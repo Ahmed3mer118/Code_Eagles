@@ -206,8 +206,8 @@ function DetailStudent() {
         }
       );
 
-      setCurrentStutas(newStatus);
       toast.success(`User status changed to ${newStatus}`);
+      setCurrentStutas(newStatus);
     } catch (error) {
       toast.error("Failed to update user status");
       console.error("Status update error:", error);
@@ -242,6 +242,7 @@ function DetailStudent() {
                   <td className="border">{students.GroupName || "N/A"}</td>
                   <td className="border">
                     <span
+                    style={{cursor:"pointer"}}
                       onClick={() => handleDelete(studentId)}
                       className="text-danger cursor"
                     >

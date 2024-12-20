@@ -18,8 +18,8 @@ function NavStudent({ menuOpen }) {
         .then((res) => {
           setLoggedUser(res.data);
           // console.log(res.data);
-          setIsEnrolled(res.data.groups?.length > 0); // التحقق إذا كان المستخدم مسجلاً في مجموعات
-          setStatusUser(res.data.groups || []); // تعيين المجموعات أو مصفوفة فارغة
+          setIsEnrolled(res.data.groups?.length > 0); 
+          setStatusUser(res.data.groups || []); 
         })
         .catch((err) => console.error("Error fetching user data:", err));
     }
@@ -36,9 +36,9 @@ function NavStudent({ menuOpen }) {
         <li className="nav-item">
           <NavLink
             to={`/${statusUser
-              .filter((item) => item.status === "approved") 
+              .filter((item) => item.status == "approved") 
               .map((item) => item.groupId)
-              }/course`}
+            }/course`}
             className="nav-link text-dark"
           >
             My Courses
