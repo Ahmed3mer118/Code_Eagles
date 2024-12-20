@@ -10,7 +10,7 @@ function Register() {
   const navigate = useNavigate();
 
   const [showInputVerif, setShowInputVerif] = useState(
-    localStorage.getItem("showVerif") ? JSON.parse(localStorage.getItem("showVerif")) : false
+    JSON.parse(localStorage.getItem("showVerif")) || false
   );
   const [number, setNumber] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,12 +23,16 @@ function Register() {
     }
   );
 
-  // تسجيل المستخدم
-  setTimeout(() => {
-    localStorage.removeItem("showVerif");
-  }, 20000);
- 
+  useEffect(() => {
+    localStorage.setItem("registerData", JSON.stringify(register));
+    localStorage.setItem("showVerif", JSON.stringify(showInputVerif));
+    setTimeout(() => {
+      localStorage.removeItem("showVerif");
+      localStorage.removeItem("registerData");
+    }, 60000);
+  }, [register, showInputVerif]);
 
+  // تسجيل المستخدم
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -46,7 +50,7 @@ function Register() {
       toast.error("Password must be at least 6 characters long.");
       return;
     }
-  
+
     try {
       const res = await axios.post(`${URLAPI}/api/users/register`, register, {
         headers: { "Content-Type": "application/json" },
@@ -62,10 +66,6 @@ function Register() {
       toast.error("An error occurred during registration.");
     }
   };
-  useEffect(() => {
-    localStorage.setItem("registerData", JSON.stringify(register.email));
-    localStorage.setItem("showVerif", JSON.stringify(showInputVerif));
-  }, [handleRegister, register, showInputVerif]);
 
   // التحقق من البريد الإلكتروني
   const handleVerification = async (e) => {
