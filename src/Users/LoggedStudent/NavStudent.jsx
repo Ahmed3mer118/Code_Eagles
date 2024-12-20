@@ -17,7 +17,6 @@ function NavStudent({ menuOpen }) {
         })
         .then((res) => {
           setLoggedUser(res.data);
-          // console.log(res.data);
           setIsEnrolled(res.data.groups?.length > 0); 
           setStatusUser(res.data.groups || []); 
         })

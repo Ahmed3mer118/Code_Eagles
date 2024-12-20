@@ -3,6 +3,7 @@ import { FaBars } from "react-icons/fa";
 import { NavLink, useLocation } from "react-router-dom";
 import NavStudent from "../LoggedStudent/NavStudent";
 import { DataContext } from "../Context/Context";
+import "./nav.css";
 
 function Navbar() {
   const { getTokenUser } = useContext(DataContext);
@@ -46,24 +47,21 @@ function Navbar() {
   return (
     <header className="navbar">
       <div className="container">
-        <img src="/images/LOGO.png" alt="logo" loading="lazy" style={{width:"100px", height:"80px", borderRadius:"50%"}}/>
-        {/* <h1
-          className="navbar-brand text-dark"
-          id="logo"
-          style={{
-            fontFamily: "Playwrite DE VA Guides",
-            fontWeight: "400",
-            fontStyle: "normal",
-          }}
-        >
-          Code Eagles
-        </h1> */}
+        <img
+          src="/images/LOGO.png"
+          alt="logo"
+          loading="lazy"
+          style={{ width: "100px", height: "80px", borderRadius: "50%" }}
+        />
+
         {!isLoggedIn ? (
           <ul className={menuOpen ? "nav responsive" : "nav"}>
             <li className="nav-item">
               <NavLink
                 to="/"
-                className="nav-link text-dark"
+                className={({ isActive }) =>
+                  `nav-link  ${isActive ? "text-warning" : "text-dark"}`
+                }
                 onClick={closeNavbar}
               >
                 Home
@@ -72,7 +70,9 @@ function Navbar() {
             <li className="nav-item">
               <NavLink
                 to="/all-courses"
-                className="nav-link text-dark"
+                className={({ isActive }) =>
+                  `nav-link  ${isActive ? "text-warning" : "text-dark"}`
+                }
                 onClick={closeNavbar}
               >
                 Courses
@@ -81,7 +81,9 @@ function Navbar() {
             <li className="nav-item">
               <NavLink
                 to="/contact"
-                className="nav-link text-dark"
+                className={({ isActive }) =>
+                  `nav-link  ${isActive ? "text-warning" : "text-dark"}`
+                }
                 onClick={closeNavbar}
               >
                 Contact us
@@ -90,7 +92,9 @@ function Navbar() {
             <li className="nav-item">
               <NavLink
                 to="/login"
-                className="nav-link text-dark"
+                className={({ isActive }) =>
+                  `nav-link  ${isActive ? "text-warning" : "text-dark"}`
+                }
                 onClick={closeNavbar}
               >
                 Log In

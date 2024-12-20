@@ -18,52 +18,64 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    const res = await axios.post(`${URLAPI}/api/users/login`, {
-      email: login.email,
-      password: login.password,
-    });
-
-    if (res.data) {
-      toast.success("Login successful!");
-
-      const currentTime = Date.now(); // الوقت الحالي
-      const expirationTime = currentTime + 3 * 60 * 60 * 1000; // إضافة 3 ساعات
-
-      if (res.data.user.role === "admin") {
-        localStorage.setItem("tokenAdmin", JSON.stringify(res.data.token));
-        localStorage.setItem("tokenExpirationAdmin", expirationTime);
-
-        setTimeout(() => {
-          localStorage.removeItem("tokenAdmin");
-          localStorage.removeItem("tokenExpirationAdmin");
-          toast.error("Session expired. Please log in again.");
-          window.location.href = "/login/admin";
-        }, 3 * 60 * 60 * 1000); // مسح التوكن بعد 3 ساعات
-
-        setTimeout(() => {
-          navigate("/admin");
-        }, 3000);
-      } else {
-        localStorage.setItem("tokenUser", JSON.stringify(res.data.token));
-        localStorage.setItem("tokenExpirationUser", expirationTime);
-
-        setTimeout(() => {
-          localStorage.removeItem("tokenUser");
-          localStorage.removeItem("tokenExpirationUser");
-          localStorage.clear();
-          toast.error("Session expired. Please log in again.");
-          window.location.href = "/login";
-        }, 3 * 60 * 60 * 1000); // مسح التوكن بعد 3 ساعات
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 3000);
+  
+    try {
+      const res = await axios.post(`${URLAPI}/api/users/login`, {
+        email: login.email,
+        password: login.password,
+      });
+  
+      if (res.data) {
+        toast.success("Login successful!");
+  
+        const currentTime = Date.now();
+        const expirationTime = currentTime + 3 * 60 * 60 * 1000;
+  
+        if (res.data.user.role === "admin") {
+          localStorage.setItem("tokenAdmin", JSON.stringify(res.data.token));
+          localStorage.setItem("tokenExpirationAdmin", expirationTime);
+          setTimeout(() => {
+            localStorage.removeItem("tokenAdmin");
+            localStorage.removeItem("tokenExpirationAdmin");
+            toast.error("Session expired. Please log in again.");
+            window.location.href = "/login/admin";
+          }, 3 * 60 * 60 * 1000); // مسح التوكن بعد 3 ساعات
+  
+          setTimeout(() => {
+            navigate("/admin");
+          }, 3000);
+        } else {
+          localStorage.setItem("tokenUser", JSON.stringify(res.data.token));
+          localStorage.setItem("tokenExpirationUser", expirationTime);
+  
+          setTimeout(() => {
+            localStorage.removeItem("tokenUser");
+            localStorage.removeItem("tokenExpirationUser");
+            localStorage.clear();
+            toast.error("Session expired. Please log in again.");
+            window.location.href = "/login";
+          }, 3 * 60 * 60 * 1000); // مسح التوكن بعد 3 ساعات
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 3000);
+        }
       }
-    } else {
-      toast.error("Invalid email or password.");
+    } catch (error) {
       setLoading(false);
+  
+      if (error.response ) {
+        // إذا كانت بيانات تسجيل الدخول غير صحيحة
+        toast.error("Invalid email or password.");
+      } else if (error.response && error.response.status === 500) {
+        // إذا حدث خطأ في الخادم
+        toast.error("Server error. Please try again later.");
+      } else {
+        // لأي خطأ آخر
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     }
   };
+  
 
   // Password Reset Handler
   const handleForgetPass = async (e) => {
