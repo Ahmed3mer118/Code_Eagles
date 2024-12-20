@@ -10,7 +10,7 @@ function Register() {
   const navigate = useNavigate();
 
   const [showInputVerif, setShowInputVerif] = useState(
-    JSON.parse(localStorage.getItem("showVerif")) || false
+    localStorage.getItem("showVerif") ? JSON.parse(localStorage.getItem("showVerif")) : false
   );
   const [number, setNumber] = useState("");
   const [loading, setLoading] = useState(false);
