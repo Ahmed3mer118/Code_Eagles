@@ -26,10 +26,25 @@ function Register() {
   useEffect(() => {
     localStorage.setItem("registerData", JSON.stringify(register));
     localStorage.setItem("showVerif", JSON.stringify(showInputVerif));
-    setTimeout(() => {
-      localStorage.removeItem("showVerif");
-      localStorage.removeItem("registerData");
-    }, 60000);
+
+    let timeout;
+    if (showInputVerif) {
+      // إعادة تعيين المهلة الزمنية (60 ثانية)
+      timeout = setTimeout(() => {
+        setShowInputVerif(false);
+        setRegister({
+          name: "",
+          email: "",
+          password: "",
+          phone_number: "",
+        });
+        localStorage.removeItem("showVerif");
+        localStorage.removeItem("registerData");
+        toast.error("Time expired. Please register again.");
+      }, 60000); // 60 ثانية
+    }
+
+    return () => clearTimeout(timeout); // تنظيف التايمر عند إلغاء المكون أو تغيير الحالة
   }, [register, showInputVerif]);
 
   // تسجيل المستخدم
