@@ -18,19 +18,19 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     try {
       const res = await axios.post(`${URLAPI}/api/users/login`, {
         email: login.email,
         password: login.password,
       });
-  
+
       if (res.data) {
         toast.success("Login successful!");
-  
+
         const currentTime = Date.now();
         const expirationTime = currentTime + 3 * 60 * 60 * 1000;
-  
+
         if (res.data.user.role === "admin") {
           localStorage.setItem("tokenAdmin", JSON.stringify(res.data.token));
           localStorage.setItem("tokenExpirationAdmin", expirationTime);
@@ -40,14 +40,14 @@ function Login() {
             toast.error("Session expired. Please log in again.");
             window.location.href = "/login/admin";
           }, 3 * 60 * 60 * 1000); // مسح التوكن بعد 3 ساعات
-  
+
           setTimeout(() => {
             navigate("/admin");
           }, 3000);
         } else {
           localStorage.setItem("tokenUser", JSON.stringify(res.data.token));
           localStorage.setItem("tokenExpirationUser", expirationTime);
-  
+
           setTimeout(() => {
             localStorage.removeItem("tokenUser");
             localStorage.removeItem("tokenExpirationUser");
@@ -62,8 +62,8 @@ function Login() {
       }
     } catch (error) {
       setLoading(false);
-  
-      if (error.response ) {
+
+      if (error.response) {
         // إذا كانت بيانات تسجيل الدخول غير صحيحة
         toast.error("Invalid email or password.");
       } else if (error.response && error.response.status === 500) {
@@ -75,7 +75,6 @@ function Login() {
       }
     }
   };
-  
 
   // Password Reset Handler
   const handleForgetPass = async (e) => {

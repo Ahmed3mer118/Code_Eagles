@@ -10,7 +10,6 @@ function DetailStudent() {
 
   const [students, setStudents] = useState([]);
   const [groupIdByStd, setGroupIdByStd] = useState("");
-  const [lectureByStd, setLectureByStd] = useState("");
   const [loading, setLoading] = useState(true);
   const [dataUpdateStudent, setDataUpdateStudent] = useState({
     name: "",
@@ -91,6 +90,7 @@ function DetailStudent() {
         });
     }
   }, [studentId, URLAPI, getTokenAdmin]);
+  
 
   // Fetch Group Data
   useEffect(() => {
@@ -165,6 +165,7 @@ function DetailStudent() {
 
   // Toggle User Status
   const handleStopUser = async (id, currentStatus) => {
+    console.log(id, currentStatus)
     if (!getTokenAdmin) {
       toast.error("Unauthorized. Please log in.");
       return;
@@ -194,10 +195,10 @@ function DetailStudent() {
     const updateStatus = {
       status: newStatus,
     };
-
+    const groupId = groupIdByStd[0]?.groupId;
     try {
       await axios.put(
-        `${URLAPI}/api/users/update-join-request/${groupIdByStd}/${id}`,
+        `${URLAPI}/api/users/update-join-request/${groupId}/${id}`,
         updateStatus,
         {
           headers: {

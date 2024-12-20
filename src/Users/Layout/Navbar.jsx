@@ -60,7 +60,7 @@ function Navbar() {
               <NavLink
                 to="/"
                 className={({ isActive }) =>
-                  `nav-link  ${isActive ? "text-warning" : "text-dark"}`
+                  `nav-link  ${isActive ? "text-success" : "text-dark"}`
                 }
                 onClick={closeNavbar}
               >
@@ -71,7 +71,7 @@ function Navbar() {
               <NavLink
                 to="/all-courses"
                 className={({ isActive }) =>
-                  `nav-link  ${isActive ? "text-warning" : "text-dark"}`
+                  `nav-link  ${isActive ? "text-success" : "text-dark"}`
                 }
                 onClick={closeNavbar}
               >
@@ -82,7 +82,7 @@ function Navbar() {
               <NavLink
                 to="/contact"
                 className={({ isActive }) =>
-                  `nav-link  ${isActive ? "text-warning" : "text-dark"}`
+                  `nav-link  ${isActive ? "text-success" : "text-dark"}`
                 }
                 onClick={closeNavbar}
               >
@@ -93,7 +93,7 @@ function Navbar() {
               <NavLink
                 to="/login"
                 className={({ isActive }) =>
-                  `nav-link  ${isActive ? "text-warning" : "text-dark"}`
+                  `nav-link  ${isActive ? "text-success" : "text-dark"}`
                 }
                 onClick={closeNavbar}
               >

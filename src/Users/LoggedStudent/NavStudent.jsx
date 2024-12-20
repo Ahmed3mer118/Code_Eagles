@@ -17,8 +17,8 @@ function NavStudent({ menuOpen }) {
         })
         .then((res) => {
           setLoggedUser(res.data);
-          setIsEnrolled(res.data.groups?.length > 0); 
-          setStatusUser(res.data.groups || []); 
+          setIsEnrolled(res.data.groups?.length > 0);
+          setStatusUser(res.data.groups || []);
         })
         .catch((err) => console.error("Error fetching user data:", err));
     }
@@ -27,7 +27,12 @@ function NavStudent({ menuOpen }) {
   return (
     <ul className={menuOpen ? "nav responsive" : "nav align-items-center"}>
       <li className="nav-item">
-        <NavLink to="/" className="nav-link text-dark">
+        <NavLink
+          to="/"
+          className={({ isActive }) =>
+            `nav-link  ${isActive ? "text-success" : "text-dark"}`
+          }
+        >
           Home
         </NavLink>
       </li>
@@ -35,17 +40,23 @@ function NavStudent({ menuOpen }) {
         <li className="nav-item">
           <NavLink
             to={`/${statusUser
-              .filter((item) => item.status == "approved") 
-              .map((item) => item.groupId)
-            }/course`}
-            className="nav-link text-dark"
+              .filter((item) => item.status == "approved")
+              .map((item) => item.groupId)}/course`}
+            className={({ isActive }) =>
+              `nav-link  ${isActive ? "text-success" : "text-dark"}`
+            }
           >
             My Courses
           </NavLink>
         </li>
-      ) }
+      )}
       <li className="nav-item">
-        <NavLink to="/profile" className="nav-link text-dark">
+        <NavLink
+          to="/profile"
+          className={({ isActive }) =>
+            `nav-link  ${isActive ? "text-success" : "text-dark"}`
+          }
+        >
           Profile
         </NavLink>
       </li>
