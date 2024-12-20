@@ -24,7 +24,7 @@ function Register() {
   );
 
   useEffect(() => {
-    // localStorage.setItem("registerData", JSON.stringify(register));
+    localStorage.setItem("registerData", JSON.stringify(register.email));
     localStorage.setItem("showVerif", JSON.stringify(showInputVerif));
   }, [register, showInputVerif]);
 
@@ -46,7 +46,9 @@ function Register() {
       toast.error("Password must be at least 6 characters long.");
       return;
     }
-
+    setTimeout(() => {
+      localStorage.removeItem("showVerif");
+    }, 20000);
     try {
       const res = await axios.post(`${URLAPI}/api/users/register`, register, {
         headers: { "Content-Type": "application/json" },
@@ -92,7 +94,6 @@ function Register() {
       setLoading(false);
     }
   };
-
 
   const handleChangeValue = (e) => {
     const inputNumber = e.target.value.replace(/\D/g, "");

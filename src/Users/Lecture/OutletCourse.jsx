@@ -26,10 +26,7 @@ function OutletCourse() {
       })
       .then((res) => {
         setLecture(res.data.lecture);
-        console.log(res.data.lecture);
-        if (res.data.lecture.attendees.attendedAt > 0) {
-          console.log("done");
-        }
+      
       })
       .catch((err) => {
         console.error("Error fetching lecture data:", err);
@@ -94,7 +91,7 @@ function OutletCourse() {
           style={{ position: "relative", width: "100%", marginBottom: "30px" }}
         >
           <video
-            src="https://res.cloudinary.com/drprxdib0/video/upload/v1733845484/2024-12-03_22-58-43_whhyaf.mkv"
+            // src="https://res.cloudinary.com/drprxdib0/video/upload/v1733845484/2024-12-03_22-58-43_whhyaf.mkv"
             // src="https://youtu.be/LQ_urjYEghs?si=H7ofFiUitemx90-4"
             // src="https://youtu.be/LQ_urjYEghs?si=th9j4VrnQ7piTz_b"
             controls

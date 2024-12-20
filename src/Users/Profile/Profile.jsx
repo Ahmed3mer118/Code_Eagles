@@ -8,7 +8,7 @@ function Profile() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [userData, setUserData] = useState(null); // user data
   const [tasks, setTasks] = useState([]); // show  tasks
-  const [attendance, setAttendance] = useState({ present: 0, absent: 0 }); // calc 
+  const [attendance, setAttendance] = useState({ present: 0, absent: 0 }); // calc
   const [attendacneData, setAttendanceData] = useState([]);
   const [totalTaskGrades, setTotalTaskGrades] = useState(0);
   const [editing, setEditing] = useState(false);
@@ -28,18 +28,17 @@ function Profile() {
 
         if (res.data) {
           setUserData(res.data);
-          
+
           setUpdatedData({
             name: res.data.name,
             email: res.data.email,
             phone_number: res.data.phone_number,
           });
 
-         
           // Extract attendance data from the response
           const attendanceData = res.data.attendance; // Ensure it's an array
-     
-          setAttendanceData(res.data.attendance)
+
+          setAttendanceData(res.data.attendance);
           const presentCount = attendanceData.filter(
             (item) => item.attendanceStatus == "present"
           ).length;
@@ -50,15 +49,13 @@ function Profile() {
           // If you want to store attendance, make sure to structure the state correctly
           setAttendance({ present: presentCount, absent: absentCount }); // Store the whole attendance data if needed
 
-         
-           // Extract task data from the response
-           const taskData = res.data.tasks || []; // Ensure it's an array
-           setTasks(taskData);
- 
-           setTotalTaskGrades(
-             taskData.reduce((sum, task) => sum + task.score, 0) // Sum task grades
-           );
- 
+          // Extract task data from the response
+          const taskData = res.data.tasks || []; // Ensure it's an array
+          setTasks(taskData);
+
+          setTotalTaskGrades(
+            taskData.reduce((sum, task) => sum + task.score, 0) // Sum task grades
+          );
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -69,17 +66,17 @@ function Profile() {
   }, [getTokenUser]);
 
   const handleUpdate = async () => {
-    console.log(updatedData)
+    console.log(updatedData);
     try {
       const updateRes = await axios.put(`${URLAPI}/api/users`, updatedData, {
         headers: { Authorization: `${getTokenUser}` },
       });
       setUserData(updateRes.data);
-      
+
       toast.success("Profile updated successfully!");
       setTimeout(() => {
-        window.location.reload()
-        
+        window.location.reload();
+
         setEditing(false);
       }, 3000);
     } catch (error) {
@@ -89,7 +86,7 @@ function Profile() {
   };
 
   const handleLoggout = () => {
-    localStorage.removeItem("userId");
+    localStorage.removeItem("tokenExpirationUser");
     localStorage.removeItem("tokenUser");
     toast.success("logout successfully");
     setTimeout(() => {
@@ -187,7 +184,7 @@ function Profile() {
               <div className="card-body">
                 {/* attendance */}
                 <h3 className="text-center">Attendance</h3>
-             
+
                 <p>
                   <strong>Present:</strong> {attendance.present}
                 </p>
@@ -195,25 +192,22 @@ function Profile() {
                   <strong>Absent:</strong> {attendance.absent}
                 </p>
                 <>
-                  {
-                    attendacneData.map((item, index) => (
-                      <li key={index}>
-                       
-                        <strong>Lecture {index + 1}</strong>:
-                        <span
-                          className={
-                            item.attendanceStatus === "present"
-                              ? "text-success"
-                              : "text-danger"
-                          }
-                        >
-                          
-                          {item.attendanceStatus === "present"
-                            ? " Attended"
-                            : " Absent"}
-                        </span>
-                      </li>
-                    ))}
+                  {attendacneData.map((item, index) => (
+                    <li key={index}>
+                      <strong>Lecture {index + 1}</strong>:
+                      <span
+                        className={
+                          item.attendanceStatus === "present"
+                            ? "text-success"
+                            : "text-danger"
+                        }
+                      >
+                        {item.attendanceStatus === "present"
+                          ? " Attended"
+                          : " Absent"}
+                      </span>
+                    </li>
+                  ))}
                 </>
               </div>
             </div>
@@ -223,7 +217,7 @@ function Profile() {
               <div className="card-body">
                 <h3 className="card-title text-center">Tasks</h3>
                 <p>
-                  <strong>Total Score :</strong> {totalTaskGrades} 
+                  <strong>Total Score :</strong> {totalTaskGrades}
                 </p>
                 <>
                   {tasks.map((task, index) => (

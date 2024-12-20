@@ -38,7 +38,7 @@ function NavStudent({ menuOpen }) {
             to={`/${statusUser
               .filter((item) => item.status === "approved") 
               .map((item) => item.groupId)
-              .join(",")}/course`}
+              }/course`}
             className="nav-link text-dark"
           >
             My Courses
