@@ -24,13 +24,8 @@ function Register() {
   );
 
   useEffect(() => {
-    localStorage.setItem("registerData", JSON.stringify(register));
-    localStorage.setItem("showVerif", JSON.stringify(showInputVerif));
-
-    let timeout;
     if (showInputVerif) {
-      // إعادة تعيين المهلة الزمنية (60 ثانية)
-      timeout = setTimeout(() => {
+      setTimeout(() => {
         setShowInputVerif(false);
         setRegister({
           name: "",
@@ -41,13 +36,14 @@ function Register() {
         localStorage.removeItem("showVerif");
         localStorage.removeItem("registerData");
         toast.error("Time expired. Please register again.");
-      }, 60000); // 60 ثانية
+        navigate("/register");
+      }, 60000); // 60 seconds
     }
 
-    return () => clearTimeout(timeout); // تنظيف التايمر عند إلغاء المكون أو تغيير الحالة
-  }, [register, showInputVerif]);
+    // return () => clearTimeout(timeout);
+  }, []);
 
-  // تسجيل المستخدم
+  // Handle user registration
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -65,6 +61,8 @@ function Register() {
       toast.error("Password must be at least 6 characters long.");
       return;
     }
+    localStorage.setItem("registerData", JSON.stringify(register));
+    localStorage.setItem("showVerif", JSON.stringify(!showInputVerif));
 
     try {
       const res = await axios.post(`${URLAPI}/api/users/register`, register, {
@@ -82,12 +80,11 @@ function Register() {
     }
   };
 
-  // التحقق من البريد الإلكتروني
+  // Handle email verification
   const handleVerification = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const code = number.replace(/\s+/g, "");
-
+    const code = number.replace(/\s+/g, "");  
     try {
       const res = await axios.post(`${URLAPI}/api/users/verify-Email`, {
         email: register.email,
@@ -112,13 +109,14 @@ function Register() {
     }
   };
 
+  // Handle input change for verification code
   const handleChangeValue = (e) => {
     const inputNumber = e.target.value.replace(/\D/g, "");
     if (inputNumber.length <= 6) {
       const formattedInput = inputNumber.split("").join(" ").substr(0, 13);
       setNumber(formattedInput);
     } else {
-      toast.error("يجب ادخال 6 ارقام");
+      toast.error("Verification code must be 6 digits");
     }
   };
 
@@ -155,7 +153,7 @@ function Register() {
               placeholder="Password"
               className="form-control border rounded mt-3"
               value={register.password}
-              minLength={10}
+              minLength={6}
               onChange={(e) =>
                 setRegister({ ...register, password: e.target.value })
               }
@@ -206,5 +204,4 @@ function Register() {
     </>
   );
 }
-
 export default Register;

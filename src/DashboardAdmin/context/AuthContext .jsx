@@ -5,8 +5,9 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  // الحالة تعتمد على القيمة المخزنة في localStorage مباشرةً
-  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("tokenAdmin"));
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => !!localStorage.getItem("tokenAdmin")
+  );
 
   const login = (token) => {
     localStorage.setItem("tokenAdmin", JSON.stringify(token));

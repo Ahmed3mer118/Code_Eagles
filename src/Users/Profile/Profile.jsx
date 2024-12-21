@@ -3,6 +3,7 @@ import React, { Fragment, useContext, useEffect, useState } from "react";
 import { DataContext } from "../Context/Context";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 function Profile() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
@@ -93,10 +94,42 @@ function Profile() {
       window.location.href = "/";
     }, 2000);
   };
+  const handleDeleteAccount = () => {
+    const userConfirmed = window.confirm(
+      "Are you sure you want to delete your account ?"
+    );
+    if (userConfirmed) {
+      toast.info("Deleting your account...");
+      axios
+      .delete(`${URLAPI}/api/users`, {
+        headers: { Authorization: `${getTokenUser}` },
+      })
+      .then(() => {
+        toast.success(
+          "Your account has been deleted successfully. Come back to us again!"
+        );
+        localStorage.removeItem("tokenExpirationUser");
+        localStorage.removeItem("tokenUser");
+        // إعادة توجيه المستخدم بعد فترة قصيرة
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 3000);
+      })
+      .catch((error) => {
+        toast.error("An error occurred while deleting your account. Please try again.");
+      });
+    }else{
+      toast.info("Account deletion canceled.");
+    }
+   
+  };
 
   return (
     <>
       <ToastContainer />
+      <Helmet>
+        <title>Profile</title>
+      </Helmet>
       <div className="container mt-4">
         <h2 className="mb-4">User Dashboard</h2>
 
@@ -232,9 +265,20 @@ function Profile() {
             </div>
           </div>
         </div>
-        <button onClick={handleLoggout} className="btn btn-outline-danger m-2">
-          Logout
-        </button>
+        <div className="d-flex justify-content-between align-items-center flex-wrap">
+          <button
+            onClick={handleLoggout}
+            className="btn btn-outline-info m-2"
+          >
+            Logout
+          </button>
+          <button
+            onClick={handleDeleteAccount}
+            className="btn btn-outline-danger m-2"
+          >
+            Delete Account
+          </button>
+        </div>
       </div>
     </>
   );

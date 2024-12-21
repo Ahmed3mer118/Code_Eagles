@@ -3,11 +3,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { DataContext } from "../Context/Context";
 
-function NavStudent({ menuOpen }) {
+function NavStudent({ menuOpen  , setMenuOpen}) {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [loggedUser, setLoggedUser] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [statusUser, setStatusUser] = useState([]);
+
 
   useEffect(() => {
     if (getTokenUser) {
@@ -23,11 +24,15 @@ function NavStudent({ menuOpen }) {
         .catch((err) => console.error("Error fetching user data:", err));
     }
   }, [getTokenUser]);
+  const closeNavbar = () => {
+    setMenuOpen(false);
+  };
 
   return (
     <ul className={menuOpen ? "nav responsive" : "nav align-items-center"}>
       <li className="nav-item">
         <NavLink
+          onClick={closeNavbar}
           to="/"
           className={({ isActive }) =>
             `nav-link  ${isActive ? "text-success" : "text-dark"}`
@@ -39,6 +44,7 @@ function NavStudent({ menuOpen }) {
       {isEnrolled && statusUser.some((item) => item.status === "approved") && (
         <li className="nav-item">
           <NavLink
+            onClick={closeNavbar}
             to={`/${statusUser
               .filter((item) => item.status == "approved")
               .map((item) => item.groupId)}/course`}
@@ -52,6 +58,7 @@ function NavStudent({ menuOpen }) {
       )}
       <li className="nav-item">
         <NavLink
+          onClick={closeNavbar}
           to="/profile"
           className={({ isActive }) =>
             `nav-link  ${isActive ? "text-success" : "text-dark"}`

@@ -30,31 +30,15 @@ function Login() {
 
         const currentTime = Date.now();
         const expirationTime = currentTime + 3 * 60 * 60 * 1000;
-
         if (res.data.user.role === "admin") {
           localStorage.setItem("tokenAdmin", JSON.stringify(res.data.token));
           localStorage.setItem("tokenExpirationAdmin", expirationTime);
-          setTimeout(() => {
-            localStorage.removeItem("tokenAdmin");
-            localStorage.removeItem("tokenExpirationAdmin");
-            toast.error("Session expired. Please log in again.");
-            window.location.href = "/login/admin";
-          }, 3 * 60 * 60 * 1000); // مسح التوكن بعد 3 ساعات
-
           setTimeout(() => {
             navigate("/admin");
           }, 3000);
         } else {
           localStorage.setItem("tokenUser", JSON.stringify(res.data.token));
           localStorage.setItem("tokenExpirationUser", expirationTime);
-
-          setTimeout(() => {
-            localStorage.removeItem("tokenUser");
-            localStorage.removeItem("tokenExpirationUser");
-            localStorage.clear();
-            toast.error("Session expired. Please log in again.");
-            window.location.href = "/login";
-          }, 3 * 60 * 60 * 1000); // مسح التوكن بعد 3 ساعات
           setTimeout(() => {
             window.location.href = "/";
           }, 3000);

@@ -3,38 +3,19 @@ import { FaBars } from "react-icons/fa";
 import { NavLink, useLocation } from "react-router-dom";
 import NavStudent from "../LoggedStudent/NavStudent";
 import { DataContext } from "../Context/Context";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./nav.css";
 
 function Navbar() {
   const { getTokenUser } = useContext(DataContext);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(!!getTokenUser); // حالة تسجيل الدخول
+  const [isLoggedIn, setIsLoggedIn] = useState(getTokenUser); // حالة تسجيل الدخول
   const location = useLocation();
   useEffect(() => {
-    const token =
-      localStorage.getItem("tokenUser") || localStorage.getItem("tokenAdmin");
-    const expirationTime = localStorage.getItem("tokenExpiration");
+      setIsLoggedIn(isLoggedIn);
 
-    if (token && expirationTime) {
-      const currentTime = Date.now();
-      if (currentTime > expirationTime) {
-        localStorage.removeItem("tokenUser");
-        localStorage.removeItem("tokenAdmin");
-        localStorage.removeItem("tokenExpiration");
-        toast.error("Session expired. Please log in again.");
-        setIsLoggedIn(false);
-      } else {
-        setIsLoggedIn(true);
-      }
-    } else {
-      setIsLoggedIn(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    // تحقق عند تغيير التوكن أو الموقع
-    setIsLoggedIn(!!getTokenUser);
-  }, [getTokenUser, location.pathname]);
+  }, [getTokenUser]);
 
   const toggleNavbar = () => {
     setMenuOpen(!menuOpen);
@@ -46,6 +27,7 @@ function Navbar() {
 
   return (
     <header className="navbar">
+      <ToastContainer />
       <div className="container">
         <img
           src="/images/LOGO.png"
@@ -102,7 +84,7 @@ function Navbar() {
             </li>
           </ul>
         ) : (
-          <NavStudent menuOpen={menuOpen} />
+          <NavStudent menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         )}
         <button className="navbar-toggler btn btn-dark" onClick={toggleNavbar}>
           <FaBars />

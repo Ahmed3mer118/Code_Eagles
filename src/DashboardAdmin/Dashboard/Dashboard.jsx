@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import axios from "axios";
 import { IoMenu } from "react-icons/io5";
@@ -12,6 +12,19 @@ function Dashboard() {
     online: true,
     offline: true,
   });
+
+  const expiration = localStorage.getItem("tokenExpirationAdmin");
+  if (getTokenAdmin && expiration) {
+    const currentTime = Date.now();
+    if (currentTime > expiration) {
+      localStorage.removeItem("tokenAdmin");
+      localStorage.removeItem("tokenExpirationAdmin");
+      toast.error("Session expired. Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 3000);
+    }
+  }
 
   const [dark, setDark] = useState(false);
   const [toggleNav, setToggleNav] = useState(true);
@@ -26,9 +39,9 @@ function Dashboard() {
     setToggleNav(!toggleNav);
   };
 
+  // get type course
   useEffect(() => {
     const fetchData = async () => {
-
         const response = await axios.get(`${URLAPI}/api/groups`, {
           headers: { Authorization: `${getTokenAdmin}` },
         });
@@ -51,6 +64,7 @@ function Dashboard() {
   const handleOpen = (tag) => {
     setOpenSections((prevState) => ({...prevState, [tag]: !prevState[tag],}));
   };
+ 
   
   return (
     <div className="row">

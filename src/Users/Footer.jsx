@@ -37,8 +37,8 @@ function Footer() {
           <div className="contact-info mb-4 d-flex flex-column align-items-center">
             <div className="d-flex justify-content-center mb-2">
               <AiOutlineMail size={20} className="me-2" />
-              <a href="mailto:info@codeeagles.com" className="text-white">
-                info@codeeagles.com
+              <a href="mailto:codeeagles.com" className="text-white">
+                codeeagles.com
               </a>
             </div>
             <div className="d-flex justify-content-center">

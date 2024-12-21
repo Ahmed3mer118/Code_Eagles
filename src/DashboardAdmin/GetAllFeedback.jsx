@@ -9,16 +9,22 @@ function GetAllFeedback() {
   const [feedbacks, setFeedbacks] = useState([]);
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
 
-  // جلب جميع الفيدباك
   useEffect(() => {
     const fetchFeedbacks = async () => {
       try {
-        const response = await axios.get(`${URLAPI}/api/users/get-all-feedback`);
-  
+        const response = await axios.get(
+          `${URLAPI}/api/users/get-all-feedback`,
+          {
+            headers: {
+              Authorization: `${getTokenAdmin}`,
+            },
+          }
+        );
+
         // تحقق من الحالة
         if (response.status === 200) {
           const feedbacks = response.data.feedbacks;
-  
+
           if (feedbacks && feedbacks.length > 0) {
             setFeedbacks(feedbacks);
           } else {
@@ -36,10 +42,9 @@ function GetAllFeedback() {
         }
       }
     };
-  
+
     fetchFeedbacks();
   }, []);
-  
 
   // حذف فيدباك معين
   const handleDeleteFeedback = async (feedbackId) => {
