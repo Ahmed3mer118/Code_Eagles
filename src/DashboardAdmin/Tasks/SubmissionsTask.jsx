@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { DataContext } from "../../Users/Context/Context";
 import axios from "axios";
 import { Helmet } from "react-helmet-async";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 
 function SubmissionsTask() {
@@ -30,6 +30,7 @@ function SubmissionsTask() {
         )
         .then((res) => {
           setSubmissions(res.data.submissions);
+          console.log(res.data.submissions);
           setTaskName(res.data);
         })
         .catch((err) => {
@@ -37,31 +38,6 @@ function SubmissionsTask() {
         });
     }
   }, [lectureId, taskId, URLAPI, getTokenAdmin]);
-
-  useEffect(() => {
-    // Fetch user details for each submission
-    if (submissions.length > 0) {
-      submissions.forEach((submission) => {
-        if (submission.userId) {
-          axios
-            .get(`${URLAPI}/api/users/${submission.userId}`, {
-              headers: {
-                Authorization: `${getTokenAdmin}`,
-              },
-            })
-            .then((res) => {
-              setTaskName({ ...taskName, name: res.data.name });
-            })
-            .catch((err) => {
-              console.error(
-                `Error fetching user data for userId ${submission.userId}:`,
-                err
-              );
-            });
-        }
-      });
-    }
-  }, [submissions, URLAPI, getTokenAdmin]);
 
   const handleSendScore = (submissionId) => {
     if (submissionId !== undefined) {
@@ -124,20 +100,17 @@ function SubmissionsTask() {
           {Array.isArray(submissions) &&
             submissions.map((item, index) => (
               <tr key={index}>
+   
                 <td className="border text-center">{index + 1}</td>
-                <td className="border text-center">{taskName.name}</td>
+                <td className="border text-center">{item.userName}</td>
                 <td className="border text-center">
                   {/* {getTaskDescription(taskId)} */}
                   {taskName.taskTitle}
                 </td>
                 <td className="border text-center">
-                  <a
-                    href={`${submissions.submissionLink}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <Link to={item.submissionLink} target="_blank">
                     View Submission
-                  </a>
+                  </Link>
                 </td>
                 <td className="border text-center" style={{ width: "150px" }}>
                   {item.score !== null ? (

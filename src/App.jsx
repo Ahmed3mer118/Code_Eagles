@@ -50,6 +50,7 @@ import Notification from "./Users/Notification/Notification";
 // PrivateRoute
 import PrivateRoute from "./DashboardAdmin/PrivateRoute";
 import { AuthProvider } from "./DashboardAdmin/context/AuthContext ";
+import GetAllMessage from "./DashboardAdmin/Messages/GetAllMessage";
 
 const helmetContext = {};
 
@@ -91,6 +92,10 @@ function App() {
         {
           path: "/admin/get-all-feekback-by-admin",
           element: <GetAllFeedback />,
+        },
+        {
+          path: "/admin/get-all-message-by-admin",
+          element: <GetAllMessage />,
         },
         {
           path: "/admin/:groupId",

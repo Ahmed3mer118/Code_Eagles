@@ -36,7 +36,7 @@ function Register() {
         localStorage.removeItem("showVerif");
         localStorage.removeItem("registerData");
         toast.error("Time expired. Please register again.");
-        window.location.href ="/register";
+        window.location.href = "/register";
       }, 60000); // 60 seconds
     }
 
@@ -72,11 +72,13 @@ function Register() {
       if (res.data) {
         setShowInputVerif(true);
         toast.success(`Hello ${register.name}, please check your email.`);
+        setLoading(true)
       } else {
         toast.error("Error in Form");
       }
     } catch (error) {
       toast.error("An error occurred during registration.");
+      setLoading(false)
     }
   };
 
@@ -84,7 +86,7 @@ function Register() {
   const handleVerification = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const code = number.replace(/\s+/g, "");  
+    const code = number.replace(/\s+/g, "");
     try {
       const res = await axios.post(`${URLAPI}/api/users/verify-Email`, {
         email: register.email,
@@ -119,6 +121,13 @@ function Register() {
       toast.error("Verification code must be 6 digits");
     }
   };
+  useEffect(() => {
+    if (showInputVerif) {
+      toast.info(
+        "If you didn't complete the verification code and want to return to registration, please wait here for a minute and then re-register."
+      );
+    }
+  }, [showInputVerif]);
 
   return (
     <>
@@ -168,8 +177,11 @@ function Register() {
               }
             />
             <div className="mt-2 p-2">
-              <button className="btn btn-primary d-block w-100 m-auto">
-                Submit
+              <button
+                className="btn btn-primary d-block w-100 m-auto"
+                disabled={loading}
+              >
+                {!loading ? "Send" : "Loading..."}
               </button>
             </div>
             <Link

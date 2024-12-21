@@ -36,15 +36,15 @@ function DashboardIndex() {
     // })
 
     // جلب عدد الرسائل
-    // axios
-    //   .get(`${URLAPI}/api/Messages/get-all-messages`, {
-    //     headers: {
-    //       Authorization: `${getTokenAdmin}`,
-    //     },
-    //   })
-    //   .then((res) => {
-    //     setMessagesCount(res.data.length || 0);
-    //   });
+    axios
+      .get(`${URLAPI}/api/contact/contact-us/messages`, {
+        headers: {
+          Authorization: `${getTokenAdmin}`,
+        },
+      })
+      .then((res) => {
+        setMessagesCount(res.data.messages.length || 0);
+      });
 
     axios
       .get(`${URLAPI}/api/users/get-all-feedback`, {
@@ -79,7 +79,7 @@ function DashboardIndex() {
       {/* عدد الرسائل */}
       <div className="card p-2 m-2">
         <h3>Messages: {messagesCount}</h3>
-        <Link to="/admin/messages">See All Messages</Link>
+        <Link to="/admin/get-all-message-by-admin">See All Messages</Link>
       </div>
 
       {/* عدد الـ feedback */}

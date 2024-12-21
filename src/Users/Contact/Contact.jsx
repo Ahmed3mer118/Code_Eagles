@@ -1,20 +1,33 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useContext, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-
+import { DataContext } from "../../Users/Context/Context";
 function Contact() {
+  const { URLAPI } = useContext(DataContext);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    contact: "",
+    message: "",
   });
-  const [writeMessage, setWriteMessage] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
-    toast.success("Thank You For Contacting Us");
-    // setFormData("")
+    setLoading(true);
+
+    try {
+      await axios.post(`${URLAPI}/api/contact/contact-us`, formData);
+      toast.success("Thank You For Contacting Us");
+      setTimeout(() => {
+        setFormData({ name: "", email: "", message: "" }); // إعادة تعيين الحقول
+        setLoading(false);
+      }, 2000);
+    } catch (error) {
+      toast.error("Failed to send your message. Please try again.");
+      setLoading(false);
+    }
   };
+
   return (
     <>
       <ToastContainer />
@@ -54,17 +67,17 @@ function Contact() {
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="feedback" className="form-label">
-              How to help You
+            <label htmlFor="message" className="form-label">
+              How can we help you?
             </label>
             <textarea
               className="form-control"
-              id="contact"
-              name="contact"
+              id="message"
+              name="message"
               rows="4"
-              value={formData.contact}
+              value={formData.message}
               onChange={(e) =>
-                setFormData({ ...formData, contact: e.target.value})
+                setFormData({ ...formData, message: e.target.value })
               }
               required
             ></textarea>
@@ -72,9 +85,9 @@ function Contact() {
           <button
             type="submit"
             className="btn btn-primary w-100"
-            disabled={formData.contact.trim().length > 0 ? writeMessage : !writeMessage}
+            disabled={loading || formData.message.trim() === ""}
           >
-            Submit contact
+            {loading ? "Sending..." : "Submit"}
           </button>
         </form>
       </div>
