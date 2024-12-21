@@ -153,7 +153,7 @@ function Register() {
               placeholder="Password"
               className="form-control border rounded mt-3"
               value={register.password}
-              minLength={6}
+              minLength={10}
               onChange={(e) =>
                 setRegister({ ...register, password: e.target.value })
               }
