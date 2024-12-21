@@ -36,7 +36,7 @@ function Register() {
         localStorage.removeItem("showVerif");
         localStorage.removeItem("registerData");
         toast.error("Time expired. Please register again.");
-        navigate("/register");
+        window.location.href ="/register";
       }, 60000); // 60 seconds
     }
 
