@@ -51,6 +51,7 @@ import Notification from "./Users/Notification/Notification";
 import PrivateRoute from "./DashboardAdmin/PrivateRoute";
 import { AuthProvider } from "./DashboardAdmin/context/AuthContext ";
 import GetAllMessage from "./DashboardAdmin/Messages/GetAllMessage";
+import VerificationForm from "./Users/Register/VerificationForm";
 
 const helmetContext = {};
 
@@ -150,18 +151,7 @@ function App() {
         },
       ],
     },
-    {
-      path: "/Register",
-      element: <Register />,
-    },
-    {
-      path: "/login",
-      element: <Login />,
-    },
-    {
-      path: "/forgetpassword",
-      element: <ForgetPass />,
-    },
+   
     {
       path: "/",
       element: <Layout />,
@@ -169,6 +159,22 @@ function App() {
         {
           index: true,
           element: <Main />,
+        },
+        {
+          path: "/register",
+          element: <Register />,
+        },
+        {
+          path: "/register/verif-email",
+          element: <VerificationForm />,
+        },
+        {
+          path: "/login",
+          element: <Login />,
+        },
+        {
+          path: "/forgetpassword",
+          element: <ForgetPass />,
         },
         {
           path: "/all-courses",

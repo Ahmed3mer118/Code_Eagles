@@ -26,21 +26,7 @@ function Group() {
         });
     }
 
-    // if (groupId) {
-    //   axios
-    //     .get(`${URLAPI}/api/groups/${groupId}`)
-    //     .then((res) => {
-    //       setGroup(res.data);
-    //       setLoading(false);
-    //     })
-    //     .catch((err) => {
-    //       console.error("Error fetching group data:", err);
-
-    //       setLoading(false);
-    //     });
-    // } else {
-    //   setLoading(false);
-    // }
+  
   }, [groupId, getTokenUser]);
 
   return (
@@ -62,7 +48,7 @@ function Group() {
           >
             <h2>{group.title}</h2>
             <p>{group.start_date?.slice(0, 10)}</p>
-            <button onClick={handleJoinGroup} className="btn btn-success">
+            <button onClick={handleJoinGroup} className="btn btn-success" disabled={loading}>
               Join Group
             </button>
           </div>

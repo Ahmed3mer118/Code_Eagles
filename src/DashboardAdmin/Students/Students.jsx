@@ -59,7 +59,6 @@ function Students() {
         toast.success("Successfully added new student");
         setNewStudent(false);
       });
-   
   };
 
   // get all student
@@ -104,7 +103,6 @@ function Students() {
               <th className="border">Email</th>
               <th className="border">Attendance</th>
               <th className="border">Tasks</th>
-              <th className="border">total</th>
               <th className="border">Evaluation</th>
               <th className="border">All Details</th>
             </tr>
@@ -120,9 +118,6 @@ function Students() {
                 </td>
                 <td className="border">
                   {Array.isArray(item.tasks) ? item.tasks.length : 0}
-                </td>
-                <td className="border">
-                {(item.attendance.length + item.tasks.length) }
                 </td>
                 <td className="border">{evaluation.toFixed(2)}%</td>
                 <td className="border">

@@ -34,7 +34,7 @@ function MyCourses() {
       <Helmet>
         <title>Lectures</title>
       </Helmet>
-      <div className="container mt-4">
+      <div className="container mt-4 mb-4">
         <div className="row">
           {/* Content Section */}
           <div className="col-12 col-md-8 bg-light p-4">
@@ -44,7 +44,7 @@ function MyCourses() {
           {/* Sidebar Section */}
 
           {lectures && lectures.length > 0 && (
-            <div className="col-12 col-md-4 text-dark p-4">
+            <div className="col-12 col-md-4 text-dark p-4 ">
               <h4 className="mb-3">Lectures</h4>
               {lectures.map((item, index) => (
                 <div key={index} className="mb-3">

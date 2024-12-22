@@ -31,7 +31,7 @@ function Contact() {
   return (
     <>
       <ToastContainer />
-      <div className="container mt-5">
+      <div className="container mt-5 mb-5">
         <h2 className="text-center mb-4">Contact us</h2>
         <form onSubmit={handleSubmit} className="shadow p-4 rounded m-auto">
           <div className="mb-3">

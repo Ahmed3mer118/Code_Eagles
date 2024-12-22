@@ -43,8 +43,9 @@ function AllGroup() {
                       <button
                         className="btn btn-success"
                         onClick={() => handleJoinGroup(group._id)}
+                        disabled={loading}
                       >
-                        Join Group
+                        {loading?"Loading" :"Join Group"}
                       </button>
                     </div>
                   </div>

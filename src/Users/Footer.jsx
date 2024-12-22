@@ -4,7 +4,7 @@ import { AiOutlineMail, AiOutlinePhone } from "react-icons/ai";
 
 function Footer() {
   return (
-    <footer className="bg-dark text-white py-4 mt-5">
+    <footer className="bg-dark text-white py-4 ">
       <div className="container">
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center">
           <h1 className="mb-3 mb-md-0">Code Eagles</h1>

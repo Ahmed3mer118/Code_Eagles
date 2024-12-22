@@ -122,7 +122,6 @@ function AllStudents() {
             <th className="border">Email</th>
             <th className="border">Attendance</th>
             <th className="border">Tasks</th>
-            {/* <th className="border">Quiz</th> */}
             <th className="border">Evaluation</th>
             <th className="border">All Details</th>
           </tr>
