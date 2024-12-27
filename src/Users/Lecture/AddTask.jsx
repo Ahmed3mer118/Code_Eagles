@@ -50,7 +50,7 @@ const navigate = useNavigate()
   return (
     <>
       <ToastContainer />
-      <div className="container mt-5">
+      <div className="container mt-5 m-5">
         <div className="card shadow-sm p-4">
           <h1 className="text-center mb-4">Add Task</h1>
           <div className="mb-3">
