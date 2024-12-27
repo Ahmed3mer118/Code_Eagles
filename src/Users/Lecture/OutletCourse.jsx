@@ -2,12 +2,13 @@ import React, { Fragment, useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { DataContext } from "../Context/Context";
-import { toast, ToastContainer } from "react-toastify";
+import { collapseToast, toast, ToastContainer } from "react-toastify";
 
 function OutletCourse() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const { id, groupId } = useParams();
   const [lecture, setLecture] = useState([]);
+  const [lectureVideo,setLectureVideo] = useState([])
   const [disabledInput, setDisabledInput] = useState(false);
   const [attendCode, setAttendCode] = useState({ code: "" });
   const [isSubmissionAllowed, setIsSubmissionAllowed] = useState(true);
@@ -25,7 +26,8 @@ function OutletCourse() {
         },
       })
       .then((res) => {
-        setLecture(res.data.lecture);
+        setLecture(res.data.lecture );
+        setLectureVideo(res.data.lecture.resources.toString())
       
       })
       .catch((err) => {
@@ -33,6 +35,7 @@ function OutletCourse() {
       });
   }, [id, getTokenUser, URLAPI]);
 
+  console.log(lectureVideo)
   // تسجيل الحضور
   const handleAttend = (e) => {
     e.preventDefault();
@@ -42,9 +45,7 @@ function OutletCourse() {
       toast.warning("You have already attended this lecture.");
       return;
     }
-  
-    console.log({ ...attendCode, lectureId: id });
- 
+
     axios
       .post(
         `${URLAPI}/api/lectures/attend`,
@@ -91,9 +92,8 @@ function OutletCourse() {
           style={{ position: "relative", width: "100%", marginBottom: "30px" }}
         >
           <video
-            // src="https://res.cloudinary.com/drprxdib0/video/upload/v1733845484/2024-12-03_22-58-43_whhyaf.mkv"
-            // src="https://youtu.be/LQ_urjYEghs?si=H7ofFiUitemx90-4"
-            // src="https://youtu.be/LQ_urjYEghs?si=th9j4VrnQ7piTz_b"
+            src="https://mega.nz/file/HAABDSwK#3O1Lo9NWjXmysN2QyxWR89qqbnEHFc1ba1Es2taKxfY"
+            // src={lectureVideo}
             controls
             controlsList="nodownload"
             disablePictureInPicture
