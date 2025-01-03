@@ -63,6 +63,7 @@ function Main() {
         <>
           <div className="main-background">
             <div className="main-content">
+              {/* <h1 className="cssanimation typing text-center">Web Development Courses Platform</h1> */}
               <h1 className="text-center">Web Development Courses Platform</h1>
               <p>
                 Here you'll find everything you need to learn programming and
@@ -73,7 +74,7 @@ function Main() {
                 target="_blank"
                  rel="noopener noreferrer"
               > */}
-              <button
+              {/* <button
                 className="btn btn-success"
                 onClick={handleWhatsAppRedirect}
                 style={{
@@ -85,7 +86,7 @@ function Main() {
                 }}
               >
                 Book Now
-              </button>
+              </button> */}
               {/* </a> */}
             </div>
           </div>
