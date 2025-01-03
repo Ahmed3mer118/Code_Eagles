@@ -19,7 +19,7 @@ function About() {
           🔹 After each lecture, there will be one or two tasks as part of the practical work, along with quizzes to assess the theoretical understanding of the material.
         </p>
         <p>
-          🔹 The entire course is priced at <strong>0000 EGP</strong>, which is a reasonable price to start your journey in <strong>Front-end development</strong> and programming.
+          🔹 The entire course is priced at <strong>1150 EGP</strong>, which is a reasonable price to start your journey in <strong>Front-end development</strong> and programming.
         </p>
         <p>
           🔹 This course will be different as it focuses more on practical application, which is the most important part of learning anything—applying it to real projects.
