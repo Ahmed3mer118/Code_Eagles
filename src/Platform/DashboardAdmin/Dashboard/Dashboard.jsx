@@ -13,6 +13,7 @@ function Dashboard() {
     offline: true,
   });
 
+
   const expiration = localStorage.getItem("tokenExpirationAdmin");
   if (getTokenAdmin && expiration) {
     const currentTime = Date.now();
@@ -123,18 +124,31 @@ function Dashboard() {
           <li>
             <Link to="/admin/emails">
               <button className="btn btn-warning text-dark w-100 text-start">
-                Emails
+              All Request Emails
               </button>
             </Link>
           </li>
           <li>
             <Link to="/admin/get-all-message-by-admin">
               <button className="btn btn-warning text-dark w-100 text-start">
-                Messages
+                All Message Emails 
               </button>
             </Link>
           </li>
-          
+          <li>
+            <Link to="/admin/list-for-Students-by-admin">
+              <button className="btn btn-warning text-dark w-100 text-start">
+                 List For Students
+              </button>
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/chat">
+              <button className="btn btn-warning text-dark w-100 text-start">
+                 Chat
+              </button>
+            </Link>
+          </li>
         </ul>
       </div>
       <div className={`col outlet ${dark ? "bg-dark text-light" : ""}`}>

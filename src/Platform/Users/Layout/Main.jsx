@@ -12,17 +12,16 @@ import About from "./About";
 
 function Main() {
   const [group_Id, setGroupId] = useState(null);
-
-  const userIdLocal = JSON.parse(localStorage.getItem("userId"));
   const { URLAPI, getTokenUser } = useContext(DataContext);
   // const phoneNumber = "201033705805";
   // const message = "عايز اعرف تفاصيل الدفعه الجديده";
   // const url = `https://api.whatsapp.com/send/?phone=${phoneNumber}&text=${encodeURIComponent(
   //   message
   // )}&type=phone_number&app_absent=0`;
+
   const handleWhatsAppRedirect = () => {
     const phoneNumber = "201033705805";
-    const message = encodeURIComponent("عايز اعرف تفاصيل الدفعه الجديده");
+    const message = encodeURIComponent("عايز اعرف تفاصيل الاشتراك ");
     const url = `https://api.whatsapp.com/send/?phone=${phoneNumber}&text=${message}&type=phone_number&app_absent=0`;
     window.open(url, "", "heigth=500;width=500");
   };
@@ -64,7 +63,7 @@ function Main() {
         <>
           <div className="main-background">
             <div className="main-content">
-              <h1>Web Development Courses Platform</h1>
+              <h1 className="cssanimation typing text-center">Web Development Courses Platform</h1>
               <p>
                 Here you'll find everything you need to learn programming and
                 build websites using the latest technologies.

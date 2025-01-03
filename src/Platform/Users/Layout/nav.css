@@ -40,6 +40,23 @@ header .container .btn {
   }
 }
 /* end header */
+/* typing animation*/
+.typing {
+  width: 670px;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid transparent;
+  padding: 2px;
+  text-align: center;
+  margin: auto;
+  animation: typing 2s steps(12, end), cursor .2s steps(12, end) ;
+}
+@keyframes typing {
+  from { width: 0 }
+}
+@keyframes cursor {
+  50% { border-color: transparent }
+}
 /* Main.css */
 .main-background {
   background-image: url("/images/bg.webp");
@@ -62,22 +79,30 @@ header .container .btn {
 }
 
 /* Adjustments for smaller screens */
-@media (max-width: 768px) {
+@media (max-width: 768px ) {
   .main-content h1 {
-    font-size: 35px;
+    font-size: 24px;
   }
   .main-content p {
-    font-size: 20px;
+    font-size: 18px;
+  }
+  .typing {
+    width: 475px;
+   
   }
 }
 
 /* Adjustments for very small screens */
-@media (max-width: 480px) {
+@media (max-width: 520px) {
   .main-content h1 {
-    font-size: 20px;
+    font-size: 18px;
+   
   }
   .main-content p {
-    font-size: 15px;
+    font-size: 12px;
+  }
+  .typing {
+    width: 300px;
   }
 }
 

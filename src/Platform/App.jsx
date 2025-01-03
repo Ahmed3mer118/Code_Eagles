@@ -55,6 +55,9 @@ import GetAllMessage from "./DashboardAdmin/Messages/GetAllMessage";
 import VerificationForm from "./Users/Register/VerificationForm";
 import DataProvider from "./Users/Context/Context.jsx";
 import CourseDetail from "./Users/Lecture/CourseDetails.jsx";
+import ListStd from "./DashboardAdmin/Students/ListStd.jsx";
+import Chat from "./DashboardAdmin/Chat/Chat.jsx";
+import AllChats from "./DashboardAdmin/Chat/AllChats.jsx";
 
 
 const helmetContext = {};
@@ -105,6 +108,14 @@ function App() {
         {
           path: "/admin/get-all-message-by-admin",
           element: <GetAllMessage />,
+        },
+        {
+          path: "/admin/list-for-Students-by-admin",
+          element: <ListStd />,
+        },
+        {
+          path: "/admin/chat",
+          element: <Chat />,
         },
         {
           path: "/admin/:groupId",

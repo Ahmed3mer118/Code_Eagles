@@ -27,7 +27,6 @@ function Login() {
 
       if (res.data) {
         toast.success("Login successful!");
-
         const currentTime = Date.now();
         const expirationTime = currentTime + 3 * 60 * 60 * 1000;
         if (res.data.user.role === "admin") {

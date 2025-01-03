@@ -3,12 +3,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { DataContext } from "../Context/Context";
 
-function NavStudent({ menuOpen  , setMenuOpen}) {
+function NavStudent({ menuOpen, setMenuOpen }) {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [loggedUser, setLoggedUser] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [statusUser, setStatusUser] = useState([]);
-
 
   useEffect(() => {
     if (getTokenUser) {

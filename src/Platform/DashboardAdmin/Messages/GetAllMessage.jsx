@@ -22,12 +22,13 @@ function GetAllMessage() {
           headers: { Authorization: `${getTokenAdmin}` },
         });
         setMessages(res.data.messages);
+        console.log(res.data.messages);
       } catch (error) {
         toast.error("Failed to fetch messages. Please try again.");
       }
     };
     fetchMessages();
-  }, [ getTokenAdmin,messages]);
+  }, [ getTokenAdmin,messages.isReplied]);
 
   const handleReplyChange = (e) => {
     setReply(e.target.value);
@@ -152,7 +153,7 @@ function GetAllMessage() {
                 Message: <b>{currentMessage.message}</b>
               </p>
               <p className="card-text">
-                {currentMessage.adminReply.length > 0 && (
+                {currentMessage.adminReplies ||currentMessage.adminReply.length > 0  && (
                   <b className={"text-success"}>
                     Admin Reply : {currentMessage.adminReply}
                   </b>

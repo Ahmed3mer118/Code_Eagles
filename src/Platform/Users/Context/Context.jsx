@@ -21,7 +21,6 @@ function Context({ children }) {
         })
         .then((res) => {
           setUserGroups(res.data.groups || []);
-          console.log(res.data.groups);
           setLoading(false);
         })
         .catch((err) => {
