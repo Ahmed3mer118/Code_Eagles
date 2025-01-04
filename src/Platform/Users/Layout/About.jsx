@@ -25,7 +25,7 @@ function About() {
           🔹 This course will be different as it focuses more on practical application, which is the most important part of learning anything—applying it to real projects.
         </p>
         <p>
-          🔹 You can enroll in the course by clicking the <strong>"Book Now"</strong> button, and the details will be sent to your email.
+          🔹 You can enroll in the course by clicking the <strong>"Book Now"</strong> button, and the details will be sent to your email or Contact us via whatsApp.
         </p>
       </section>
     </div>

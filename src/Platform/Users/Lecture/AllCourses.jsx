@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
+import About from "../Layout/About"
 function AllCourses() {
   const [courses] = useState([
     {
@@ -34,6 +35,8 @@ function AllCourses() {
       image: "react.png",
     },
   ]);
+  const location = useLocation()
+  const showAbout = location.pathname == "/all-courses"
 
   const [visibleCourses, setVisibleCourses] = useState({});
   const courseRefs = useRef([]);
@@ -119,6 +122,7 @@ function AllCourses() {
           </div>
         ))}
       </div>
+     { showAbout && <About />}
     </div>
   );
 }

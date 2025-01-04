@@ -74,7 +74,7 @@ function Main() {
                 target="_blank"
                  rel="noopener noreferrer"
               > */}
-              {/* <button
+              <button
                 className="btn btn-success"
                 onClick={handleWhatsAppRedirect}
                 style={{
@@ -86,7 +86,7 @@ function Main() {
                 }}
               >
                 Book Now
-              </button> */}
+              </button>
               {/* </a> */}
             </div>
           </div>

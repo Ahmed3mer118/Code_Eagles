@@ -225,7 +225,7 @@ function DetailStudent() {
               <tbody>
                 <tr>
                   <td className="border">{students.name?.split(" ")[0]}</td>
-                  <td className="border">{students.email}</td>
+                  <td className="border">{students.email?.split("@")[0]}</td>
                   <td className="border">{students.phone_number}</td>
                   <td className="border">{students.GroupName || "N/A"}</td>
                   <td className="border">

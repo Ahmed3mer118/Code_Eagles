@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import { ToastContainer } from "react-toastify";
 import { DataContext } from "../../Users/Context/Context";
+import { FaPenToSquare } from "react-icons/fa6";
 
 function ListStd() {
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
@@ -12,7 +13,13 @@ function ListStd() {
     group: "",
   });
   const [showListStd, setShowlistStd] = useState([
-    {id:0, name:"ahmed amer" ,email:"amer@gmail.com",phone_number:"01033705805",group:"2024-12-12" }
+    {
+      id: 0,
+      name: "ahmed amer",
+      email: "amer@gmail.com",
+      phone_number: "01033705805",
+      group: "2024-12-12",
+    },
   ]);
 
   const handleInputChange = (e) => {
@@ -27,6 +34,17 @@ function ListStd() {
     // بعد الإرسال، يمكنك إغلاق النموذج
     setShowForm(false);
     // يمكنك إضافة Toast لإعلام المستخدم
+  };
+  const handleUpdate = (item) => {
+    setShowForm(true);
+    setStudentData({
+      name: item.name,
+      email: item.email,
+      phone_number: item.phone_number,
+      group: item.group,
+    });
+    setShowlistStd(studentData)
+
   };
 
   return (
@@ -102,18 +120,26 @@ function ListStd() {
             <th>Email</th>
             <th>Phone Number</th>
             <th>Group</th>
+            <th className="text-center">Update</th>
           </tr>
         </thead>
         <tbody>
           {/* هنا يمكنك إضافة بيانات الطلاب */}
           {Array.isArray(showListStd) &&
             showListStd.map((item, index) => (
-              <tr>
+              <tr key={index}>
                 <td>{index + 1}</td>
                 <td>{item.name}</td>
                 <td>{item.email}</td>
                 <td>{item.phone_number}</td>
                 <td>{item.group}</td>
+                <td className="text-center">
+                  <FaPenToSquare
+                  className="text-success"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleUpdate(item)}
+                  />
+                </td>
               </tr>
             ))}
         </tbody>
