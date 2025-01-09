@@ -10,11 +10,12 @@ import "./nav.css";
 function Navbar() {
   const { getTokenUser } = useContext(DataContext);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(getTokenUser); // حالة تسجيل الدخول
-  const location = useLocation();
-  useEffect(() => {
-      setIsLoggedIn(isLoggedIn);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // حالة تسجيل الدخول
 
+  useEffect(() => {
+    if (getTokenUser) {
+      setIsLoggedIn(!isLoggedIn);
+    }
   }, [getTokenUser]);
 
   const toggleNavbar = () => {

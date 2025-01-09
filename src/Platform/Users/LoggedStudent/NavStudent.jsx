@@ -9,15 +9,15 @@ function NavStudent({ menuOpen, setMenuOpen }) {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [statusUser, setStatusUser] = useState([]);
 
-  axios.defaults.withCredentials = true
   useEffect(() => {
     if (getTokenUser) {
       axios
-        .get(`${URLAPI}/api/users`)
+        .get(`${URLAPI}/api/users`, {
+          headers: { Authorization: `${getTokenUser}` },
+        })
         .then((res) => {
           if (res.data) {
-            // console.log(res.data)
-            setLoggedUser(res.data);
+            setLoggedUser(res.data.token);
             setIsEnrolled(res.data.groups?.length > 0);
             setStatusUser(res.data.groups || []);
           }

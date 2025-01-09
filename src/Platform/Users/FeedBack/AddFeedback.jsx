@@ -16,11 +16,7 @@ function AddFeedback() {
     e.preventDefault();
     if (getTokenUser) {
       axios
-        .post(`${URLAPI}/api/users/submit-feedback`, formData, {
-          headers: {
-            Authorization: `${getTokenUser}`,
-          },
-        })
+        .post(`${URLAPI}/api/users/submit-feedback`, formData)
         .then(() => {
           toast.success("Feedback submitted successfully! Thanks");
           setTimeout(() => {
@@ -41,7 +37,7 @@ function AddFeedback() {
   return (
     <>
       <ToastContainer />
-      <div className="container mt-5">
+      <div className="container mt-4 mb-4">
         <h2 className="text-center mb-4">Add Feedback</h2>
         <form onSubmit={handleSubmit} className="shadow p-4 rounded m-auto">
           <div className="mb-3">

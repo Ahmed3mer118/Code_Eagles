@@ -18,13 +18,14 @@ function Profile() {
     email: "",
     phone_number: "",
   });
-  const navigate = useNavigate();
-
+  console.log(getTokenUser)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${URLAPI}/api/users`); // لا حاجة لإضافة التوكن يدويًا
+        const res = await axios.get(`${URLAPI}/api/users`, {
+          headers: { Authorization: ` ${getTokenUser}` }, // Ensure "Bearer" is included if required
+        });
         if (res.data) {
           setUserData(res.data);
           setUpdatedData({
@@ -52,13 +53,20 @@ function Profile() {
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
-        toast.error("Failed to fetch user data. Please try again.");
+        if (error.response) {
+          console.error("Response data:", error.response.data);
+          console.error("Response status:", error.response.status);
+          console.error("Response headers:", error.response.headers);
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+        } else {
+          console.error("Error setting up request:", error.message);
+        }
       }
     };
   
     fetchData();
-  }, [URLAPI]);
-
+  }, [URLAPI, getTokenUser]);
   const handleUpdate = async () => {
     console.log(updatedData);
     try {
@@ -80,9 +88,9 @@ function Profile() {
   };
 
   const handleLoggout = () => {
-    // localStorage.removeItem("tokenExpirationUser");
-    // localStorage.removeItem("tokenUser");
-    Cookies.remove("tokenUser")
+    localStorage.removeItem("tokenExpirationUser");
+    localStorage.removeItem("tokenUser");
+    // Cookies.remove("tokenUser")
     toast.success("logout successfully");
     setTimeout(() => {
       window.location.href = "/";
@@ -102,9 +110,9 @@ function Profile() {
           toast.success(
             "Your account has been deleted successfully. Come back to us again!"
           );
-          // localStorage.removeItem("tokenExpirationUser");
-          // localStorage.removeItem("tokenUser");
-          Cookies.remove("tokenUser")
+          localStorage.removeItem("tokenExpirationUser");
+          localStorage.removeItem("tokenUser");
+          // Cookies.remove("tokenUser")
           // إعادة توجيه المستخدم بعد فترة قصيرة
           setTimeout(() => {
             window.location.href = "/";
