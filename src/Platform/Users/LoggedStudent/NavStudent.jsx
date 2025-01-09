@@ -9,22 +9,20 @@ function NavStudent({ menuOpen, setMenuOpen }) {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [statusUser, setStatusUser] = useState([]);
 
+  axios.defaults.withCredentials = true
   useEffect(() => {
-    const token = getTokenUser; 
-    if (token) {
-      axios.get(`${URLAPI}/api/users`, {
-        headers: {
-          Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3N2ZjNTc0MDIzNTU2NzA1MDQwOGFiNCIsInJvbGUiOiJ1c2VyIiwidG9rZW5WZXJzaW9uIjoxLCJpYXQiOjE3MzY0Mjc4NTUsImV4cCI6MTczNjQzODY1NX0.nbvH6mdlIegdn3vzSFvqy95qvZEJdvVYvvvkm_c-heo" // أرفق رمز الوصول في رأس الطلب
-        }
-      })
-      .then(res => {
-        if (res.data) {
-          setLoggedUser(res.data);
-          setIsEnrolled(res.data.groups?.length > 0);
-          setStatusUser(res.data.groups || []);
-        }
-      })
-      .catch(err => console.error("Error fetching user data:", err));
+    if (getTokenUser) {
+      axios
+        .get(`${URLAPI}/api/users`)
+        .then((res) => {
+          if (res.data) {
+            // console.log(res.data)
+            setLoggedUser(res.data);
+            setIsEnrolled(res.data.groups?.length > 0);
+            setStatusUser(res.data.groups || []);
+          }
+        })
+        .catch((err) => console.error("Error fetching user data:", err));
     }
   }, []);
   const closeNavbar = () => {

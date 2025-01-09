@@ -7,6 +7,7 @@ import "../Register/register.css";
 import { DataContext } from "../Context/Context";
 // import CryptoJS from "crypto-js";
 import FingerprintJs from "@fingerprintjs/fingerprintjs";
+import Cookies from "js-cookie";
 function Login() {
   const { URLAPI, secretKey } = useContext(DataContext);
   const [login, setLogin] = useState({
@@ -22,19 +23,17 @@ function Login() {
     setLoading(true);
 
     console.log({
-      "email": login.email,
-      "password": login.password,
-      "fingerprint" :login.fingerprint
-
-    })
+      email: login.email,
+      password: login.password,
+      fingerprint: login.fingerprint,
+    });
     try {
       const res = await axios.post(`${URLAPI}/api/users/login`, {
         email: login.email,
         password: login.password,
-        fingerprint :login.fingerprint
-
+        fingerprint: login.fingerprint,
       });
-      console.log(res.data)
+      console.log(res.data);
       if (res.data) {
         toast.success("Login successful!");
         const token = res.data.token;
@@ -43,20 +42,25 @@ function Login() {
         //   secretKey
         // ).toString();
         // console.log(encryptedToken)
-        const currentTime = Date.now();
-        const expirationTime = currentTime + 3 * 60 * 60 * 1000;
+        // const currentTime = Date.now();
+        // const expirationTime = currentTime + 3 * 60 * 60 * 1000;
         if (res.data.user.role === "admin" && res.data.token) {
           // localStorage.setItem("tokenAdmin", encryptedToken);
-          localStorage.setItem("tokenAdmin", JSON.stringify(token));
-          localStorage.setItem("tokenExpirationAdmin", expirationTime);
+          // localStorage.setItem("tokenAdmin", JSON.stringify(token));
+          // localStorage.setItem("tokenExpirationAdmin", expirationTime);
+          Cookies.set("tokenAdmin", res.data.token, {
+            expires: 3 * 60 * 60 * 1000,
+          });
           setTimeout(() => {
             navigate("/admin");
           }, 3000);
         } else {
           // localStorage.setItem("tokenUser", encryptedToken);
-          localStorage.setItem("tokenUser",  JSON.stringify(token));
-          localStorage.setItem("tokenExpirationUser", expirationTime);
-
+          // localStorage.setItem("tokenUser",  JSON.stringify(token));
+          // localStorage.setItem("tokenExpirationUser", expirationTime);
+          Cookies.set("tokenUser", res.data.token, {
+            expires: 3 * 60 * 60 * 1000,
+          });
           setTimeout(() => {
             window.location.href = "/";
           }, 3000);

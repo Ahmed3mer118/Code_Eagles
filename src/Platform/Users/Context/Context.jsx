@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import CryptoJS from "crypto-js"; 
+import CryptoJS from "crypto-js";
+import Cookies from "js-cookie";
 export const DataContext = createContext();
 
 function Context({ children }) {
@@ -9,7 +10,7 @@ function Context({ children }) {
   // const getToken = (key) => {
   //   const encryptedToken = localStorage.getItem(key);
   //   if (encryptedToken) {
-    
+
   //     const decryptedToken = CryptoJS.AES.decrypt(
   //       encryptedToken,
   //       secretKey
@@ -19,22 +20,24 @@ function Context({ children }) {
   //   return null;
   // };
   // const token = getToken("tokenUser" || "tokenAdmin" )
-  const getTokenAdmin = JSON.parse(localStorage.getItem("tokenAdmin"));
-  const getTokenUser = JSON.parse(localStorage.getItem("tokenUser"));
+  // const getTokenAdmin = JSON.parse(localStorage.getItem("tokenAdmin"));
+  // const getTokenUser = JSON.parse(localStorage.getItem("tokenUser"));
+  const getTokenUser = Cookies.get("tokenUser");
+  const getTokenAdmin = Cookies.get("tokenAdmin");
   const [URLAPI] = useState("https://api-codeeagles-cpq8.vercel.app");
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
- 
+  Cookies.set("tokenUser", getTokenUser, { expires: 3 * 60 * 60 * 1000 }); // لمدة 7 أيام
+  Cookies.set("tokenAdmin", getTokenAdmin, { expires: 3 * 60 * 60 * 1000 }); // لمدة 7 أيام
 
+  //
   // Fetch user's groups on component mount
   useEffect(() => {
     setLoading(true);
     if (getTokenUser) {
       axios
-        .get(`${URLAPI}/api/users`, {
-          headers: { Authorization: `${getTokenUser}` },
-        })
+        .get(`${URLAPI}/api/users`)
         .then((res) => {
           setUserGroups(res.data.groups || []);
           setLoading(false);

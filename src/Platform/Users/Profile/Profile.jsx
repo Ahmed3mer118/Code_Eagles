@@ -4,7 +4,7 @@ import { DataContext } from "../Context/Context";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-
+import Cookies from "js-cookie";
 function Profile() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [userData, setUserData] = useState(null); // user data
@@ -24,10 +24,7 @@ function Profile() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${URLAPI}/api/users`, {
-          headers: { Authorization: `${getTokenUser}` },
-        });
-
+        const res = await axios.get(`${URLAPI}/api/users`); // لا حاجة لإضافة التوكن يدويًا
         if (res.data) {
           setUserData(res.data);
           setUpdatedData({
@@ -35,36 +32,32 @@ function Profile() {
             email: res.data.email,
             phone_number: res.data.phone_number,
           });
-
-          // Extract attendance data from the response
-          const attendanceData = res.data.attendance; // Ensure it's an array
-
-          setAttendanceData(res.data.attendance);
+  
+          const attendanceData = res.data.attendance || [];
+          setAttendanceData(attendanceData);
+  
           const presentCount = attendanceData.filter(
-            (item) => item.attendanceStatus == "present"
+            (item) => item.attendanceStatus === "present"
           ).length;
           const absentCount = attendanceData.filter(
-            (item) => item.attendanceStatus == "absent"
+            (item) => item.attendanceStatus === "absent"
           ).length;
-
-          // If you want to store attendance, make sure to structure the state correctly
-          setAttendance({ present: presentCount, absent: absentCount }); // Store the whole attendance data if needed
-
-          // Extract task data from the response
-          const taskData = res.data.tasks || []; // Ensure it's an array
+  
+          setAttendance({ present: presentCount, absent: absentCount });
+  
+          const taskData = res.data.tasks || [];
           setTasks(taskData);
-
-          setTotalTaskGrades(
-            taskData.reduce((sum, task) => sum + task.score, 0) // Sum task grades
-          );
+  
+          setTotalTaskGrades(taskData.reduce((sum, task) => sum + task.score, 0));
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+        toast.error("Failed to fetch user data. Please try again.");
       }
     };
-
+  
     fetchData();
-  }, [getTokenUser]);
+  }, [URLAPI]);
 
   const handleUpdate = async () => {
     console.log(updatedData);
@@ -87,8 +80,9 @@ function Profile() {
   };
 
   const handleLoggout = () => {
-    localStorage.removeItem("tokenExpirationUser");
-    localStorage.removeItem("tokenUser");
+    // localStorage.removeItem("tokenExpirationUser");
+    // localStorage.removeItem("tokenUser");
+    Cookies.remove("tokenUser")
     toast.success("logout successfully");
     setTimeout(() => {
       window.location.href = "/";
@@ -108,8 +102,9 @@ function Profile() {
           toast.success(
             "Your account has been deleted successfully. Come back to us again!"
           );
-          localStorage.removeItem("tokenExpirationUser");
-          localStorage.removeItem("tokenUser");
+          // localStorage.removeItem("tokenExpirationUser");
+          // localStorage.removeItem("tokenUser");
+          Cookies.remove("tokenUser")
           // إعادة توجيه المستخدم بعد فترة قصيرة
           setTimeout(() => {
             window.location.href = "/";
