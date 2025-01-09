@@ -20,16 +20,16 @@ function Profile() {
   });
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await axios.get(`${URLAPI}/api/users`, {
-          headers: { Authorization: ` ${getTokenUser}` },
+          headers: { Authorization: `${getTokenUser}` },
         });
 
         if (res.data) {
           setUserData(res.data);
-
           setUpdatedData({
             name: res.data.name,
             email: res.data.email,
@@ -101,27 +101,28 @@ function Profile() {
     if (userConfirmed) {
       toast.info("Deleting your account...");
       axios
-      .delete(`${URLAPI}/api/users`, {
-        headers: { Authorization: `${getTokenUser}` },
-      })
-      .then(() => {
-        toast.success(
-          "Your account has been deleted successfully. Come back to us again!"
-        );
-        localStorage.removeItem("tokenExpirationUser");
-        localStorage.removeItem("tokenUser");
-        // إعادة توجيه المستخدم بعد فترة قصيرة
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 3000);
-      })
-      .catch((error) => {
-        toast.error("An error occurred while deleting your account. Please try again.");
-      });
-    }else{
+        .delete(`${URLAPI}/api/users`, {
+          headers: { Authorization: `${getTokenUser}` },
+        })
+        .then(() => {
+          toast.success(
+            "Your account has been deleted successfully. Come back to us again!"
+          );
+          localStorage.removeItem("tokenExpirationUser");
+          localStorage.removeItem("tokenUser");
+          // إعادة توجيه المستخدم بعد فترة قصيرة
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 3000);
+        })
+        .catch((error) => {
+          toast.error(
+            "An error occurred while deleting your account. Please try again."
+          );
+        });
+    } else {
       toast.info("Account deletion canceled.");
     }
-   
   };
 
   return (
@@ -266,10 +267,7 @@ function Profile() {
           </div>
         </div>
         <div className="d-flex justify-content-between align-items-center flex-wrap">
-          <button
-            onClick={handleLoggout}
-            className="btn btn-outline-info m-2"
-          >
+          <button onClick={handleLoggout} className="btn btn-outline-info m-2">
             Logout
           </button>
           <button

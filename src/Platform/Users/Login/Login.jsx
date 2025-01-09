@@ -1,12 +1,12 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import { Helmet } from "react-helmet-async";
 import "../Register/register.css";
 import { DataContext } from "../Context/Context";
-import CryptoJS from "crypto-js";
-
+// import CryptoJS from "crypto-js";
+import FingerprintJs from "@fingerprintjs/fingerprintjs";
 function Login() {
   const { URLAPI, secretKey } = useContext(DataContext);
   const [login, setLogin] = useState({
@@ -21,10 +21,18 @@ function Login() {
     e.preventDefault();
     setLoading(true);
 
+    console.log({
+      "email": login.email,
+      "password": login.password,
+      "fingerprint" :login.fingerprint
+
+    })
     try {
       const res = await axios.post(`${URLAPI}/api/users/login`, {
         email: login.email,
         password: login.password,
+        fingerprint :login.fingerprint
+
       });
       console.log(res.data)
       if (res.data) {
@@ -69,6 +77,17 @@ function Login() {
       }
     }
   };
+  useEffect(() => {
+    async function getFingerPrint() {
+      const fp = await FingerprintJs.load();
+      const result = await fp.get();
+      const fingerprint = result.visitorId;
+      setLogin({ ...login, fingerprint });
+      return result.visitorId;
+    }
+
+    getFingerPrint();
+  }, []);
 
   // Password Reset Handler
   const handleForgetPass = async (e) => {

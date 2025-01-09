@@ -5,7 +5,7 @@ import CryptoJS from "crypto-js";
 export const DataContext = createContext();
 
 function Context({ children }) {
-  const secretKey = "mySuperSecretKey123";
+  // const secretKey = "mySuperSecretKey123";
   // const getToken = (key) => {
   //   const encryptedToken = localStorage.getItem(key);
   //   if (encryptedToken) {

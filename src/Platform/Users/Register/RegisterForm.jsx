@@ -1,9 +1,9 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { DataContext } from "../Context/Context";
-import FingerprintJs from "@fingerprintjs/fingerprintjs"
+import FingerprintJs from "@fingerprintjs/fingerprintjs";
 function RegisterForm() {
   const { URLAPI } = useContext(DataContext);
   const [register, setRegister] = useState({
@@ -32,11 +32,13 @@ function RegisterForm() {
       return;
     }
 
+
     try {
       setLoading(true);
       const res = await axios.post(`${URLAPI}/api/users/register`, register, {
         headers: { "Content-Type": "application/json" },
       });
+      // conosle.log(res.data)
 
       if (res.data) {
         toast.success(`Hello ${register.name}, please check your email.`);
@@ -58,11 +60,17 @@ function RegisterForm() {
       setLoading(false);
     }
   };
-  async function getFingerPrint() {
-    const fp = await FingerprintJs.load()
-    const result = await fp.get();
-    return result.visitorId;
-  }
+  useEffect(() => {
+    async function getFingerPrint() {
+      const fp = await FingerprintJs.load();
+      const result = await fp.get();
+      const fingerprint = result.visitorId;
+      setRegister({ ...register, fingerprint });
+      return result.visitorId;
+    }
+
+    getFingerPrint();
+  }, []);
 
   return (
     <>
