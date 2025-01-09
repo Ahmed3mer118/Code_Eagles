@@ -87,6 +87,7 @@ function DashboardIndex() {
         <h3>Feedbacks: {feedbackCount}</h3>
         <Link to="/admin/get-all-feekback-by-admin">See All Feedback</Link>
       </div>
+      
     </div>
   );
 }

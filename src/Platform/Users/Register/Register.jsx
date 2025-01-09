@@ -15,6 +15,7 @@ function Register() {
       </Helmet>
       <div className="bg-form">
           <RegisterForm />
+        
       </div>
     </>
   );

@@ -58,6 +58,7 @@ import CourseDetail from "./Users/Lecture/CourseDetails.jsx";
 import ListStd from "./DashboardAdmin/Students/ListStd.jsx";
 import Chat from "./DashboardAdmin/Chat/Chat.jsx";
 import AllChats from "./DashboardAdmin/Chat/AllChats.jsx";
+import ProfileAdmin from "./DashboardAdmin/ProfileAdmin/Profile.jsx";
 
 
 const helmetContext = {};
@@ -70,8 +71,8 @@ function App() {
     },
     {
       path: "/admin",
-      element: <PrivateRoute element={<Dashboard />} />,
-      // element:<Dashboard />,
+      // element: <PrivateRoute element={<Dashboard />} />,
+      element:<Dashboard />,
       children: [
         {
           index: true,
@@ -116,6 +117,10 @@ function App() {
         {
           path: "/admin/chat",
           element: <Chat />,
+        },
+        {
+          path: "/admin/profile-admin",
+          element: <ProfileAdmin />,
         },
         {
           path: "/admin/:groupId",

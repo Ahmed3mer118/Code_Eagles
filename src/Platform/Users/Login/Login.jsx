@@ -5,9 +5,10 @@ import axios from "axios";
 import { Helmet } from "react-helmet-async";
 import "../Register/register.css";
 import { DataContext } from "../Context/Context";
+import CryptoJS from "crypto-js";
 
 function Login() {
-  const { URLAPI } = useContext(DataContext);
+  const { URLAPI, secretKey } = useContext(DataContext);
   const [login, setLogin] = useState({
     email: "",
     password: "",
@@ -15,6 +16,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  //  login Handler
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -24,20 +26,29 @@ function Login() {
         email: login.email,
         password: login.password,
       });
-
+      console.log(res.data)
       if (res.data) {
         toast.success("Login successful!");
+        const token = res.data.token;
+        // const encryptedToken = CryptoJS.AES.encrypt(
+        //   token,
+        //   secretKey
+        // ).toString();
+        // console.log(encryptedToken)
         const currentTime = Date.now();
         const expirationTime = currentTime + 3 * 60 * 60 * 1000;
-        if (res.data.user.role === "admin") {
-          localStorage.setItem("tokenAdmin", JSON.stringify(res.data.token));
+        if (res.data.user.role === "admin" && res.data.token) {
+          // localStorage.setItem("tokenAdmin", encryptedToken);
+          localStorage.setItem("tokenAdmin", JSON.stringify(token));
           localStorage.setItem("tokenExpirationAdmin", expirationTime);
           setTimeout(() => {
             navigate("/admin");
           }, 3000);
         } else {
-          localStorage.setItem("tokenUser", JSON.stringify(res.data.token));
+          // localStorage.setItem("tokenUser", encryptedToken);
+          localStorage.setItem("tokenUser",  JSON.stringify(token));
           localStorage.setItem("tokenExpirationUser", expirationTime);
+
           setTimeout(() => {
             window.location.href = "/";
           }, 3000);
@@ -66,17 +77,23 @@ function Login() {
       toast.error("Please enter your email.");
     } else {
       setLoading(true);
-      toast.success("Password reset email sent. Please check your inbox.");
+
       await axios
         .post(`${URLAPI}/api/users/forgot-password`, {
           email: login.email,
         })
-        .then(() => {
+        .then((res) => {
+          // toast.success("The password has been reset successfully");
           toast.success("Password reset email sent. Please check your inbox.");
-          navigate("/forgetpassword");
+          localStorage.setItem(
+            "forget-password-token",
+            JSON.stringify(res.data.token)
+          );
+          setTimeout(() => {
+            navigate("/forgetpassword");
+          }, 2500);
         })
         .catch((err) => {
-          toast.error("Failed to send password reset email.");
           setLoading(false);
         });
     }
@@ -122,6 +139,7 @@ function Login() {
           <Link
             to={"/register"}
             className="text-decoration-underline p-2 mt-2 text-light btn"
+            disabled={loading}
           >
             Sign up
           </Link>

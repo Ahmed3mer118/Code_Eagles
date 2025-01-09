@@ -82,9 +82,9 @@ function Dashboard() {
                 New Group
               </Link>
             </button>
-            <button className="btn btn-dark text m-2" onClick={toggleDarkMode}>
+            {/* <button className="btn btn-dark text m-2" onClick={toggleDarkMode}>
               Dark
-            </button>
+            </button> */}
           </li>
           <li>
             <Link to="/admin/allGroups">
@@ -112,7 +112,7 @@ function Dashboard() {
                 {groups[type]?.map((group) => (
                   <li key={group._id}>
                     <Link to={`/admin/${group._id}`} className="text-light">
-                      {group.type_course} - {group.start_date.slice(0, 10)}
+                    {group.title}- {group.start_date.slice(0, 10)}
                     </Link>
                   </li>
                 ))}
@@ -146,6 +146,13 @@ function Dashboard() {
             <Link to="/admin/chat">
               <button className="btn btn-warning text-dark w-100 text-start">
                  Chat
+              </button>
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/profile-admin">
+              <button className="btn btn-warning text-dark w-100 text-start">
+                 Profile
               </button>
             </Link>
           </li>

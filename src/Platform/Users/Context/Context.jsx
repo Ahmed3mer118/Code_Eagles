@@ -1,15 +1,31 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-
+import CryptoJS from "crypto-js"; 
 export const DataContext = createContext();
 
 function Context({ children }) {
+  const secretKey = "mySuperSecretKey123";
+  // const getToken = (key) => {
+  //   const encryptedToken = localStorage.getItem(key);
+  //   if (encryptedToken) {
+    
+  //     const decryptedToken = CryptoJS.AES.decrypt(
+  //       encryptedToken,
+  //       secretKey
+  //     ).toString(CryptoJS.enc.Utf8);
+  //     return decryptedToken;
+  //   }
+  //   return null;
+  // };
+  // const token = getToken("tokenUser" || "tokenAdmin" )
   const getTokenAdmin = JSON.parse(localStorage.getItem("tokenAdmin"));
   const getTokenUser = JSON.parse(localStorage.getItem("tokenUser"));
   const [URLAPI] = useState("https://api-codeeagles-cpq8.vercel.app");
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
+
+ 
 
   // Fetch user's groups on component mount
   useEffect(() => {
@@ -28,7 +44,7 @@ function Context({ children }) {
           setLoading(false);
         });
     } else {
-      setLoading(false); // If no token, stop loading
+      setLoading(false); // If no getTokenUser, stop loading
     }
   }, [URLAPI, getTokenUser]);
 
@@ -79,7 +95,14 @@ function Context({ children }) {
 
   return (
     <DataContext.Provider
-      value={{ URLAPI, handleJoinGroup, getTokenUser, getTokenAdmin }}
+      value={{
+        URLAPI,
+        handleJoinGroup,
+        getTokenAdmin,
+        getTokenUser,
+        // secretKey,
+        // getToken,
+      }}
     >
       {children}
     </DataContext.Provider>

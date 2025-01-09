@@ -9,31 +9,37 @@ function VerificationForm() {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const { URLAPI } = useContext(DataContext);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const verif_email_token = JSON.parse(localStorage.getItem("verif-email-token") );
   const handleVerification = async (e) => {
     e.preventDefault();
-
     const code = number.replace(/\s+/g, "");
     setLoading(true);
+
     await axios
-      .post(`${URLAPI}/api/users/verify-Email`, {
-        email: location.state,
-        code,
-      })
+      .post(
+        `${URLAPI}/api/users/verify-Email`,
+        {
+          email: location.state,
+          code,
+        },
+        { headers: { Authorization: `${verif_email_token}` } }
+      )
       .then((res) => {
         if (res.data) {
-        toast.success("Welcome " + location.state);
-        setLoading(false);
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
-      } else {
-        toast.error("Verification failed");
-        setLoading(false);
-      }
+          toast.success("Welcome " + location.state);
+          setLoading(false);
+          setTimeout(() => {
+            localStorage.removeItem("verif-email-token");
+            navigate("/login");
+          }, 2000);
+        } else {
+          toast.error("Verification failed");
+          setLoading(false);
+        }
       })
       .catch(() => {
-        toast.error("An error occurred during verification." );
+        toast.error("An error occurred during verification.");
       })
       .finally(() => {
         setLoading(false);

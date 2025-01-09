@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { DataContext } from "../Context/Context";
-
+import FingerprintJs from "@fingerprintjs/fingerprintjs"
 function RegisterForm() {
   const { URLAPI } = useContext(DataContext);
   const [register, setRegister] = useState({
@@ -40,71 +40,91 @@ function RegisterForm() {
 
       if (res.data) {
         toast.success(`Hello ${register.name}, please check your email.`);
-      
+        localStorage.setItem(
+          "verif-email-token",
+          JSON.stringify(res.data.token)
+        );
         setTimeout(() => {
           navigate("/register/verif-email", { state: register.email });
-        }, 1500);
+        }, 2500);
       } else {
         toast.error("Error in Form");
       }
     } catch (error) {
-      toast.error("An error occurred during registration. please try again after 10 minutes.");
+      toast.error(
+        "An error occurred during registration. please try again after 10 minutes."
+      );
     } finally {
       setLoading(false);
     }
   };
+  async function getFingerPrint() {
+    const fp = await FingerprintJs.load()
+    const result = await fp.get();
+    return result.visitorId;
+  }
 
   return (
-    <form className="p-3 rounded" onSubmit={handleRegister}>
-      <h1 className="text-center text-light">Register</h1>
-      <input
-        type="text"
-        placeholder="Name"
-        className="form-control border rounded mt-3"
-        value={register.name}
-        onChange={(e) => setRegister({ ...register, name: e.target.value })}
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        className="form-control border rounded mt-3"
-        value={register.email}
-        onChange={(e) => setRegister({ ...register, email: e.target.value })}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        className="form-control border rounded mt-3"
-        value={register.password}
-        minLength={10}
-        onChange={(e) => setRegister({ ...register, password: e.target.value })}
-      />
-      <input
-        type="text"
-        placeholder="Phone Number"
-        className="form-control border rounded mt-3"
-        value={register.phone_number}
-        onChange={(e) =>
-          setRegister({ ...register, phone_number: e.target.value })
-        }
-      />
-      <div className="mt-2 p-2 mb-2">
-        <button
-          className="btn btn-primary d-block w-100 m-auto"
-          disabled={loading}
-        >
-          {!loading ? "Send" : "Loading..."}
-        </button>
-        <button className="btn mt-2">
-          <Link
-            to={"/login"}
-            className=" text-decoration-underline text-light p-2 mt-2 "
+    <>
+      <form className="p-3 rounded" onSubmit={handleRegister}>
+        <h1 className="text-center text-light">Register</h1>
+        <input
+          type="text"
+          placeholder="Name"
+          className="form-control border rounded mt-3"
+          value={register.name}
+          onChange={(e) => setRegister({ ...register, name: e.target.value })}
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          className="form-control border rounded mt-3"
+          value={register.email}
+          onChange={(e) => setRegister({ ...register, email: e.target.value })}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          className="form-control border rounded mt-3"
+          value={register.password}
+          minLength={10}
+          onChange={(e) =>
+            setRegister({ ...register, password: e.target.value })
+          }
+        />
+        <input
+          type="text"
+          placeholder="Phone Number"
+          className="form-control border rounded mt-3"
+          value={register.phone_number}
+          onChange={(e) =>
+            setRegister({ ...register, phone_number: e.target.value })
+          }
+          minLength={11}
+        />
+        <div className="mt-2 p-2 mb-2">
+          <button
+            className="btn btn-primary d-block w-100 m-auto"
+            disabled={loading}
           >
-            Sign In
-          </Link>
-        </button>
-      </div>
-    </form>
+            {!loading ? "Send" : "Loading..."}
+          </button>
+          <button className="btn mt-2">
+            <Link
+              to={"/login"}
+              className=" text-decoration-underline text-light p-2 mt-2 "
+            >
+              Sign In
+            </Link>
+          </button>
+        </div>
+        <div>
+          <p className="alert alert-warning p-2">
+            Use one device on which you registered the email
+          </p>
+        </div>
+      </form>
+    </>
   );
 }
 
