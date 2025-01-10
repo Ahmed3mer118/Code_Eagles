@@ -9,7 +9,7 @@ function DetailStudent() {
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
 
   const [students, setStudents] = useState([]);
-  const [groupIdByStd, setGroupIdByStd] = useState("");
+  const [groupIdByStd, setGroupIdByStd] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dataUpdateStudent, setDataUpdateStudent] = useState({
     name: "",
@@ -17,10 +17,11 @@ function DetailStudent() {
     role: "",
   });
   const [currentRole, setCurrentRole] = useState("");
-  const [currentStutas, setCurrentStutas] = useState("");
-  const [attendacneData, setAttendanceData] = useState([]);
+  const [currentStatus, setCurrentStatus] = useState("");
+  const [attendanceData, setAttendanceData] = useState([]);
   const [attendance, setAttendance] = useState({ present: 0, absent: 0 });
   const [taskData, setTaskData] = useState([]);
+  const [groupDetails, setGroupDetails] = useState([]); // تفاصيل الجروب
   const { studentId } = useParams();
   const navigate = useNavigate();
 
@@ -39,18 +40,19 @@ function DetailStudent() {
           },
         });
         setStudents(res.data);
+
         // تحقق من أن هناك مجموعة للطالب
         if (res.data.groups && res.data.groups.length > 0) {
           setGroupIdByStd(res.data.groups);
-          setCurrentStutas(res.data.groups[0].status);
+          setCurrentStatus(res.data.groups[0].status);
           setDataUpdateStudent({
             name: res.data.name,
             email: res.data.email,
             role: res.data.groups[0].status,
           });
         } else {
-          setGroupIdByStd(null); // في حال لم توجد مجموعة
-          setCurrentStutas("N/A"); // استخدم قيمة بديلة إذا لم توجد مجموعة
+          setGroupIdByStd([]); // في حال لم توجد مجموعة
+          setCurrentStatus("N/A"); // استخدم قيمة بديلة إذا لم توجد مجموعة
         }
 
         setCurrentRole(res.data.role);
@@ -77,10 +79,10 @@ function DetailStudent() {
           const attendanceCount = res.data.attendance;
           setAttendanceData(attendanceCount);
           const presentCount = attendanceCount.filter(
-            (item) => item.attendanceStatus == "present"
+            (item) => item.attendanceStatus === "present"
           ).length;
           const absentCount = attendanceCount.filter(
-            (item) => item.attendanceStatus == "absent"
+            (item) => item.attendanceStatus === "absent"
           ).length;
           setAttendance({ present: presentCount, absent: absentCount });
           setTaskData(res.data.tasks);
@@ -90,29 +92,34 @@ function DetailStudent() {
         });
     }
   }, [studentId, URLAPI, getTokenAdmin]);
-  
 
-  // Fetch Group Data
+  // Fetch Group Details
   useEffect(() => {
-    if (groupIdByStd) {
-      groupIdByStd.map((group) => {
-        axios
-          .get(`${URLAPI}/api/groups/${group.groupId}`, {
-            headers: {
-              Authorization: `${getTokenAdmin}`,
-            },
-          })
-          .then((res) => {
-            const GroupName = res.data.title;
-            setStudents((prevState) => ({ ...prevState, GroupName }));
-          })
-          .catch((error) => {
-            console.error("Error fetching group:", error); // تتبع الأخطاء
-          });
-      });
+    if (groupIdByStd.length > 0) {
+      const fetchGroupDetails = async () => {
+        try {
+          const details = await Promise.all(
+            groupIdByStd.map(async (group) => {
+              const res = await axios.get(
+                `${URLAPI}/api/groups/${group.groupId}`,
+                {
+                  headers: {
+                    Authorization: `${getTokenAdmin}`,
+                  },
+                }
+              );
+              return res.data;
+            })
+          );
+          setGroupDetails(details);
+        } catch (error) {
+          console.error("Error fetching group details:", error);
+        }
+      };
+
+      fetchGroupDetails();
     }
-  }, [groupIdByStd, URLAPI]);
-  
+  }, [groupIdByStd, URLAPI, getTokenAdmin]);
 
   // Update Student
   const handleUpdate = async (e) => {
@@ -152,13 +159,12 @@ function DetailStudent() {
 
   // Toggle User Status
   const handleStopUser = async (id, currentStatus) => {
-    console.log(id, currentStatus)
     if (!getTokenAdmin) {
       toast.error("Unauthorized. Please log in.");
       return;
     }
 
-    if (!groupIdByStd) {
+    if (!groupIdByStd || groupIdByStd.length === 0) {
       toast.error("No group available for this student.");
       return;
     }
@@ -183,6 +189,7 @@ function DetailStudent() {
       status: newStatus,
     };
     const groupId = groupIdByStd[0]?.groupId;
+
     try {
       await axios.put(
         `${URLAPI}/api/users/update-join-request/${groupId}/${id}`,
@@ -195,7 +202,7 @@ function DetailStudent() {
       );
 
       toast.success(`User status changed to ${newStatus}`);
-      setCurrentStutas(newStatus);
+      setCurrentStatus(newStatus);
     } catch (error) {
       toast.error("Failed to update user status");
       console.error("Status update error:", error);
@@ -211,14 +218,14 @@ function DetailStudent() {
       <div className="container p-1">
         <div className="row">
           <div className="col-lg-6 col-md-12 mb-3">
-            {/* data student */}
+            {/* بيانات الطالب */}
             <table className="table text-center">
               <thead>
                 <tr>
                   <th className="border">Name</th>
                   <th className="border">Email</th>
-                  <th className="border">Pnumber</th>
-                  <th className="border">Gname</th>
+                  <th className="border">Phone Number</th>
+
                   <th className="border">Delete</th>
                 </tr>
               </thead>
@@ -227,10 +234,10 @@ function DetailStudent() {
                   <td className="border">{students.name?.split(" ")[0]}</td>
                   <td className="border">{students.email?.split("@")[0]}</td>
                   <td className="border">{students.phone_number}</td>
-                  <td className="border">{students.GroupName || "N/A"}</td>
+
                   <td className="border">
                     <span
-                    style={{cursor:"pointer"}}
+                      style={{ cursor: "pointer" }}
                       onClick={() => handleDelete(studentId)}
                       className="text-danger cursor"
                     >
@@ -240,11 +247,45 @@ function DetailStudent() {
                 </tr>
               </tbody>
             </table>
+
+            {/* تفاصيل الجروب */}
+            <div className="mt-4">
+              <h3>Group Name</h3>
+              {groupDetails.map((group) => (
+                <div key={group._id} className="card mb-3">
+                  <div className="card-body">
+                    <h5 className="card-title">{group.title}</h5>
+                    <p className="card-text">
+                      Start Date: {group.start_date?.split("T")[0]}
+                    </p>
+                    <button
+                      className="btn btn-primary"
+                      // onClick={() => navigate(`/group/${group._id}`)}
+                    >
+                      Show Details Student
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleStopUser(studentId, currentStatus)}
+                      className={`btn ${
+                        currentStatus === "approved"
+                          ? "btn-danger"
+                          : "btn-success"
+                      }  ms-3`}
+                    >
+                      {currentStatus === "approved"
+                        ? "Reject User"
+                        : "Approve User"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="col-lg-3 col-md-6 col-sm-12 mb-3">
             <div className="card p-3">
-              {/* attendance */}
+              {/* الحضور والغياب */}
               <h3 className="text-center">Attendance</h3>
               <p>
                 <strong>Present:</strong> {attendance.present}
@@ -253,8 +294,8 @@ function DetailStudent() {
                 <strong>Absent:</strong> {attendance.absent}
               </p>
               <div>
-                {Array.isArray(attendacneData) &&
-                  attendacneData.map((item, index) => (
+                {Array.isArray(attendanceData) &&
+                  attendanceData.map((item, index) => (
                     <li key={index}>
                       <strong>Lecture {index + 1}</strong>:
                       <span
@@ -274,16 +315,11 @@ function DetailStudent() {
               </div>
             </div>
           </div>
-          {/* tasks */}
+
           <div className="col-lg-3 col-md-6 col-sm-12 mb-3">
             <div className="card p-3">
-              <h3 className="text-center">Tasks : {}</h3>
-              <p>
-                <strong>Present:</strong> {taskData.present}
-              </p>
-              <p>
-                <strong>Absent:</strong> {taskData.absent}
-              </p>
+              {/* المهام */}
+              <h3 className="text-center">Tasks</h3>
               <ol>
                 {Array.isArray(taskData) &&
                   taskData.map((item, index) => (
@@ -334,23 +370,6 @@ function DetailStudent() {
               <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
-            {/* <select
-              value={dataUpdateStudent.group_id || ""}
-              className="border rounded p-2 m-2 w-100 "
-              onChange={(e) =>
-                setDataUpdateStudent({
-                  ...dataUpdateStudent,
-                  group_id: e.target.value,
-                })
-              }
-            >
-              <option value="">Select Group</option>
-              {dataUpdateStudentGroup.map((item) => (
-                <option key={item._id} value={item.id}>
-                  {item.title}
-                </option>
-              ))}
-            </select> */}
 
             <div className="row p-4">
               <button
@@ -358,15 +377,6 @@ function DetailStudent() {
                 className="btn btn-primary col-lg-6 col-md-10 col-sm-5 ms-2 m-2"
               >
                 Update
-              </button>
-              <button
-                type="button"
-                onClick={() => handleStopUser(studentId, currentStutas)}
-                className={`btn ${
-                  currentStutas === "approved" ? "btn-danger" : "btn-success"
-                } col-lg-6 col-md-10 col-sm-5 ms-2 m-2`}
-              >
-                {currentStutas === "approved" ? "Reject User" : "Approve User"}
               </button>
             </div>
           </form>

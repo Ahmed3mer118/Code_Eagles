@@ -6,41 +6,39 @@ import { collapseToast, toast, ToastContainer } from "react-toastify";
 
 function OutletCourse() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
-  const { id, groupId } = useParams();
+  const { lecCourse, groupId } = useParams();
   const [lecture, setLecture] = useState([]);
-  const [lectureVideo,setLectureVideo] = useState([])
+  const [lectureVideo, setLectureVideo] = useState([]);
   const [disabledInput, setDisabledInput] = useState(false);
   const [attendCode, setAttendCode] = useState({ code: "" });
   const [isSubmissionAllowed, setIsSubmissionAllowed] = useState(true);
+ 
 
   // get lecture
   useEffect(() => {
-    if (!id) {
-      console.log("Lecture ID is missing");
+    if (!lecCourse) {
+      console.log("Lecture is missing");
       return;
     }
     axios
-      .get(`${URLAPI}/api/lectures/${id}`, {
+      .get(`${URLAPI}/api/lectures/${lecCourse}`, {
         headers: {
           Authorization: `${getTokenUser}`,
         },
       })
       .then((res) => {
-        setLecture(res.data.lecture );
-        setLectureVideo(res.data.lecture.resources.toString())
-      
+        setLecture(res.data.lecture);
+        setLectureVideo(res.data.lecture.resources.toString());
       })
       .catch((err) => {
         console.error("Error fetching lecture data:", err);
       });
-  }, [id, getTokenUser, URLAPI]);
+  }, [lecCourse, getTokenUser, URLAPI]);
 
-  console.log(lectureVideo)
   // تسجيل الحضور
   const handleAttend = (e) => {
     e.preventDefault();
-  
-    // إذا كان الإدخال معطلًا، لا تفعل شيئًا
+
     if (disabledInput) {
       toast.warning("You have already attended this lecture.");
       return;
@@ -49,7 +47,7 @@ function OutletCourse() {
     axios
       .post(
         `${URLAPI}/api/lectures/attend`,
-        { ...attendCode, lectureId: id },
+        { ...attendCode, lectureId: lecCourse },
         {
           headers: {
             Authorization: `${getTokenUser}`,
@@ -58,7 +56,7 @@ function OutletCourse() {
       )
       .then(() => {
         toast.success("Attend Lecture Is Done");
-        setDisabledInput(true); // تعطيل خانة الإدخال بعد النجاح
+        setDisabledInput(true); 
       })
       .catch((error) => {
         if (error.response?.status === 400) {
@@ -68,7 +66,6 @@ function OutletCourse() {
         }
       });
   };
-  
 
   return (
     <>
@@ -85,7 +82,7 @@ function OutletCourse() {
             color: "#333",
           }}
         >
-          {id ? `Title: ${lecture.title}` : "No Lecture Selected"}
+          {lecCourse ? `Title: ${lecture.title}` : "No Lecture Selected"}
         </h1>
 
         <div
@@ -125,7 +122,7 @@ function OutletCourse() {
         </div>
 
         <div>
-          {id && (
+          {lecCourse && (
             <>
               <div style={{ marginBottom: "20px" }}>
                 <strong style={{ fontSize: "1.2rem", color: "#555" }}>
@@ -141,6 +138,7 @@ function OutletCourse() {
                       border: "1px solid #ccc",
                       padding: "10px",
                     }}
+                    required
                     onChange={(e) =>
                       setAttendCode({
                         ...attendCode,
@@ -196,7 +194,7 @@ function OutletCourse() {
                       </p>
 
                       <Link
-                        to={`/${groupId}/course/${lecture._id}/Add-Task/${item._id}`}
+                        to={`/course/${groupId}/lecture/${lecture._id}/Add-Task/${item._id}`}
                       >
                         <button
                           className="btn btn-success"
@@ -210,18 +208,12 @@ function OutletCourse() {
                 </div>
               )}
 
-              {/* <Link to={`/${groupId}/course/${lecture._id}/Add-Task`}>
-                <button
-                  className="btn btn-success m-2"
-                  style={{ padding: "10px 20px" }}
-                >
-                  Add Task
-                </button>
-              </Link> */}
+          
             </>
           )}
         </div>
       </div>
+     
     </>
   );
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import About from "../Layout/About"
-function AllCourses() {
+function Content() {
   const [courses] = useState([
     {
       nameCourse: "HTML",
@@ -118,7 +118,7 @@ function AllCourses() {
             />
             <h2 className="mt-2">{course.nameCourse}</h2>
             <p>{course.description}</p>
-            <Link to={`/course/${course.nameCourse}`}>See More</Link>
+            <Link to={`/content/course/${course.nameCourse}`}>See More</Link>
           </div>
         ))}
       </div>
@@ -127,4 +127,4 @@ function AllCourses() {
   );
 }
 
-export default AllCourses;
+export default Content;

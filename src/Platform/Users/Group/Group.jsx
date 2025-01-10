@@ -7,27 +7,8 @@ function Group() {
   const { URLAPI, handleJoinGroup , getTokenUser} = useContext(DataContext);
   const [group, setGroup] = useState('');
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState(null);
   const groupId = JSON.parse( localStorage.getItem("newGroup"))
-  const userIdLocal = JSON.parse(localStorage.getItem("userId"));
- 
-
-  useEffect(() => {
-    if (userIdLocal) {
-      axios
-        .get(`${URLAPI}/api/users/${userIdLocal}`, {
-          headers: {
-            Authorization: `${getTokenUser}`,
-          },
-        })
-        .then((res) => {
-          setUserId(res.data._id);
-          setLoading(false);
-        });
-    }
-
   
-  }, [groupId, getTokenUser]);
 
   return (
     <>

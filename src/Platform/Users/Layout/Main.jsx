@@ -3,12 +3,12 @@ import "./nav.css"; // Make sure to import the CSS file
 import Courses from "../Lecture/Courses";
 import Group from "../Group/Group";
 import AllGroup from "../Group/AllGroup";
-import AllCourses from "../Lecture/AllCourses";
 import axios from "axios";
 import { DataContext } from "../Context/Context";
 import FeedBack from "../FeedBack/FeedBack";
 import Contact from "../Contact/Contact";
 import About from "./About";
+import Content from "../Lecture/Content";
 
 function Main() {
   const [group_Id, setGroupId] = useState(null);
@@ -90,7 +90,7 @@ function Main() {
               {/* </a> */}
             </div>
           </div>
-          <AllCourses />
+          <Content />
           <About />
           <Group />
           <AllGroup />

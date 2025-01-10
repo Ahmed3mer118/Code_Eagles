@@ -7,15 +7,13 @@ import { useNavigate, useParams } from "react-router-dom";
 
 function AddTask() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
-  
 
-  const [groupId, setGroupId] = useState("");
   const [taskData, setTaskData] = useState({
     submissionLink: "",
   });
   const [loading, setLoading] = useState(false);
-  const { id, taskId } = useParams();
-const navigate = useNavigate()
+  const { lecCourse, taskId } = useParams();
+  const navigate = useNavigate();
 
   // send task by user
   const handleTaskSubmit = () => {
@@ -24,20 +22,17 @@ const navigate = useNavigate()
       return;
     }
 
-  
-    setLoading(true); // بدء التحميل
+    setLoading(true); 
     axios
-      .post(
-        `${URLAPI}/api/lectures/${id}/submit-task/${taskId}`,
-        taskData,
-        { headers: { Authorization: `${getTokenUser}` } }
-      )
+      .post(`${URLAPI}/api/lectures/${lecCourse}/submit-task/${taskId}`, taskData, {
+        headers: { Authorization: `${getTokenUser}` },
+      })
       .then(() => {
         toast.success("Task submitted successfully!");
         setTaskData({ submissionLink: "" });
-        setTimeout(()=>{
-          window.history.back()
-        },2500)
+        setTimeout(() => {
+          window.history.back();
+        }, 2500);
       })
       .catch((err) => {
         toast.error(
@@ -52,7 +47,7 @@ const navigate = useNavigate()
       <ToastContainer />
       <div className="container mt-5 m-5">
         <div className="card shadow-sm p-4">
-          <h1 className="text-center mb-4">Add Task</h1>
+          <h1 className="text-center mb-4">Add a Task Link </h1>
           <div className="mb-3">
             <label htmlFor="submissionLink" className="form-label">
               Submission Link:
@@ -77,6 +72,7 @@ const navigate = useNavigate()
               {loading ? "Submitting..." : "Submit Task"}
             </button>
           </div>
+          <span className="text-muted mt-3">Note : Please Enter Link Google Drive</span>
         </div>
       </div>
     </>

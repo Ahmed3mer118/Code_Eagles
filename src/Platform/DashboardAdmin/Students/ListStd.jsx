@@ -33,8 +33,10 @@ function ListStd() {
             headers: { Authorization: getTokenAdmin },
           }
         );
-        setShowListStd(studentsResponse.data.group);
-        setAllStudentInList(studentsResponse.data.group.users);
+        const filteredGroups = studentsResponse.data.groups.filter(
+          (group) => group.allowedEmails.length > 0
+        );
+        setAllStudentInList(filteredGroups);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("Failed to fetch data.");
@@ -48,7 +50,7 @@ function ListStd() {
     const { name, value } = e.target;
     setStudentData({ ...studentData, [name]: value });
   };
-// add Email
+  // add Email
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(studentData);
@@ -70,63 +72,77 @@ function ListStd() {
         toast.error("Failed to add student.");
       });
   };
-// update Email
-  const handleUpdate = (item) => {
+  // update Email
+  const handleUpdate = (group, item) => {
     setShowForm(true);
     setIsEditing(true);
     setCurrentStudent(item);
     setStudentData({
       allowedEmails: item.email,
-      groupId: showListStd._id,
+      groupId: group.groupId,
     });
   };
 
   const handleUpdateSubmit = (e) => {
     e.preventDefault();
     const updateStd = {
-      allowedEmails: studentData.allowedEmails,
+      allowedEmails: studentData.allowedEmails, 
       groupId: studentData.groupId,
     };
+  
+    console.log(updateStd)
+    // axios
+    //   .put(`${URLAPI}/api/users/update-allowed-emails`, updateStd, {
+    //     headers: { Authorization: `${getTokenAdmin}` },
+    //   })
+    //   .then((res) => {
+    //     toast.success("Student Updated successfully!");
+    //     setShowForm(false);
+    //     setIsEditing(false);
+    //     setStudentData({
+    //       groupId: "",
+    //       allowedEmails: "",
+    //     });
+  
+    //     // تحديث الحالة لتعكس التغييرات
+    //     setAllStudentInList((prevList) =>
+    //       prevList.map((group) => {
+    //         if (group.groupId === studentData.groupId) {
+    //           return {
+    //             ...group,
+    //             allowedEmails: group.allowedEmails.map((item) =>
+    //               item.email === currentStudent.email
+    //                 ? { ...item, email: studentData.allowedEmails }
+    //                 : item
+    //             ),
+    //           };
+    //         }
+    //         return group;
+    //       })
+    //     );
+    //   })
+      // .catch((error) => {
+      //   console.error("Error updating student:", error);
+      //   toast.error("Failed to update student.");
+      // });
+  };
+  // delete Email
+  const handleDelete = (group, item) => {
+    const payload = {
+      data: {
+        groupId: group.groupId, 
+        allowedEmails: item.email,
+      },
+      headers: {
+        Authorization: `${getTokenAdmin}`,
+      },
+    };
+    console.log(payload)
 
     axios
-      .put(`${URLAPI}/api/users/update-allowed-emails`, updateStd, {
-        headers: { Authorization: `${getTokenAdmin}` },
-      })
-      .then((res) => {
-        toast.success("Student Updated successfully!");
-        setShowForm(false);
-        setIsEditing(false);
-        setStudentData({
-          groupId: "",
-          allowedEmails: "",
-        });
-        // setAllStudentInList((prevList) =>
-        //   prevList.map((student) =>
-        //     student.email === currentStudent.email
-        //       ? { ...student, email: studentData.allowedEmails }
-        //       : student
-        //   )
-        // );
-      })
-      .catch((error) => {
-        console.error("Error updating student:", error);
-        toast.error("Failed to update student.");
-      });
-  };
-// delete Email
-  const handleDelete = (item) => {
-    axios
-      .delete(`${URLAPI}/api/users/remove-allowed-email`, {
-        data: {
-          email: item.email,
-          groupId: showListStd._id,
-        },
-        headers: {
-          Authorization: `${getTokenAdmin}`,
-        },
-      })
+      .delete(`${URLAPI}/api/users/remove-allowed-email`, payload)
       .then(() => {
-        toast.success("Student deleted successfully");
+        toast.success("Email removed successfully");
         setAllStudentInList((prevList) =>
           prevList.filter((student) => student.email !== item.email)
         );
@@ -211,27 +227,31 @@ function ListStd() {
         </thead>
         <tbody>
           {Array.isArray(allStudentInList) &&
-            allStudentInList.map((item, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>{item.name}</td>
-                <td>{item.email}</td>
-                <td>{item.phone_number}</td>
-                <td>{showListStd.title}</td>
-                <td className="text-center">
-                  <FaPenToSquare
-                    className="text-success me-3"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleUpdate(item)}
-                  />
-                  <MdDelete
-                    className="text-danger ms-3"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleDelete(item)}
-                  />
-                </td>
-              </tr>
-            ))}
+            allStudentInList.map((group, Groupindex) =>
+              group.allowedEmails.map((item, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{item.user?.name || "N/A"}</td>
+
+                  <td>{item.email || "N/A"}</td>
+                  <td>{item.user?.phone_number || "N/A"}</td>
+
+                  <td>{group.title || "N/A"}</td>
+                  <td className="text-center">
+                    <FaPenToSquare
+                      className="text-success me-3"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => handleUpdate(group, item)}
+                    />
+                    <MdDelete
+                      className="text-danger ms-3"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => handleDelete(group, item)}
+                    />
+                  </td>
+                </tr>
+              ))
+            )}
         </tbody>
       </table>
     </div>

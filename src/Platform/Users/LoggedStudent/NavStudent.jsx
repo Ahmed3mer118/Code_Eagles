@@ -46,9 +46,10 @@ function NavStudent({ menuOpen, setMenuOpen }) {
         <li className="nav-item">
           <NavLink
             onClick={closeNavbar}
-            to={`/${statusUser
-              .filter((item) => item.status == "approved")
-              .map((item) => item.groupId)}/course`}
+            // to={`/${statusUser
+            //   .filter((item) => item.status == "approved")
+            //   .map((item) => item.groupId)}/course`}
+            to={`/my-courses`}
             className={({ isActive }) =>
               `nav-link  ${isActive ? "text-success" : "text-dark"}`
             }

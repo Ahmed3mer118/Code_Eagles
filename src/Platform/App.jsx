@@ -44,7 +44,7 @@ import Courses from "./Users/Lecture/Courses";
 import AddTask from "./Users/Lecture/AddTask";
 import Profile from "./Users/Profile/Profile";
 import AddFeedback from "./Users/FeedBack/AddFeedback";
-import AllCourses from "./Users/Lecture/AllCourses";
+import Content from "./Users/Lecture/Content.jsx";
 import Contact from "./Users/Contact/Contact";
 import Notification from "./Users/Notification/Notification";
 
@@ -59,6 +59,7 @@ import ListStd from "./DashboardAdmin/Students/ListStd.jsx";
 import Chat from "./DashboardAdmin/Chat/Chat.jsx";
 import AllChats from "./DashboardAdmin/Chat/AllChats.jsx";
 import ProfileAdmin from "./DashboardAdmin/ProfileAdmin/Profile.jsx";
+import AllCourse from "./Users/Lecture/AllCourse.jsx";
 
 
 const helmetContext = {};
@@ -71,8 +72,8 @@ function App() {
     },
     {
       path: "/admin",
-      // element: <PrivateRoute element={<Dashboard />} />,
-      element:<Dashboard />,
+      element: <PrivateRoute element={<Dashboard />} />,
+      // element:<Dashboard />,
       children: [
         {
           index: true,
@@ -201,24 +202,30 @@ function App() {
           element: <ForgetPass />,
         },
         {
-          path:"/course/:courseDetails",
+          path: "/content",
+          element: <Content />,
+        },
+        {
+          path: "/my-courses",
+          element: <AllCourse />,
+        },
+        
+        {
+          path:"/content/course/:courseDetails",
           element:<CourseDetail/>
         },
         {
-          path: "/all-courses",
-          element: <AllCourses />,
+          path: "/course/:groupId",
+          element: <Courses />,
         },
+        {
+          path: "/course/:groupId/lecture/:lecCourse",
+          element: <Courses />,
+        },
+       
 
         {
-          path: "/:groupId/course",
-          element: <Courses />,
-        },
-        {
-          path: "/:groupId/course/:id",
-          element: <Courses />,
-        },
-        {
-          path: "/:groupId/course?/:id/Add-Task/:taskId",
+          path: "/course/:groupId/lecture?/:lecCourse/Add-Task/:taskId",
           element: <AddTask />,
         },
         {

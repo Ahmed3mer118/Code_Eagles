@@ -18,13 +18,12 @@ function Profile() {
     email: "",
     phone_number: "",
   });
-  console.log(getTokenUser)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await axios.get(`${URLAPI}/api/users`, {
-          headers: { Authorization: ` ${getTokenUser}` }, // Ensure "Bearer" is included if required
+          headers: { Authorization: ` ${getTokenUser}` }, 
         });
         if (res.data) {
           setUserData(res.data);
@@ -52,21 +51,21 @@ function Profile() {
           setTotalTaskGrades(taskData.reduce((sum, task) => sum + task.score, 0));
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
         if (error.response) {
-          console.error("Response data:", error.response.data);
-          console.error("Response status:", error.response.status);
-          console.error("Response headers:", error.response.headers);
+          console.log("Response data:", error.response.data);
+          console.log("Response status:", error.response.status);
+          console.log("Response headers:", error.response.headers);
         } else if (error.request) {
-          console.error("No response received:", error.request);
+          console.log("No response received:", error.request);
         } else {
-          console.error("Error setting up request:", error.message);
+          console.log("Error setting up request:", error.message);
         }
       }
     };
   
     fetchData();
   }, [URLAPI, getTokenUser]);
+
   const handleUpdate = async () => {
     console.log(updatedData);
     try {
@@ -215,11 +214,11 @@ function Profile() {
         </div>
 
         {/* Statistics */}
-        <div className="row">
+        {/* <div className="row">
           <div className="col-md-6">
             <div className="card mb-4">
               <div className="card-body">
-                {/* attendance */}
+                
                 <h3 className="text-center">Attendance</h3>
 
                 <p>
@@ -268,7 +267,7 @@ function Profile() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
         <div className="d-flex justify-content-between align-items-center flex-wrap">
           <button onClick={handleLoggout} className="btn btn-outline-info m-2">
             Logout

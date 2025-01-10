@@ -52,7 +52,7 @@ function Navbar() {
             </li>
             <li className="nav-item">
               <NavLink
-                to="/all-courses"
+                to="/content"
                 className={({ isActive }) =>
                   `nav-link  ${isActive ? "text-success" : "text-dark"}`
                 }

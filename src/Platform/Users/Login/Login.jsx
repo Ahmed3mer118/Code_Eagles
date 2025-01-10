@@ -21,16 +21,12 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log({
-      email: login.email,
-      password: login.password,
-      fingerprint: login.fingerprint,
-    })
+   
     try {
       const res = await axios.post(`${URLAPI}/api/users/login`, {
         email: login.email,
         password: login.password,
-        fingerprint: login.fingerprint,
+        fingerprint: login.fingerprint ,
       });
       
       if (res.data) {
