@@ -92,6 +92,7 @@ function AddFeedback() {
             type="submit"
             className="btn btn-primary w-100"
             disabled={!getTokenUser}
+              aria-label="Submit Form"
           >
             Submit Feedback
           </button>

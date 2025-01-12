@@ -67,25 +67,25 @@ function DashboardIndex() {
       {/* عدد الطلبات */}
       <div className="card p-2 m-2">
         <h3>Requests: {requestsCount}</h3>
-        <Link to="/admin/emails">See All Requests</Link>
+        <Link to="/admin/emails" aria-label="link">See All Requests</Link>
       </div>
 
       {/* عدد التسليمات */}
       <div className="card p-2 m-2">
         <h3>Submissions: {submissionsCount}</h3>
-        <Link to="/admin/submissions">See All Submissions</Link>
+        <Link to="/admin/submissions"  aria-label="link">See All Submissions</Link>
       </div>
 
       {/* عدد الرسائل */}
       <div className="card p-2 m-2">
         <h3>Messages: {messagesCount}</h3>
-        <Link to="/admin/get-all-message-by-admin">See All Messages</Link>
+        <Link to="/admin/get-all-message-by-admin"  aria-label="link">See All Messages</Link>
       </div>
 
       {/* عدد الـ feedback */}
       <div className="card p-2 m-2">
         <h3>Feedbacks: {feedbackCount}</h3>
-        <Link to="/admin/get-all-feekback-by-admin">See All Feedback</Link>
+        <Link to="/admin/get-all-feekback-by-admin"  aria-label="link">See All Feedback</Link>
       </div>
       
     </div>

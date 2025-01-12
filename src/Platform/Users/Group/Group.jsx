@@ -29,7 +29,7 @@ function Group() {
           >
             <h2>{group.title}</h2>
             <p>{group.start_date?.slice(0, 10)}</p>
-            <button onClick={handleJoinGroup} className="btn btn-success" disabled={loading}>
+            <button onClick={handleJoinGroup} className="btn btn-success" disabled={loading}   aria-label="Submit Form">
               Join Group
             </button>
           </div>

@@ -85,7 +85,7 @@ function ForgetPass() {
           />
 
           <div className="mt-2 p-2">
-            <button className="btn btn-primary   d-block w-100 m-atuo" disabled={loading}>
+            <button className="btn btn-primary   d-block w-100 m-atuo" disabled={loading} aria-label="Submit">
               {loading ? "loading" : "Submit"}
             </button>
           </div>

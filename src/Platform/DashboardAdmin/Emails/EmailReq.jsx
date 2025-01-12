@@ -109,12 +109,14 @@ function EmailReq() {
                   <button
                     className="btn btn-success m-2"
                     onClick={() => handleAccept(item.userId, item.groupId)}
+                     aria-label="submit"
                   >
                     Accept
                   </button>
                   <button
                     className="btn btn-danger m-2"
                     onClick={() => handleRejected(item.userId, item.groupId)}
+                     aria-label="submit"
                   >
                     Reject
                   </button>

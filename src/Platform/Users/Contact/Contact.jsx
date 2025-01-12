@@ -86,6 +86,7 @@ function Contact() {
             type="submit"
             className="btn btn-primary w-100"
             disabled={loading || formData.message.trim() === ""}
+            aria-label="Submit Form"
           >
             {loading ? "Sending..." : "Submit"}
           </button>

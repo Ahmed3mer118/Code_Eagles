@@ -62,6 +62,7 @@ function Tasks() {
                   <td className="border p-2">
                     <Link
                       to={`/admin/${groupId}/lectures/${lecture._id}/tasks/${task._id}/submissions`}
+                       aria-label="link"
                     >
                       {task.submissions.length > 0
                         ? task.submissions.length
@@ -77,6 +78,7 @@ function Tasks() {
                   <td className="border p-2">
                     <Link
                       to={`/admin/${groupId}/lectures/${lecture._id}/tasks/updateTask/${task._id}`}
+                       aria-label="link"
                     >
                       See More
                     </Link>

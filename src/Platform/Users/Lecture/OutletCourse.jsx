@@ -1,5 +1,5 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { DataContext } from "../Context/Context";
 import { collapseToast, toast, ToastContainer } from "react-toastify";
@@ -12,7 +12,8 @@ function OutletCourse() {
   const [disabledInput, setDisabledInput] = useState(false);
   const [attendCode, setAttendCode] = useState({ code: "" });
   const [isSubmissionAllowed, setIsSubmissionAllowed] = useState(true);
- 
+  const [deadline, setDeadline] = useState("");
+  const navigate =useNavigate()
 
   // get lecture
   useEffect(() => {
@@ -20,6 +21,7 @@ function OutletCourse() {
       console.log("Lecture is missing");
       return;
     }
+
     axios
       .get(`${URLAPI}/api/lectures/${lecCourse}`, {
         headers: {
@@ -28,7 +30,29 @@ function OutletCourse() {
       })
       .then((res) => {
         setLecture(res.data.lecture);
-        setLectureVideo(res.data.lecture.resources.toString());
+
+        const TimeDeadling = res.data.lecture.tasks;
+        for (let i = 0; i < TimeDeadling.length; i++) {
+          const element = TimeDeadling[i];
+          const backendDeadline = new Date(element.end_date);
+          const today = new Date();
+
+          const timeDifference = backendDeadline - today;
+          const daysRemaining = Math.ceil(
+            timeDifference / (1000 * 60 * 60 * 24)
+          );
+          if (daysRemaining < 0) {
+            setIsSubmissionAllowed(false);
+            setDeadline(
+              `The deadline for this task has passed  ${daysRemaining * -1} days ago.`
+            );
+          } else {
+            setIsSubmissionAllowed(true);
+            setDeadline(
+              `You have ${daysRemaining} days remaining to submit the task.`
+            );
+          }
+        }
       })
       .catch((err) => {
         console.error("Error fetching lecture data:", err);
@@ -40,7 +64,7 @@ function OutletCourse() {
     e.preventDefault();
 
     if (disabledInput) {
-      toast.warning("You have already attended this lecture.");
+      toast.info("You have already attended this lecture.");
       return;
     }
 
@@ -56,16 +80,19 @@ function OutletCourse() {
       )
       .then(() => {
         toast.success("Attend Lecture Is Done");
-        setDisabledInput(true); 
+        setDisabledInput(true);
       })
       .catch((error) => {
         if (error.response?.status === 400) {
-          toast.error("You already attended this lecture.");
+          toast.info("You already attended this lecture.");
         } else {
           toast.error("An error occurred while processing your attendance.");
         }
       });
   };
+  const handleSendTask = (groupId,lectureId,itemId) =>{
+    navigate(`/course/${groupId}/lecture/${lectureId}/Add-Task/${itemId}`)
+  }
 
   return (
     <>
@@ -145,7 +172,7 @@ function OutletCourse() {
                         code: e.target.value.trim(),
                       })
                     }
-                    disabled={disabledInput}
+                      disabled={deadline && !isSubmissionAllowed  }
                   />
                   <input
                     type="button"
@@ -153,7 +180,7 @@ function OutletCourse() {
                     className="btn btn-primary"
                     style={{ padding: "10px 20px" }}
                     onClick={handleAttend}
-                    disabled={disabledInput}
+                    disabled={deadline && !isSubmissionAllowed  }
                   />
                 </div>
               </div>
@@ -192,28 +219,27 @@ function OutletCourse() {
                       <p style={{ color: "#777", fontSize: "0.9rem" }}>
                         Deadline: {item.end_date?.slice(0, 10)}
                       </p>
-
-                      <Link
-                        to={`/course/${groupId}/lecture/${lecture._id}/Add-Task/${item._id}`}
-                      >
+                      <p style={{ color: "#777", fontSize: "0.9rem" }}>
+                        {deadline}
+                      </p>
+                   
                         <button
                           className="btn btn-success"
+                          onClick={()=>handleSendTask(groupId,lecture._id,item._id)}
                           disabled={!isSubmissionAllowed}
+                          aria-label="Submit"
                         >
                           Submit Task
                         </button>
-                      </Link>
+                     
                     </div>
                   ))}
                 </div>
               )}
-
-          
             </>
           )}
         </div>
       </div>
-     
     </>
   );
 }

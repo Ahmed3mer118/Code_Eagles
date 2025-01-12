@@ -149,6 +149,7 @@ function UpdateGroup() {
             className="btn btn-success col-lg-2 col-md-4 col-sm-10 col  m-2"
             onClick={handleUpdateGroup}
             disabled={loading}
+            aria-label="submit"
           >
             {loading ? "Updating..." : "Update"}
           </button>
@@ -158,6 +159,7 @@ function UpdateGroup() {
               e.preventDefault();
               handleDeleteGroup(groupId);
             }}
+            aria-label="submit"
           >
             Delete
           </button>

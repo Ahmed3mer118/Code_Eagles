@@ -169,6 +169,7 @@ function AllStudents() {
                     <Link
                       to={`/admin/student/${item._id}`}
                       className="text-primary"
+                        aria-label="link"
                     >
                       Details
                     </Link>

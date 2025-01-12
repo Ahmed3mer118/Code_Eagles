@@ -45,7 +45,7 @@ function AddTask() {
   return (
     <>
       <ToastContainer />
-      <div className="container mt-5 m-5">
+      <div className="container mt-5 mb-5">
         <div className="card shadow-sm p-4">
           <h1 className="text-center mb-4">Add a Task Link </h1>
           <div className="mb-3">
@@ -68,6 +68,7 @@ function AddTask() {
               onClick={handleTaskSubmit}
               className="btn btn-primary w-50"
               disabled={loading}
+                aria-label="Submit Form"
             >
               {loading ? "Submitting..." : "Submit Task"}
             </button>

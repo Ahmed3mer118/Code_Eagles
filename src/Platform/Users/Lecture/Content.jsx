@@ -36,7 +36,7 @@ function Content() {
     },
   ]);
   const location = useLocation()
-  const showAbout = location.pathname == "/all-courses"
+  const showAbout = location.pathname == "/content"
 
   const [visibleCourses, setVisibleCourses] = useState({});
   const courseRefs = useRef([]);

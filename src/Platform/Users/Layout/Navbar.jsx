@@ -87,7 +87,7 @@ function Navbar() {
         ) : (
           <NavStudent menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         )}
-        <button className="navbar-toggler btn btn-dark" onClick={toggleNavbar}>
+        <button className="navbar-toggler btn btn-dark" onClick={toggleNavbar} aria-label="Toggle navigation">
           <FaBars />
         </button>
       </div>

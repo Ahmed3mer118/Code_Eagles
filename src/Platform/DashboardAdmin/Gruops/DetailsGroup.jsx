@@ -45,16 +45,16 @@ function DetailsGroup() {
               } - ${showDetailsGroup.start_date?.slice(0, 10)} `
             : " loading.."}
         </h1>
-        <NavLink to={`/admin/${groupId}/students`} className={getLinkClassName}>
+        <NavLink to={`/admin/${groupId}/students`} className={getLinkClassName} aria-label="link">
           Students
         </NavLink>
-        <NavLink to={`/admin/${groupId}/lectures`} className={getLinkClassName}>
+        <NavLink to={`/admin/${groupId}/lectures`} className={getLinkClassName} aria-label="link">
           Lectures
         </NavLink>
-        <NavLink to={`/admin/${groupId}/tasks`} className={getLinkClassName}>
+        <NavLink to={`/admin/${groupId}/tasks`} className={getLinkClassName} aria-label="link">
           Tasks
         </NavLink>
-        <NavLink to={`/admin/${groupId}/update`} className={getLinkClassName}>
+        <NavLink to={`/admin/${groupId}/update`} className={getLinkClassName} aria-label="link">
           Update
         </NavLink>
       </div>

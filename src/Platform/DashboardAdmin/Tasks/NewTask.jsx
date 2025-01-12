@@ -199,12 +199,14 @@ function NewTask() {
             <button
               className="btn btn-success col-3 m-3"
               onClick={handleUpdateTask}
+                aria-label="submit"
             >
               Update
             </button>
             <button
               className="btn btn-danger col-3"
               onClick={() => handleDeletTask(taskId)}
+               aria-label="submit"
             >
               Delete
             </button>

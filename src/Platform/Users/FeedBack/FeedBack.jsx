@@ -61,6 +61,7 @@ function FeedBack() {
               className="btn btn-secondary"
               onClick={prevFeedback}
               disabled={currentIndex === 0}
+                aria-label="Submit Form"
             >
               Previous
             </button>
@@ -68,6 +69,7 @@ function FeedBack() {
               className="btn btn-success"
               onClick={nextFeedback}
               disabled={currentIndex + 3 >= feedbackList.length}
+                aria-label="Submit Form"
             >
               Next
             </button>
@@ -78,8 +80,8 @@ function FeedBack() {
       )}
         {/* Link to Add Feedback */}
         <div className="mt-2 text-center">
-            <Link to={"/feedback"}>
-              <button className="btn btn-success m-2">Add Feedback</button>
+            <Link to={"/feedback"} className="btn btn-success m-2">
+              Add Feedback
             </Link>
           </div>
     </>

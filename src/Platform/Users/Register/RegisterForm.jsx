@@ -114,6 +114,7 @@ function RegisterForm() {
           <button
             className="btn btn-primary d-block w-100 m-auto"
             disabled={loading}
+            aria-label="Submit"
           >
             {!loading ? "Send" : "Loading..."}
           </button>
@@ -121,6 +122,7 @@ function RegisterForm() {
             <Link
               to={"/login"}
               className=" text-decoration-underline text-light p-2 mt-2 "
+              aria-label="Submit"
             >
               Sign In
             </Link>

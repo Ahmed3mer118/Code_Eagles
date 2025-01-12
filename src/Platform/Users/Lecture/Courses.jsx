@@ -40,7 +40,7 @@ function Courses() {
             headers: { Authorization: ` ${getTokenUser}` },
           }
         );
-        console.log(nonAttendedRes.data)
+        // console.log(nonAttendedRes.data)
 
         // تجميع بيانات الحضور والغياب
         const attendedLectures = attendedRes.data.attendedLectures || [];
@@ -86,7 +86,7 @@ function Courses() {
   return (
     <>
       <Helmet>
-        <title>Lectures</title>
+        <title>Code Eagles | Lectures</title>
       </Helmet>
       <div className="container mt-4 mb-4">
         <div className="row">

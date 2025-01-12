@@ -121,7 +121,7 @@ function Students() {
                 </td>
                 <td className="border">{evaluation.toFixed(2)}%</td>
                 <td className="border">
-                  <Link to={`/admin/student/${item._id}`}>See More</Link>
+                  <Link to={`/admin/student/${item._id}`}   aria-label="link">See More</Link>
                 </td>
               </tr>
             ))}

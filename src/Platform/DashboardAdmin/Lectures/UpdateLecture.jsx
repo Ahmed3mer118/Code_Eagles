@@ -185,7 +185,7 @@ function UpdateLecture() {
         />
       </form>
 
-      <button className="btn btn-success col-3 m-3" onClick={handleUpdate}>
+      <button className="btn btn-success col-3 m-3"  aria-label="submit" onClick={handleUpdate}>
         Update
       </button>
     </>

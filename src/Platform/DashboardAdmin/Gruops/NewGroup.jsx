@@ -110,7 +110,7 @@ function NewGroup() {
           required 
         />
 
-        <button type="submit" className="btn btn-primary mt-4">
+        <button type="submit" className="btn btn-primary mt-4" >
           Create
    
         </button>

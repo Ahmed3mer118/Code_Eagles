@@ -74,6 +74,7 @@ function VerificationForm() {
           <button
             className="btn btn-primary d-block w-100 m-auto"
             disabled={number.replace(/\s+/g, "").length < 6}
+            aria-label="Submit"
           >
             {!loading ? "Send" : "Loading..."}
           </button>

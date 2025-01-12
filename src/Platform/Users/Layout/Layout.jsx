@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import Navbar from './Navbar'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import Footer from '../Footer'
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,6 +10,9 @@ function Layout() {
   const navigate = useNavigate()
   const token = localStorage.getItem("tokenUser");
   const expiration = localStorage.getItem("tokenExpirationUser");
+  const location = useLocation();
+
+  const showFooter = location.pathname == "/my-courses" || location.pathname == "/profile"  ;
   // useEffect(() => {
   
     if (token && expiration) {
@@ -25,6 +28,9 @@ function Layout() {
       }
     }
   // }, [ expiration]);
+  if(showFooter){
+
+  }
   
   return (
     <div>
@@ -36,7 +42,7 @@ function Layout() {
         <main>
             <Outlet />
         </main>
-        <Footer />
+      {showFooter ? "" : <Footer />}
         
     </div>
   )

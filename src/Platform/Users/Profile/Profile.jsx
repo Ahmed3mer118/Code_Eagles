@@ -2,9 +2,9 @@ import axios from "axios";
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { DataContext } from "../Context/Context";
 import { toast, ToastContainer } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+
 import { Helmet } from "react-helmet-async";
-import Cookies from "js-cookie";
+
 function Profile() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [userData, setUserData] = useState(null); // user data
@@ -23,7 +23,7 @@ function Profile() {
     const fetchData = async () => {
       try {
         const res = await axios.get(`${URLAPI}/api/users`, {
-          headers: { Authorization: ` ${getTokenUser}` }, 
+          headers: { Authorization: ` ${getTokenUser}` },
         });
         if (res.data) {
           setUserData(res.data);
@@ -32,23 +32,25 @@ function Profile() {
             email: res.data.email,
             phone_number: res.data.phone_number,
           });
-  
+
           const attendanceData = res.data.attendance || [];
           setAttendanceData(attendanceData);
-  
+
           const presentCount = attendanceData.filter(
             (item) => item.attendanceStatus === "present"
           ).length;
           const absentCount = attendanceData.filter(
             (item) => item.attendanceStatus === "absent"
           ).length;
-  
+
           setAttendance({ present: presentCount, absent: absentCount });
-  
+
           const taskData = res.data.tasks || [];
           setTasks(taskData);
-  
-          setTotalTaskGrades(taskData.reduce((sum, task) => sum + task.score, 0));
+
+          setTotalTaskGrades(
+            taskData.reduce((sum, task) => sum + task.score, 0)
+          );
         }
       } catch (error) {
         if (error.response) {
@@ -62,7 +64,7 @@ function Profile() {
         }
       }
     };
-  
+
     fetchData();
   }, [URLAPI, getTokenUser]);
 
@@ -155,6 +157,7 @@ function Profile() {
                 <button
                   className="btn btn-primary"
                   onClick={() => setEditing(true)}
+                  aria-label="Submit"
                 >
                   Edit Profile
                 </button>
@@ -205,6 +208,7 @@ function Profile() {
                 <button
                   className="btn btn-secondary ms-2"
                   onClick={() => setEditing(false)}
+                  aria-label="Submit"
                 >
                   Cancel
                 </button>
@@ -269,12 +273,17 @@ function Profile() {
           </div>
         </div> */}
         <div className="d-flex justify-content-between align-items-center flex-wrap">
-          <button onClick={handleLoggout} className="btn btn-outline-info m-2">
+          <button
+            onClick={handleLoggout}
+            className="btn btn-outline-info m-2"
+            aria-label="Submit"
+          >
             Logout
           </button>
           <button
             onClick={handleDeleteAccount}
             className="btn btn-outline-danger m-2"
+            aria-label="Submit"
           >
             Delete Account
           </button>

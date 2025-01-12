@@ -37,7 +37,7 @@ function Lectures() {
   useEffect(() => {
     const fetchDataGroup = async () => {
       setLoading(true);
-   
+
       await axios
         .get(`${URLAPI}/api/lectures/group/${groupId}`, {
           headers: {
@@ -61,7 +61,7 @@ function Lectures() {
     e.preventDefault();
     setTable(!tableLecture);
   };
-  // add lecture 
+  // add lecture
   const handleAddLecture = async (e) => {
     e.preventDefault();
 
@@ -88,7 +88,7 @@ function Lectures() {
             if (response.status === 201) {
               toast.success("Lecture created successfully!");
               setTimeout(() => {
-                setTable(false)
+                setTable(false);
               }, 2000);
             } else {
               toast.error("Failed to create lecture.");
@@ -177,8 +177,13 @@ function Lectures() {
                   </Link>
                 </li>
                 <li className="list-group-item">
-          
-                  Attendance : <Link to={`/admin/${groupId}/lectures/${item._id}/attendance`}> {item.attendanceCount}</Link>
+                  Attendance :{" "}
+                  <Link
+                    to={`/admin/${groupId}/lectures/${item._id}/attendance`}
+                  >
+                    {" "}
+                    {item.attendanceCount}
+                  </Link>
                 </li>
                 {/* <li className="list-group-item">Upload : </li> */}
                 <li className="list-group-item">
@@ -207,8 +212,12 @@ function Lectures() {
                 </li>
 
                 <li className="list-group-item">
-                  <Link to={`/admin/${groupId}/lectures/update/${item._id}`}>
-                    <button className="btn btn-success m-2">Update</button>
+                  <Link
+                    to={`/admin/${groupId}/lectures/update/${item._id}`}
+                    className="btn btn-success m-2"
+                    aria-label="link"
+                  >
+                    Update
                   </Link>
 
                   <button
@@ -216,6 +225,7 @@ function Lectures() {
                     onClick={() => {
                       handleDeleteLecture(item._id);
                     }}
+                      aria-label="submit"
                   >
                     Delete
                   </button>
@@ -270,6 +280,7 @@ function Lectures() {
           <button
             className="btn btn-primary m-2 col-lg-3 col-md-5 ms-4 "
             onClick={handleAddLecture}
+              aria-label="submit"
           >
             Create
           </button>

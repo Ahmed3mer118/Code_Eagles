@@ -61,7 +61,7 @@ function Main() {
         </>
       ) : (
         <>
-          <div className="main-background">
+          <div className="main-background"  onLoad="lazy">
             <div className="main-content">
               {/* <h1 className="cssanimation typing text-center">Web Development Courses Platform</h1> */}
               <h1 className="text-center">Web Development Courses Platform</h1>
@@ -84,6 +84,7 @@ function Main() {
                   borderRadius: "5px",
                   cursor: "pointer",
                 }}
+                  aria-label="Submit Form"
               >
                 Book Now
               </button>

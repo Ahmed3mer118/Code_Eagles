@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { DataContext } from "../../Users/Context/Context";
 import { Helmet } from "react-helmet-async";
+import { GiNextButton } from "react-icons/gi";
 
 function AllGroups() {
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
@@ -40,18 +41,18 @@ function AllGroups() {
       });
   }, [location.pathname]);
 
-  const handleShowGroup = (id) => {
-    // setShowGroup((prevState) => ({ ...prevState, [id]: !prevState[id] }));
-    socket.emit("sendGroupId", id);
-  };
+  // const handleShowGroup = (id) => {
+  //   // setShowGroup((prevState) => ({ ...prevState, [id]: !prevState[id] }));
+  //   socket.emit("sendGroupId", id);
+  // };
 
   const renderGroupButtons = (groupList) => {
     return groupList.map((item) => (
       <div className="d-flex flex-wrap" key={item._id}>
-        <Link to={`/admin/${item._id}`}>
-          <button className="btn btn-warning d-block m-2">
+        <Link to={`/admin/${item._id}`}  className="btn btn-warning d-block m-2" aria-label="link">
+          
             {item.title} - {item.start_date?.slice(0, 10)}
-          </button>
+         
         </Link>
      
       </div>

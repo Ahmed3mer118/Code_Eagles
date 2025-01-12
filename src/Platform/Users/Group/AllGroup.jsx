@@ -44,6 +44,7 @@ function AllGroup() {
                         className="btn btn-success"
                         onClick={() => handleJoinGroup(group._id)}
                         disabled={loading}
+                          aria-label="Submit Form"
                       >
                         {loading?"Loading" :"Join Group"}
                       </button>

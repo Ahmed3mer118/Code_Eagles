@@ -108,7 +108,7 @@ function SubmissionsTask() {
                   {taskName.taskTitle}
                 </td>
                 <td className="border text-center">
-                  <Link to={item.submissionLink} target="_blank">
+                  <Link to={item.submissionLink} target="_blank"  aria-label="link">
                     View Submission
                   </Link>
                 </td>

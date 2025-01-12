@@ -150,6 +150,7 @@ function Login() {
             <button
               className="btn btn-primary d-block w-100 m-auto"
               disabled={loading}
+              aria-label="Submit"
             >
               {loading ? "Logging in..." : "Submit"}
             </button>
@@ -167,6 +168,7 @@ function Login() {
             onClick={handleForgetPass}
             className="btn mt-2 text-light"
             disabled={loading}
+            aria-label="Submit"
           >
             Forgot Password
           </button>
