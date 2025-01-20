@@ -13,7 +13,8 @@ function OutletCourse() {
   const [attendCode, setAttendCode] = useState({ code: "" });
   const [isSubmissionAllowed, setIsSubmissionAllowed] = useState(true);
   const [deadline, setDeadline] = useState("");
-  const navigate =useNavigate()
+  const navigate = useNavigate();
+  const [groupName, setGroupName] = useState("");
 
   // get lecture
   useEffect(() => {
@@ -21,7 +22,6 @@ function OutletCourse() {
       console.log("Lecture is missing");
       return;
     }
-
     axios
       .get(`${URLAPI}/api/lectures/${lecCourse}`, {
         headers: {
@@ -31,6 +31,7 @@ function OutletCourse() {
       .then((res) => {
         setLecture(res.data.lecture);
 
+        // close task after deadline
         const TimeDeadling = res.data.lecture.tasks;
         for (let i = 0; i < TimeDeadling.length; i++) {
           const element = TimeDeadling[i];
@@ -44,7 +45,9 @@ function OutletCourse() {
           if (daysRemaining < 0) {
             setIsSubmissionAllowed(false);
             setDeadline(
-              `The deadline for this task has passed  ${daysRemaining * -1} days ago.`
+              `The deadline for this task has passed  ${
+                daysRemaining * -1
+              } days ago.`
             );
           } else {
             setIsSubmissionAllowed(true);
@@ -58,7 +61,17 @@ function OutletCourse() {
         console.error("Error fetching lecture data:", err);
       });
   }, [lecCourse, getTokenUser, URLAPI]);
-
+useEffect(()=>{
+  axios
+  .get(`${URLAPI}/api/groups/${groupId}`, {
+    headers: {
+      Authorization: `${getTokenUser}`,
+    },
+  })
+  .then((res) => {
+    setGroupName(res.data.title);
+  });
+})
   // تسجيل الحضور
   const handleAttend = (e) => {
     e.preventDefault();
@@ -90,9 +103,9 @@ function OutletCourse() {
         }
       });
   };
-  const handleSendTask = (groupId,lectureId,itemId) =>{
-    navigate(`/course/${groupId}/lecture/${lectureId}/Add-Task/${itemId}`)
-  }
+  const handleSendTask = (groupId, lectureId, itemId) => {
+    navigate(`/course/${groupId}/lecture/${lectureId}/Add-Task/${itemId}`);
+  };
 
   return (
     <>
@@ -109,7 +122,7 @@ function OutletCourse() {
             color: "#333",
           }}
         >
-          {lecCourse ? `Title: ${lecture.title}` : "No Lecture Selected"}
+          {lecCourse ? `Title: ${lecture.title}` : `Course : ${groupName}`}
         </h1>
 
         <div
@@ -172,7 +185,7 @@ function OutletCourse() {
                         code: e.target.value.trim(),
                       })
                     }
-                      disabled={deadline && !isSubmissionAllowed  }
+                    disabled={deadline && !isSubmissionAllowed}
                   />
                   <input
                     type="button"
@@ -180,7 +193,7 @@ function OutletCourse() {
                     className="btn btn-primary"
                     style={{ padding: "10px 20px" }}
                     onClick={handleAttend}
-                    disabled={deadline && !isSubmissionAllowed  }
+                    disabled={deadline && !isSubmissionAllowed}
                   />
                 </div>
               </div>
@@ -222,16 +235,17 @@ function OutletCourse() {
                       <p style={{ color: "#777", fontSize: "0.9rem" }}>
                         {deadline}
                       </p>
-                   
-                        <button
-                          className="btn btn-success"
-                          onClick={()=>handleSendTask(groupId,lecture._id,item._id)}
-                          disabled={!isSubmissionAllowed}
-                          aria-label="Submit"
-                        >
-                          Submit Task
-                        </button>
-                     
+
+                      <button
+                        className="btn btn-success"
+                        onClick={() =>
+                          handleSendTask(groupId, lecture._id, item._id)
+                        }
+                        disabled={!isSubmissionAllowed}
+                        aria-label="Submit"
+                      >
+                        Submit Task
+                      </button>
                     </div>
                   ))}
                 </div>

@@ -1,25 +1,11 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-
-// صفحات و مكونات
-import Login from "./components/Login";
-import AdminDashboard from "./components/AdminDashboard";
-import ManageChildren from "./components/ManageChildren";
-import Attendance from "./components/Attendance";
-import AddChild from "./components/AddChild";
+import React from 'react'
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/children" element={<ManageChildren />} />
-        <Route path="/admin/attendance" element={<Attendance />} />
-        <Route path="/admin/add-child" element={<AddChild />} />
-      </Routes>
-    </Router>
-  );
+    <div className="p-8 bg-primary text-white">
+    <h1 className="text-3xl font-bold">Hello, Tailwind CSS!</h1>
+  </div>
+  )
 }
 
-export default App;
+export default App

@@ -18,7 +18,7 @@ function DetailStudent() {
   });
   const [currentRole, setCurrentRole] = useState("");
   const [currentStatus, setCurrentStatus] = useState("");
-  const [attendanceData, setAttendanceData] = useState([]);
+  const [attendanceData, setAttendanceData] = useState([]); // title lecture
   const [attendance, setAttendance] = useState({ present: 0, absent: 0 });
   const [taskData, setTaskData] = useState([]);
   const [groupDetails, setGroupDetails] = useState([]); // تفاصيل الجروب
@@ -40,19 +40,21 @@ function DetailStudent() {
           },
         });
         setStudents(res.data);
-
-        // تحقق من أن هناك مجموعة للطالب
         if (res.data.groups && res.data.groups.length > 0) {
           setGroupIdByStd(res.data.groups);
-          setCurrentStatus(res.data.groups[0].status);
+          console.log(res.data.groups);
+          for (let i = 0; i < res.data.groups.length; i++) {
+            const element = res.data.groups[i];
+            setCurrentStatus(element.status);
+          }
           setDataUpdateStudent({
             name: res.data.name,
             email: res.data.email,
-            role: res.data.groups[0].status,
+            role: res.data.groups,
           });
         } else {
-          setGroupIdByStd([]); // في حال لم توجد مجموعة
-          setCurrentStatus("N/A"); // استخدم قيمة بديلة إذا لم توجد مجموعة
+          setGroupIdByStd([]);
+          setCurrentStatus("N/A");
         }
 
         setCurrentRole(res.data.role);
@@ -66,38 +68,12 @@ function DetailStudent() {
     fetchStudent();
   }, [studentId, getTokenAdmin]);
 
-  // Fetch Attendance and Tasks
-  useEffect(() => {
-    if (studentId) {
-      axios
-        .get(`${URLAPI}/api/users/${studentId}`, {
-          headers: {
-            Authorization: ` ${getTokenAdmin}`,
-          },
-        })
-        .then((res) => {
-          const attendanceCount = res.data.attendance;
-          setAttendanceData(attendanceCount);
-          const presentCount = attendanceCount.filter(
-            (item) => item.attendanceStatus === "present"
-          ).length;
-          const absentCount = attendanceCount.filter(
-            (item) => item.attendanceStatus === "absent"
-          ).length;
-          setAttendance({ present: presentCount, absent: absentCount });
-          setTaskData(res.data.tasks);
-        })
-        .catch((error) => {
-          console.error("Error fetching attendance:", error);
-        });
-    }
-  }, [studentId, URLAPI, getTokenAdmin]);
-
   // Fetch Group Details
   useEffect(() => {
-    if (groupIdByStd.length > 0) {
+    if (groupIdByStd) {
       const fetchGroupDetails = async () => {
         try {
+          // console.log(groupIdByStd)
           const details = await Promise.all(
             groupIdByStd.map(async (group) => {
               const res = await axios.get(
@@ -111,6 +87,7 @@ function DetailStudent() {
               return res.data;
             })
           );
+
           setGroupDetails(details);
         } catch (error) {
           console.error("Error fetching group details:", error);
@@ -158,11 +135,12 @@ function DetailStudent() {
   };
 
   // Toggle User Status
-  const handleStopUser = async (id, currentStatus) => {
+  const handleStopUser = async (id, currentStatus, groupId) => {
     if (!getTokenAdmin) {
       toast.error("Unauthorized. Please log in.");
       return;
     }
+    console.log("StudentID :" + id, "status :" + currentStatus , "groupId :" + groupId);
 
     if (!groupIdByStd || groupIdByStd.length === 0) {
       toast.error("No group available for this student.");
@@ -188,11 +166,10 @@ function DetailStudent() {
     const updateStatus = {
       status: newStatus,
     };
-    const groupId = groupIdByStd[0]?.groupId;
 
     try {
       await axios.put(
-        `${URLAPI}/api/users/update-join-request/${groupId}/${id}`,
+        `${URLAPI}/api/users/set-role-to-pending/${groupId}/${id}`,
         updateStatus,
         {
           headers: {
@@ -203,10 +180,36 @@ function DetailStudent() {
 
       toast.success(`User status changed to ${newStatus}`);
       setCurrentStatus(newStatus);
+      return;
     } catch (error) {
       toast.error("Failed to update user status");
       console.error("Status update error:", error);
+      return;
     }
+  };
+  // show Details Student
+  const showDetailsStd = async (groupId) => {
+    axios
+      .get(
+        `${URLAPI}/api/lectures/${studentId}/${groupId}/attendance-by-admin`,
+        {
+          headers: { Authorization: getTokenAdmin },
+        }
+      )
+      .then((res) => {
+        const attendedLecturesCount = res.data.attendedLecturesCount || 0;
+        const notAttendedLecturesCount = res.data.notAttendedLecturesCount || 0;
+        const lectureAttendName = res.data.groupLectures || [];
+        setAttendanceData(lectureAttendName);
+        setAttendance({
+          present: attendedLecturesCount,
+          absent: notAttendedLecturesCount,
+        });
+      })
+      .catch((err) => {
+        toast.info("Error: " + err.message);
+        return;
+      });
   };
 
   return (
@@ -260,13 +263,15 @@ function DetailStudent() {
                     </p>
                     <button
                       className="btn btn-primary"
-                      // onClick={() => navigate(`/group/${group._id}`)}
+                      onClick={() => showDetailsStd(group._id)}
                     >
                       Show Details Student
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleStopUser(studentId, currentStatus)}
+                      onClick={() =>
+                        handleStopUser(studentId, currentStatus, group._id)
+                      }
                       className={`btn ${
                         currentStatus === "approved"
                           ? "btn-danger"
@@ -274,8 +279,8 @@ function DetailStudent() {
                       }  ms-3`}
                     >
                       {currentStatus === "approved"
-                        ? "Reject User"
-                        : "Approve User"}
+                        ? "Rejected User"
+                        : "Approved User"}
                     </button>
                   </div>
                 </div>
@@ -300,15 +305,12 @@ function DetailStudent() {
                       <strong>Lecture {index + 1}</strong>:
                       <span
                         className={
-                          item.attendanceStatus === "present"
+                          item.status === "present"
                             ? "text-success"
                             : "text-danger"
                         }
                       >
-                        {" "}
-                        {item.attendanceStatus === "present"
-                          ? " Attended"
-                          : " Absent"}
+                        {item.status === "present" ? " Attended" : " Absent"}
                       </span>
                     </li>
                   ))}

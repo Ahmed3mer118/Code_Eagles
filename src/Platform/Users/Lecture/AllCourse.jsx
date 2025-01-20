@@ -12,9 +12,11 @@ function AllCourse() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const navigate = useNavigate();
 
-  const attendedLectures = 4;
-  const totalLectures = 17;
-  const percentage = (attendedLectures / totalLectures) * 100;
+  var attendedLectures = 0;
+  // let totalLectures = 0;
+  // let percentage = (attendedLectures / totalLectures) * 100;
+  // attendancePercentage
+
   // Fetch all groups and filter approved ones
   useEffect(() => {
     const fetchCourses = async () => {
@@ -29,7 +31,13 @@ function AllCourse() {
           headers: { Authorization: ` ${getTokenUser}` },
         });
 
-        // Filter groups where the user is approved
+        // for (let i = 0; i < userRes.data.groups.length; i++) {
+        //   const element = userRes.data.groups[i];
+        //   attendedLectures = element.attendancePercentage;
+
+        //   console.log(attendedLectures);
+        // }
+
         const approvedCourses = userRes.data.groups.filter(
           (group) => group.status === "approved"
         );
@@ -43,7 +51,10 @@ function AllCourse() {
                 headers: { Authorization: getTokenUser },
               }
             );
-            return res.data;
+            return {
+              ...res.data,
+              attendancePercentage: element.attendancePercentage,
+            };
           })
         );
 
@@ -65,7 +76,6 @@ function AllCourse() {
     navigate(`/course/${groupId}`);
   };
 
-  // إذا كانت البيانات قيد التحميل، عرض SVG Loader
   if (loading) {
     return (
       <div
@@ -73,7 +83,7 @@ function AllCourse() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: "100vh",
+          height: "70vh",
         }}
       >
         <svg
@@ -89,24 +99,34 @@ function AllCourse() {
 
   return (
     <>
-    <Helmet>
-      <title>Code Eagles | My Couses</title>
-    </Helmet>
+      <Helmet>
+        <title>Code Eagles | My Couses</title>
+      </Helmet>
       <div className="container mt-5 mb-5">
         <h1 className="mb-4">Your courses</h1>
-        <div className="row">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+            gap: "20px",
+          }}
+        >
           {courses.length > 0 ? (
             courses.map((course) => {
-  
+              const percentage = course.attendancePercentage || 0;
+              const startDate = course.start_date
+                ? course.start_date.split("T")[0]
+                : "N/A";
+
               return (
-                <div className="col-md-4 mb-4" key={course._id}>
-                  <div className="card h-100">
+                <div key={course._id}>
+                  <div className="card">
                     <div className="card-body">
                       <h5 className="card-title">Course: {course.title}</h5>
 
                       <div className="card-text d-flex justify-content-between align-items-center">
                         <strong className="text-muted">
-                          Start Date : {course.start_date?.split("T")[0]}
+                          Start Date: {startDate}
                         </strong>
                         <div
                           style={{
@@ -117,8 +137,7 @@ function AllCourse() {
                             justifyContent: "center",
                             alignItems: "center",
                             background: `conic-gradient(#28a745 ${percentage}%, transparent ${percentage}% 100%)`,
-                            // mask: "radial-gradient(transparent 60%, #000 60%)",
-                            zIndex:1
+                            zIndex: 1,
                           }}
                         >
                           <span
@@ -131,7 +150,7 @@ function AllCourse() {
                               display: "flex",
                               justifyContent: "center",
                               alignItems: "center",
-                              padding:"30px",
+                              padding: "30px",
                               fontSize: "14px",
                               fontWeight: "bold",
                               color: "#28a745",
@@ -145,7 +164,7 @@ function AllCourse() {
                       <button
                         className="btn btn-primary"
                         onClick={() => handleViewCourse(course._id)}
-                          aria-label="Submit"
+                        aria-label="Submit"
                       >
                         Show Course
                       </button>

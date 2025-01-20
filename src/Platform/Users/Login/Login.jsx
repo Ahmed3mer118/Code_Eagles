@@ -7,7 +7,7 @@ import "../Register/register.css";
 import { DataContext } from "../Context/Context";
 // import CryptoJS from "crypto-js";
 import FingerprintJs from "@fingerprintjs/fingerprintjs";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie";
 function Login() {
   const { URLAPI, secretKey } = useContext(DataContext);
   const [login, setLogin] = useState({

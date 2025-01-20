@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { DataContext } from "../Context/Context";
+import { ToastContainer } from "react-toastify";
 
 function AllGroup() {
   const { URLAPI, handleJoinGroup } = useContext(DataContext);
@@ -23,10 +24,30 @@ function AllGroup() {
       });
   }, [URLAPI]);
 
-  if (loading) return <h1 className="text-center">Loading groups...</h1>;
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
+      >
+        <svg
+          className="loading"
+          viewBox="25 25 50 50"
+          style={{ width: "3.25em" }}
+        >
+          <circle r="20" cy="50" cx="50"></circle>
+        </svg>
+      </div>
+    );
+  }
 
   return (
     <>
+    <ToastContainer />
       {showAllGroup && (
         <div className="container mb-3" style={{width:"80%"}}>
           <h1 className="text-center my-4">All Groups</h1>

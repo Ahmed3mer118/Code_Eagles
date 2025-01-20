@@ -1,12 +1,15 @@
-import React, { createContext, useState, useEffect, useId } from "react";
+import React, { createContext, useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 export const DataContext = createContext();
 
 function Context({ children }) {
-  const getTokenAdmin = JSON.parse(localStorage.getItem("tokenAdmin"));
-  const getTokenUser = JSON.parse(localStorage.getItem("tokenUser"));
+  let getTokenAdmin, getTokenUser;
+
+    getTokenAdmin = JSON.parse(localStorage.getItem("tokenAdmin") || "null");
+    getTokenUser = JSON.parse(localStorage.getItem("tokenUser") || "null");
+
   const [URLAPI] = useState("https://api-codeeagles-cpq8.vercel.app");
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +71,6 @@ function Context({ children }) {
         }
       }
 
-  
       // Send the join request
       const joinRes = {
         groupId,
@@ -88,17 +90,24 @@ function Context({ children }) {
     } catch (err) {
       console.error("Error sending join request:", err);
       toast.error("Failed to send join request. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Memoize values for better performance
+  const memoizedUserGroups = useMemo(() => userGroups, [userGroups]);
+  const memoizedHandleJoinGroup = useCallback(handleJoinGroup, [getTokenUser, userGroups, URLAPI]);
 
   return (
     <DataContext.Provider
       value={{
         URLAPI,
-        handleJoinGroup,
+        handleJoinGroup: memoizedHandleJoinGroup,
         getTokenAdmin,
         getTokenUser,
         loading,
+        userGroups: memoizedUserGroups,
       }}
     >
       {children}

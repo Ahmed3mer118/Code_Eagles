@@ -18,44 +18,34 @@ function Courses() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-         // جلب بيانات الطالب
-         const userRes = await axios.get(
-          `${URLAPI}/api/users`,
+     
+        const attendedLec = await axios.get(
+          `${URLAPI}/api/lectures/${groupId}/get-user-attendance-status-in-group`,
           {
             headers: { Authorization: ` ${getTokenUser}` },
           }
         );
-        // جلب بيانات الحضور
-        const attendedRes = await axios.get(
-          `${URLAPI}/api/lectures/${groupId}/attended-lectures`,
-          {
-            headers: { Authorization: ` ${getTokenUser}` },
-          }
-        );
-
-        // جلب بيانات الغياب
-        const nonAttendedRes = await axios.get(
-          `${URLAPI}/api/lectures/${groupId}/non-attended-lectures`,
-          {
-            headers: { Authorization: ` ${getTokenUser}` },
-          }
-        );
-        // console.log(nonAttendedRes.data)
-
-        // تجميع بيانات الحضور والغياب
-        const attendedLectures = attendedRes.data.attendedLectures || [];
-        const nonAttendedLectures = nonAttendedRes.data.notAttendedLectures || [];
 
         // حساب عدد الحضور والغياب
-        const presentCount = attendedLectures.length;
-        const absentCount = nonAttendedLectures.length;
+        const attendedLectures = attendedLec.data.attendedLecturesCount || 0;
+        const nonAttendedLectures =
+          attendedLec.data.notAttendedLecturesCount || 0;
 
-        setAttendance({ present: presentCount, absent: absentCount });
-        setAttendanceData([...attendedLectures, ...nonAttendedLectures]);
+        const lectureAttendName = attendedLec.data.lectures || [];
 
-        // جلب بيانات المهام
 
-        const taskData = userRes.data.tasks || [];
+        setAttendance({
+          present: attendedLectures,
+          absent: nonAttendedLectures,
+        });
+        setAttendanceData(lectureAttendName);
+        const taskGroup = await axios.get(
+          `${URLAPI}/api/lectures/groups/${groupId}/tasks`,
+          {
+            headers: { Authorization: ` ${getTokenUser}` },
+          }
+        );
+        const taskData = taskGroup.data.tasks || [];
         setTasks(taskData);
         setTotalTaskGrades(taskData.reduce((sum, task) => sum + task.score, 0));
       } catch (error) {
@@ -117,8 +107,8 @@ function Courses() {
             </div>
           )}
 
-          {/* Attendance and Tasks Section */}
-          {/* <div className="row mt-3 mb-4 col-12 col-md-8">
+          {/* Attendance  Section */}
+          <div className="row mt-3 mb-4 col-12 col-md-8">
             <div className="col-md-6">
               <div className="card mb-4">
                 <div className="card-body">
@@ -132,14 +122,15 @@ function Courses() {
                   <ul>
                     {attendanceData.map((item, index) => (
                       <li key={index}>
-                        {console.log(item)}
                         <strong>{item.title} </strong>:
                         <span
                           className={
-                            item.title ? "text-success" : "text-danger"
+                            item.status == "absent"
+                              ? "text-danger"
+                              : "text-success"
                           }
                         >
-                          {item.title ? " Attended" : " Absent"}
+                          {item.status == "absent" ? " Absent" : " Attend"}
                         </span>
                       </li>
                     ))}
@@ -147,7 +138,7 @@ function Courses() {
                 </div>
               </div>
             </div>
-
+            {/*  Task Section */}
             <div className="col-md-6">
               <div className="card mb-4">
                 <div className="card-body">
@@ -158,15 +149,23 @@ function Courses() {
                   <ul>
                     {tasks.map((task, index) => (
                       <li key={index}>
-                        <strong>Task {index + 1}</strong> : {task.score || 0} -{" "}
-                        {task.feedback || "No Feedback"}
+                        <strong>{task.taskDescription}</strong> :
+                        {task.score > task.score / 2 ? (
+                          <span className="text-success">
+                            {task.score || 0} -{task.feedback || "No Feedback "}
+                          </span>
+                        ) : (
+                          <span className="text-danger">
+                            {task.score || 0} -{task.feedback || "No Feedback "}
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
                 </div>
               </div>
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
     </>

@@ -73,7 +73,7 @@ function AddTask() {
               {loading ? "Submitting..." : "Submit Task"}
             </button>
           </div>
-          <span className="text-muted mt-3">Note : Please Enter Link Google Drive</span>
+          <span className="text-muted mt-3">Note : Please Enter Link Google Drive or Link GitHub</span>
         </div>
       </div>
     </>

@@ -37,6 +37,7 @@ function ForgetPass() {
       )
       .then(() => {
         toast.success("Reset Successful");
+        localStorage.removeItem("forget-password-token")
         setTimeout(() => {
           navigate("/login");
         }, 2500);

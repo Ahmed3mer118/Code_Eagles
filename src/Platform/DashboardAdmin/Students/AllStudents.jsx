@@ -37,21 +37,20 @@ function AllStudents() {
         const data = res.data;
 
         if (Array.isArray(data) && data.length > 0) {
-          // إنشاء مصفوفة جديدة تحتوي على تفاصيل كل طالب
           const studentsWithProgress = data.map((student) => ({
             ...student,
-            attendance: student.attendance.length || 0,
-            tasks: student.tasks.length || 0,
+            // attendance: student.attendance.length || 0,
+            // tasks: student.tasks || 0,
           }));
           const searchStdByNumber = studentsWithProgress.filter(
             (num) => num.phone_number == searchStd
           );
 
-        if (searchStdByNumber.length > 0) {
-          setStudents(searchStdByNumber); 
-        } else {
-          setStudents(studentsWithProgress); 
-        }
+          if (searchStdByNumber.length > 0) {
+            setStudents(searchStdByNumber);
+          } else {
+            setStudents(studentsWithProgress);
+          }
         } else {
           setStudents([]);
           toast.warn("No students found.");
@@ -61,7 +60,7 @@ function AllStudents() {
         console.error(err);
         toast.error("Failed to fetch students.");
       });
-  }, [URLAPI, getTokenAdmin, location.pathname,searchStd]);
+  }, [URLAPI, getTokenAdmin, location.pathname, searchStd]);
 
   // const handleAddStudent = async (e) => {
   //   e.preventDefault();
@@ -95,7 +94,7 @@ function AllStudents() {
 
   return (
     <>
-     <Helmet>
+      <Helmet>
         <title>All Students</title>
       </Helmet>
       <ToastContainer />
@@ -129,9 +128,7 @@ function AllStudents() {
             <th className="border">Name</th>
             <th className="border">Email</th>
             <th className="border">PNumber</th>
-            <th className="border">Attendance</th>
-            <th className="border">Tasks</th>
-            <th className="border">Evaluation</th>
+
             <th className="border">All Details</th>
           </tr>
         </thead>
@@ -142,34 +139,25 @@ function AllStudents() {
             </tr>
           ) : (
             students.map((item, index) => {
-              let totalPossible =
-                allDataTasks.allAttendance + allDataTasks.allTasks;
-              let totalAchieved = item.attendance + item.tasks + 0;
+              // let totalPossible =
+              //   allDataTasks.allAttendance + allDataTasks.allTasks;
+              // let totalAchieved = item.attendance + item.tasks + 0;
 
-              let evaluation = totalPossible
-                ? ((totalAchieved / totalPossible) * 100).toFixed(2)
-                : 0;
+              // let evaluation = totalPossible
+              //   ? ((totalAchieved / totalPossible) * 100).toFixed(2)
+              //   : 0;
               return (
                 <tr key={index}>
                   <td className="border">{index + 1}</td>
                   <td className="border">{item.name}</td>
                   <td className="border">{item.email}</td>
                   <td className="border">{item.phone_number}</td>
-                  <td className="border">
-                    {item.attendance} / {allDataTasks.allTasks}
-                  </td>
-                  <td className="border">
-                    {item.tasks} / {allDataTasks.allTasks}
-                  </td>
-                  {/* <td className="border"> */}
-                  {/* {userProgress.quiz} / {allDataTasks.allQuiz} */}
-                  {/* </td> */}
-                  <td className="border">{evaluation}%</td>
+
                   <td className="border">
                     <Link
                       to={`/admin/student/${item._id}`}
                       className="text-primary"
-                        aria-label="link"
+                      aria-label="link"
                     >
                       Details
                     </Link>

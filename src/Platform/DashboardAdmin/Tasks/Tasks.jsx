@@ -24,6 +24,7 @@ function Tasks() {
         },
       })
       .then((res) => {
+        console.log(res.data.lectures)
         const filterTaskGroup = res.data.lectures.filter((item) => {
           return  item.tasks && item.tasks.length > 0;
         });

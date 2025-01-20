@@ -8,11 +8,12 @@ import { Helmet } from "react-helmet-async";
 function Profile() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [userData, setUserData] = useState(null); // user data
-  const [tasks, setTasks] = useState([]); // show  tasks
-  const [attendance, setAttendance] = useState({ present: 0, absent: 0 }); // calc
-  const [attendacneData, setAttendanceData] = useState([]);
-  const [totalTaskGrades, setTotalTaskGrades] = useState(0);
+  // const [tasks, setTasks] = useState([]); // show  tasks
+  // const [attendance, setAttendance] = useState({ present: 0, absent: 0 }); // calc
+  // const [attendacneData, setAttendanceData] = useState([]);
+  // const [totalTaskGrades, setTotalTaskGrades] = useState(0);
   const [editing, setEditing] = useState(false);
+  const [loading,setLoading] = useState(false)
   const [updatedData, setUpdatedData] = useState({
     name: "",
     email: "",
@@ -33,24 +34,21 @@ function Profile() {
             phone_number: res.data.phone_number,
           });
 
-          const attendanceData = res.data.attendance || [];
-          setAttendanceData(attendanceData);
+          // const attendanceData = res.data.attendance || [];
+          // setAttendanceData(attendanceData);
+          // const presentCount = attendanceData.filter(
+          //   (item) => item.attendanceStatus === "present"
+          // ).length;
+          // const absentCount = attendanceData.filter(
+          //   (item) => item.attendanceStatus === "absent"
+          // ).length;
+          // setAttendance({ present: presentCount, absent: absentCount });
+          // const taskData = res.data.tasks || [];
+          // setTasks(taskData);
 
-          const presentCount = attendanceData.filter(
-            (item) => item.attendanceStatus === "present"
-          ).length;
-          const absentCount = attendanceData.filter(
-            (item) => item.attendanceStatus === "absent"
-          ).length;
-
-          setAttendance({ present: presentCount, absent: absentCount });
-
-          const taskData = res.data.tasks || [];
-          setTasks(taskData);
-
-          setTotalTaskGrades(
-            taskData.reduce((sum, task) => sum + task.score, 0)
-          );
+          // setTotalTaskGrades(
+          //   taskData.reduce((sum, task) => sum + task.score, 0)
+          // );
         }
       } catch (error) {
         if (error.response) {
@@ -123,11 +121,33 @@ function Profile() {
           toast.error(
             "An error occurred while deleting your account. Please try again."
           );
+          return
         });
     } else {
       toast.info("Account deletion canceled.");
+      return
     }
   };
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
+      >
+        <svg
+          className="loading"
+          viewBox="25 25 50 50"
+          style={{ width: "3.25em" }}
+        >
+          <circle r="20" cy="50" cx="50"></circle>
+        </svg>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -12,7 +12,7 @@ function FeedBack() {
   useEffect(() => {
     axios.get(`${URLAPI}/api/users/get-all-feedback`).then((res) => {
       setFeedbackList(res.data.feedbacks);
-      // setShowFeedback(res.data.feedbacks.length)
+
     });
   }, [URLAPI, getTokenUser]);
 
@@ -27,6 +27,7 @@ function FeedBack() {
       setCurrentIndex(currentIndex - 3); 
     }
   };
+  
 
   return (
     <>

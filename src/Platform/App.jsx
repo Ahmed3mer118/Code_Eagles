@@ -61,7 +61,7 @@ import AllChats from "./DashboardAdmin/Chat/AllChats.jsx";
 import ProfileAdmin from "./DashboardAdmin/ProfileAdmin/Profile.jsx";
 import AllCourse from "./Users/Lecture/AllCourse.jsx";
 
-
+import "../App.css"
 const helmetContext = {};
 
 function App() {

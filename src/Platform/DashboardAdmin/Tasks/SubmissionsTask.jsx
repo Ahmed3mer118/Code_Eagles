@@ -21,7 +21,7 @@ function SubmissionsTask() {
       // Fetch all submissions
       axios
         .get(
-          `${URLAPI}/api/lectures/${lectureId}/${taskId}/all-user-submit-task`,
+          `${URLAPI}/api/lectures/${lectureId}/tasks/${taskId}/submissions`,
           {
             headers: {
               Authorization: `${getTokenAdmin}`,
@@ -29,8 +29,8 @@ function SubmissionsTask() {
           }
         )
         .then((res) => {
-          setSubmissions(res.data.submissions);
-          console.log(res.data.submissions);
+          setSubmissions(res.data.submittedUsers);
+          console.log(res.data);
           setTaskName(res.data);
         })
         .catch((err) => {
@@ -40,6 +40,7 @@ function SubmissionsTask() {
   }, [lectureId, taskId, URLAPI, getTokenAdmin]);
 
   const handleSendScore = (submissionId) => {
+    console.log(submissionId);
     if (submissionId !== undefined) {
       axios
         .put(
@@ -53,8 +54,7 @@ function SubmissionsTask() {
           }
         )
         .then(() => {
-          toast.success(taskName.name + " feedback sent successfully");
-
+          toast.success(" feedback sent successfully");
           // تحديث بيانات العنصر محليًا
           setSubmissions((prevSubmissions) =>
             prevSubmissions.map((submission) =>
@@ -88,9 +88,8 @@ function SubmissionsTask() {
         <thead>
           <tr>
             <th className="border text-center">Id</th>
-            <th className="border text-center">SName</th>
-            <th className="border text-center">NTask</th>
-            <th className="border text-center">LTask</th>
+            <th className="border text-center">Name</th>
+            <th className="border text-center">Task</th>
             <th className="border text-center">Score</th>
             <th className="border text-center">Feedback</th>
             <th className="border text-center">Send</th>
@@ -100,21 +99,21 @@ function SubmissionsTask() {
           {Array.isArray(submissions) &&
             submissions.map((item, index) => (
               <tr key={index}>
-   
                 <td className="border text-center">{index + 1}</td>
-                <td className="border text-center">{item.userName}</td>
+                <td className="border text-center">{item.name}</td>
+
                 <td className="border text-center">
-                  {/* {getTaskDescription(taskId)} */}
-                  {taskName.taskTitle}
-                </td>
-                <td className="border text-center">
-                  <Link to={item.submissionLink} target="_blank"  aria-label="link">
+                  <Link
+                    to={item.submission.submissionLink}
+                    target="_blank"
+                    aria-label="link"
+                  >
                     View Submission
                   </Link>
                 </td>
                 <td className="border text-center" style={{ width: "150px" }}>
-                  {item.score !== null ? (
-                    <span>{item.score}</span>
+                  {item.submission.score !== null ? (
+                    <span>{item.submission.score}</span>
                   ) : (
                     <input
                       type="number"
@@ -123,13 +122,13 @@ function SubmissionsTask() {
                       }
                       className="form-control"
                       placeholder="Enter Score"
-                      style={{ width: "100%" }} // تقييد العرض بحجم العمود
+                      style={{ width: "100%" }}
                     />
                   )}
                 </td>
                 <td className="border text-center" style={{ width: "200px" }}>
-                  {item.feedback !== null ? (
-                    <span>{item.feedback}</span>
+                  {item.submission.feedback !== null ? (
+                    <span>{item.submission.feedback}</span>
                   ) : (
                     <input
                       type="text"
@@ -141,22 +140,22 @@ function SubmissionsTask() {
                       }
                       className="form-control"
                       placeholder="Enter Feedback"
-                      style={{ width: "100%" }} // تقييد العرض بحجم العمود
+                      style={{ width: "100%" }}
                     />
                   )}
                 </td>
 
                 <td className="border text-center">
-                  {item.score !== null ? (
+                  {item.submission.score !== null ? (
                     <span className="text-success">Evaluated</span>
                   ) : (
-                    <span
-                      onClick={() => handleSendScore(item.submissionId)}
-                      className="text-primary"
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={() => handleSendScore(item.userId)}
                       style={{ cursor: "pointer" }}
                     >
                       Send
-                    </span>
+                    </button>
                   )}
                 </td>
               </tr>

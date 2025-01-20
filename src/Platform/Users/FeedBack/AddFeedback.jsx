@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 
 import { DataContext } from "../Context/Context";
@@ -10,6 +10,9 @@ function AddFeedback() {
     email: "",
     feedback: "",
   });
+  useEffect(()=>{
+    window.scrollTo(0,0)
+  })
 
   const handleSubmit = (e) => {
     console.log(formData)
@@ -91,7 +94,8 @@ function AddFeedback() {
           <button
             type="submit"
             className="btn btn-primary w-100"
-            disabled={!getTokenUser}
+            disabled={!getTokenUser || formData.feedback.trim() === ""}
+            // disabled={getTokenUser || formData.feedback.trim() === ""}
               aria-label="Submit Form"
           >
             Submit Feedback
