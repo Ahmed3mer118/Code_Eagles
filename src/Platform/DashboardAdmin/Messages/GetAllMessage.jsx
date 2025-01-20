@@ -18,9 +18,11 @@ function GetAllMessage() {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
+        setLoading(true)
         const res = await axios.get(`${URLAPI}/api/contact/contact-us/messages`, {
           headers: { Authorization: `${getTokenAdmin}` },
         });
+        setLoading(false)
         setMessages(res.data.messages);
         console.log(res.data.messages);
       } catch (error) {
@@ -67,6 +69,27 @@ function GetAllMessage() {
     setShowFormReply(!showFormReply);
   };
 
+ 
+ if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
+      >
+        <svg
+          className="loading"
+          viewBox="25 25 50 50"
+          style={{ width: "3.25em" }}
+        >
+          <circle r="20" cy="50" cx="50"></circle>
+        </svg>
+      </div>
+    );
+  }
 
 
   return (

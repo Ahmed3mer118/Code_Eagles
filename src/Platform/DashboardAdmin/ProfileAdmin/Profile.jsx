@@ -46,7 +46,26 @@ function ProfileAdmin() {
     }
   };
 
-  if (loading) return <h2 className="text-center">Loading...</h2>;
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
+      >
+        <svg
+          className="loading"
+          viewBox="25 25 50 50"
+          style={{ width: "3.25em" }}
+        >
+          <circle r="20" cy="50" cx="50"></circle>
+        </svg>
+      </div>
+    );
+  }
 
   return (
     <div className="container mt-5 mb-3">
@@ -145,6 +164,7 @@ function ProfileAdmin() {
           </div>
         </div>
       )}
+      <button className="btn btn-outline-info m-3">Logout</button>
     </div>
   );
 }

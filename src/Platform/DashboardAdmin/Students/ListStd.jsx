@@ -18,15 +18,17 @@ function ListStd() {
   const [allStudentInList, setAllStudentInList] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentStudent, setCurrentStudent] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true)
         const groupsResponse = await axios.get(`${URLAPI}/api/groups`, {
           headers: { Authorization: getTokenAdmin },
         });
         setGroups(groupsResponse.data);
-
+        
         const studentsResponse = await axios.get(
           `${URLAPI}/api/users/get-allowed-emails`,
           {
@@ -36,6 +38,7 @@ function ListStd() {
         const filteredGroups = studentsResponse.data.groups.filter(
           (group) => group.allowedEmails.length > 0
         );
+        setLoading(false)
         setAllStudentInList(filteredGroups);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -151,6 +154,26 @@ function ListStd() {
         toast.error("Student Not deleted successfully");
       });
   };
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
+      >
+        <svg
+          className="loading"
+          viewBox="25 25 50 50"
+          style={{ width: "3.25em" }}
+        >
+          <circle r="20" cy="50" cx="50"></circle>
+        </svg>
+      </div>
+    );
+  }
 
   return (
     <div className="container mt-4">

@@ -15,6 +15,7 @@ function AllStudents() {
     allQuiz: 14,
   });
   const [searchStd, setSearchStd] = useState("");
+  const [loading,setLoading] = useState(false)
 
   // const [newStudent, setNewStudent] = useState(false);
   // const [newDataStudent, setNewDataStudent] = useState({
@@ -27,6 +28,7 @@ function AllStudents() {
   // });
 
   useEffect(() => {
+    setLoading(true)
     axios
       .get(`${URLAPI}/api/users/all-users`, {
         headers: {
@@ -34,6 +36,7 @@ function AllStudents() {
         },
       })
       .then((res) => {
+        setLoading(false)
         const data = res.data;
 
         if (Array.isArray(data) && data.length > 0) {
@@ -91,7 +94,26 @@ function AllStudents() {
   //     toast.error("Failed to add student");
   //   }
   // };
-
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
+      >
+        <svg
+          className="loading"
+          viewBox="25 25 50 50"
+          style={{ width: "3.25em" }}
+        >
+          <circle r="20" cy="50" cx="50"></circle>
+        </svg>
+      </div>
+    );
+  }
   return (
     <>
       <Helmet>

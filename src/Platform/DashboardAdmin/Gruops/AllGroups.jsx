@@ -12,6 +12,7 @@ function AllGroups() {
   const [offline, setOffline] = useState([]);
   const [online, setOnline] = useState([]);
   const location = useLocation();
+  const [loading,setLoading] = useState(false)
 
   if (!getTokenAdmin) {
     toast.error("Unauthorized. Please log in.");
@@ -19,6 +20,7 @@ function AllGroups() {
   }
 
   useEffect(() => {
+    setLoading(true)
     axios
       .get(`${URLAPI}/api/groups`, {
         headers: {
@@ -27,6 +29,7 @@ function AllGroups() {
         },
       })
       .then((res) => {
+        setLoading(false)
         const onlineGroup = res.data.filter(
           (item) => item.type_course === "online"
         );
@@ -41,10 +44,7 @@ function AllGroups() {
       });
   }, [location.pathname]);
 
-  // const handleShowGroup = (id) => {
-  //   // setShowGroup((prevState) => ({ ...prevState, [id]: !prevState[id] }));
-  //   socket.emit("sendGroupId", id);
-  // };
+ 
 
   const renderGroupButtons = (groupList) => {
     return groupList.map((item) => (
@@ -58,6 +58,26 @@ function AllGroups() {
       </div>
     ));
   };
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
+      >
+        <svg
+          className="loading"
+          viewBox="25 25 50 50"
+          style={{ width: "3.25em" }}
+        >
+          <circle r="20" cy="50" cx="50"></circle>
+        </svg>
+      </div>
+    );
+  }
 
   return (
     <div>
