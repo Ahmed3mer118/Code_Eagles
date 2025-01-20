@@ -72,11 +72,6 @@ function Layout() {
       }
     });
 
-    // تنظيف المستمعات عند إلغاء تحميل المكون
-    return () => {
-      window.removeEventListener("paste", handlePaste);
-      window.removeEventListener("copy", handleCopy);
-    };
   }, [token]);
 
   return (
