@@ -15,7 +15,7 @@ function AllStudents() {
     allQuiz: 14,
   });
   const [searchStd, setSearchStd] = useState("");
-  const [loading,setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   // const [newStudent, setNewStudent] = useState(false);
   // const [newDataStudent, setNewDataStudent] = useState({
@@ -28,7 +28,7 @@ function AllStudents() {
   // });
 
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     axios
       .get(`${URLAPI}/api/users/all-users`, {
         headers: {
@@ -36,7 +36,7 @@ function AllStudents() {
         },
       })
       .then((res) => {
-        setLoading(false)
+        setLoading(true);
         const data = res.data;
 
         if (Array.isArray(data) && data.length > 0) {
@@ -50,8 +50,10 @@ function AllStudents() {
           );
 
           if (searchStdByNumber.length > 0) {
+            setLoading(false);
             setStudents(searchStdByNumber);
           } else {
+            setLoading(false);
             setStudents(studentsWithProgress);
           }
         } else {
@@ -94,63 +96,80 @@ function AllStudents() {
   //     toast.error("Failed to add student");
   //   }
   // };
-  if (loading) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "70vh",
-        }}
-      >
-        <svg
-          className="loading"
-          viewBox="25 25 50 50"
-          style={{ width: "3.25em" }}
-        >
-          <circle r="20" cy="50" cx="50"></circle>
-        </svg>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div
+  //       style={{
+  //         display: "flex",
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //         height: "70vh",
+  //       }}
+  //     >
+  //       <svg
+  //         className="loading"
+  //         viewBox="25 25 50 50"
+  //         style={{ width: "3.25em" }}
+  //       >
+  //         <circle r="20" cy="50" cx="50"></circle>
+  //       </svg>
+  //     </div>
+  //   );
+  // }
   return (
     <>
       <Helmet>
         <title>All Students</title>
       </Helmet>
       <ToastContainer />
-      <div>
-        <div className="d-flex justify-content-between align-items-center">
-          <h1 className="m-2">Students</h1>
-          <input
-            type="text"
-            placeholder="Search By Number"
-            className="m-2"
-            style={{
-              outline: "none",
-              border: "none",
-              borderBottom: "2px solid black",
-            }}
-            onChange={(e) => setSearchStd(e.target.value)}
-          />
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "70vh",
+          }}
+        >
+          <svg
+            className="loading"
+            viewBox="25 25 50 50"
+            style={{ width: "3.25em" }}
+          >
+            <circle r="20" cy="50" cx="50"></circle>
+          </svg>
         </div>
-        {/* <button
+      ) : (
+        <>
+        <div>
+          <div className="d-flex justify-content-between align-items-center">
+            <h1 className="m-2">Students</h1>
+            {/* <input
+              type="text"
+              placeholder="Search By Number"
+              className="m-2"
+              style={{
+                outline: "none",
+                border: "none",
+                borderBottom: "2px solid black",
+              }}
+              onChange={(e) => setSearchStd(e.target.value)}
+            /> */}
+          </div>
+          {/* <button
           className="btn btn-success"
           onClick={() => setNewStudent(!newStudent)}
         >
           {!newStudent ? "New Student" : "Show Students"}
         </button> */}
-      </div>
-
-      <table className="table text-center m-auto mt-2 mb-2">
+        </div>
+        <table className="table text-center m-auto mt-2 mb-2">
         <thead>
           <tr>
             <th className="border">ID</th>
             <th className="border">Name</th>
             <th className="border">Email</th>
             <th className="border">PNumber</th>
-
             <th className="border">All Details</th>
           </tr>
         </thead>
@@ -161,13 +180,6 @@ function AllStudents() {
             </tr>
           ) : (
             students.map((item, index) => {
-              // let totalPossible =
-              //   allDataTasks.allAttendance + allDataTasks.allTasks;
-              // let totalAchieved = item.attendance + item.tasks + 0;
-
-              // let evaluation = totalPossible
-              //   ? ((totalAchieved / totalPossible) * 100).toFixed(2)
-              //   : 0;
               return (
                 <tr key={index}>
                   <td className="border">{index + 1}</td>
@@ -190,6 +202,11 @@ function AllStudents() {
           )}
         </tbody>
       </table>
+        </>
+        
+      )}
+
+
 
       {/* <form className="row m-2 w-100">
            <h2>New Student</h2>

@@ -21,7 +21,9 @@ function Profile() {
   });
 
   useEffect(() => {
+  
     const fetchData = async () => {
+      setLoading(true)
       try {
         const res = await axios.get(`${URLAPI}/api/users`, {
           headers: { Authorization: ` ${getTokenUser}` },
@@ -33,23 +35,8 @@ function Profile() {
             email: res.data.email,
             phone_number: res.data.phone_number,
           });
-
-          // const attendanceData = res.data.attendance || [];
-          // setAttendanceData(attendanceData);
-          // const presentCount = attendanceData.filter(
-          //   (item) => item.attendanceStatus === "present"
-          // ).length;
-          // const absentCount = attendanceData.filter(
-          //   (item) => item.attendanceStatus === "absent"
-          // ).length;
-          // setAttendance({ present: presentCount, absent: absentCount });
-          // const taskData = res.data.tasks || [];
-          // setTasks(taskData);
-
-          // setTotalTaskGrades(
-          //   taskData.reduce((sum, task) => sum + task.score, 0)
-          // );
         }
+        setLoading(false)
       } catch (error) {
         if (error.response) {
           console.log("Response data:", error.response.data);

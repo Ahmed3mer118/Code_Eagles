@@ -74,7 +74,7 @@ function AllGroup() {
                 </div>
               ))
             ) : (
-              <h1>No Group</h1>
+              <h1 className="text-center">No Group</h1>
             )}
           </div>
         </div>

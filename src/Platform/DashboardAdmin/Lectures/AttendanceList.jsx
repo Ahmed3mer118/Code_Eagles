@@ -9,16 +9,20 @@ function AttendanceList() {
   const { lectureId } = useParams(); // الحصول على معرف المحاضرة من الـ URL
   const [attendanceData, setAttendanceData] = useState([]);
   const [lectureTitle, setLectureTitle] = useState("");
+  const [loading,setLoading] = useState(false)
 
   // جلب بيانات الحضور
   useEffect(() => {
+    setLoading(true)
     if (lectureId) {
       axios
         .get(`${URLAPI}/api/lectures/${lectureId}/attendance`, {
           headers: { Authorization: `${getTokenAdmin}` },
         })
         .then((res) => {
+          setLoading(false)
           setAttendanceData(res.data.attendance || []);
+          console.log(res.data.attendance || []);
           setLectureTitle(res.data.lectureTitle || "Unknown Lecture");
         })
         .catch((err) => {
@@ -27,7 +31,26 @@ function AttendanceList() {
         });
     }
   }, [lectureId, URLAPI, getTokenAdmin]);
-
+ if (loading) {
+      return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "70vh",
+      }}
+    >
+      <svg
+        className="loading"
+        viewBox="25 25 50 50"
+        style={{ width: "3.25em" }}
+      >
+        <circle r="20" cy="50" cx="50"></circle>
+      </svg>
+    </div>
+      );
+    }
   return (
     <div className="container mt-4">
       <ToastContainer />

@@ -10,18 +10,17 @@ function DetailStudent() {
 
   const [students, setStudents] = useState([]);
   const [groupIdByStd, setGroupIdByStd] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [dataUpdateStudent, setDataUpdateStudent] = useState({
     name: "",
     email: "",
     role: "",
   });
-  const [currentRole, setCurrentRole] = useState("");
-  const [currentStatus, setCurrentStatus] = useState("");
-  const [attendanceData, setAttendanceData] = useState([]); // title lecture
+  const [currentStatus, setCurrentStatus] = useState({});
+  const [attendanceData, setAttendanceData] = useState([]);
   const [attendance, setAttendance] = useState({ present: 0, absent: 0 });
   const [taskData, setTaskData] = useState([]);
-  const [groupDetails, setGroupDetails] = useState([]); // تفاصيل الجروب
+  const [groupDetails, setGroupDetails] = useState([]);
   const { studentId } = useParams();
   const navigate = useNavigate();
 
@@ -40,24 +39,20 @@ function DetailStudent() {
           },
         });
         setStudents(res.data);
+
         if (res.data.groups && res.data.groups.length > 0) {
           setGroupIdByStd(res.data.groups);
-          console.log(res.data.groups);
-          for (let i = 0; i < res.data.groups.length; i++) {
-            const element = res.data.groups[i];
-            setCurrentStatus(element.status);
-          }
-          setDataUpdateStudent({
-            name: res.data.name,
-            email: res.data.email,
-            role: res.data.groups,
+
+          const statusMap = {};
+          res.data.groups.forEach((group) => {
+            statusMap[group.groupId] = group.status || "pending";
           });
+          setCurrentStatus(statusMap);
         } else {
           setGroupIdByStd([]);
-          setCurrentStatus("N/A");
+          setCurrentStatus({});
         }
 
-        setCurrentRole(res.data.role);
         setLoading(false);
       } catch (error) {
         toast.error("Failed to fetch student data.");
@@ -73,7 +68,6 @@ function DetailStudent() {
     if (groupIdByStd) {
       const fetchGroupDetails = async () => {
         try {
-          // console.log(groupIdByStd)
           const details = await Promise.all(
             groupIdByStd.map(async (group) => {
               const res = await axios.get(
@@ -87,7 +81,6 @@ function DetailStudent() {
               return res.data;
             })
           );
-
           setGroupDetails(details);
         } catch (error) {
           console.error("Error fetching group details:", error);
@@ -135,28 +128,27 @@ function DetailStudent() {
   };
 
   // Toggle User Status
-  const handleStopUser = async (id, currentStatus, groupId) => {
+  const handleStopUser = async (id, groupId) => {
     if (!getTokenAdmin) {
       toast.error("Unauthorized. Please log in.");
       return;
     }
-    console.log("StudentID :" + id, "status :" + currentStatus , "groupId :" + groupId);
 
     if (!groupIdByStd || groupIdByStd.length === 0) {
       toast.error("No group available for this student.");
       return;
     }
 
+    // الحصول على الحالة الحالية للمجموعة
+    const currentGroupStatus = currentStatus[groupId] || "pending";
+
     let newStatus = "";
-    switch (currentStatus) {
+    switch (currentGroupStatus) {
       case "pending":
         newStatus = "approved";
         break;
       case "approved":
-        newStatus = "rejected";
-        break;
-      case "rejected":
-        newStatus = "approved";
+        newStatus = "pending";
         break;
       default:
         newStatus = "approved";
@@ -169,7 +161,7 @@ function DetailStudent() {
 
     try {
       await axios.put(
-        `${URLAPI}/api/users/set-role-to-pending/${groupId}/${id}`,
+        `${URLAPI}/api/users/set-role-to-${newStatus}/${id}/${groupId}`,
         updateStatus,
         {
           headers: {
@@ -178,57 +170,72 @@ function DetailStudent() {
         }
       );
 
+      setCurrentStatus((prevStatus) => ({
+        ...prevStatus,
+        [groupId]: newStatus,
+      }));
+
       toast.success(`User status changed to ${newStatus}`);
-      setCurrentStatus(newStatus);
-      return;
     } catch (error) {
       toast.error("Failed to update user status");
       console.error("Status update error:", error);
-      return;
     }
   };
+
   // show Details Student
   const showDetailsStd = async (groupId) => {
-    axios
-      .get(
+    try {
+      setLoading(true);
+      const attendanceResponse = await axios.get(
         `${URLAPI}/api/lectures/${studentId}/${groupId}/attendance-by-admin`,
         {
           headers: { Authorization: getTokenAdmin },
         }
-      )
-      .then((res) => {
-        const attendedLecturesCount = res.data.attendedLecturesCount || 0;
-        const notAttendedLecturesCount = res.data.notAttendedLecturesCount || 0;
-        const lectureAttendName = res.data.groupLectures || [];
-        setAttendanceData(lectureAttendName);
-        setAttendance({
-          present: attendedLecturesCount,
-          absent: notAttendedLecturesCount,
-        });
-      })
-      .catch((err) => {
-        toast.info("Error: " + err.message);
-        return;
+      );
+
+      const attendedLecturesCount =
+        attendanceResponse.data.attendedLecturesCount || 0;
+      const notAttendedLecturesCount =
+        attendanceResponse.data.notAttendedLecturesCount || 0;
+      const lectureAttendName = attendanceResponse.data.groupLectures || [];
+
+      setAttendanceData(lectureAttendName);
+      setAttendance({
+        present: attendedLecturesCount,
+        absent: notAttendedLecturesCount,
       });
+
+      const res = await axios.get(`${URLAPI}/api/users/${studentId}`, {
+        headers: {
+          Authorization: `${getTokenAdmin}`,
+        },
+      });
+      console.log(res.data.groups)
+      if (res.data.groups && res.data.groups.length > 0) {
+        setGroupIdByStd(res.data.groups);
+        const allTasks = res.data.groups.flatMap((group) => group.tasks || []);
+        setTaskData(allTasks);
+      }
+      setLoading(false);
+    } catch (err) {
+      toast.info("Error: " + err.message);
+      console.error("Error in showDetailsStd:", err.message);
+    }
   };
 
   return (
     <>
       <ToastContainer />
-
       <h1 className="text-center mt-2">Student Name: {students.name}</h1>
-
       <div className="container p-1">
         <div className="row">
           <div className="col-lg-6 col-md-12 mb-3">
-            {/* بيانات الطالب */}
             <table className="table text-center">
               <thead>
                 <tr>
                   <th className="border">Name</th>
                   <th className="border">Email</th>
                   <th className="border">Phone Number</th>
-
                   <th className="border">Delete</th>
                 </tr>
               </thead>
@@ -237,7 +244,6 @@ function DetailStudent() {
                   <td className="border">{students.name?.split(" ")[0]}</td>
                   <td className="border">{students.email?.split("@")[0]}</td>
                   <td className="border">{students.phone_number}</td>
-
                   <td className="border">
                     <span
                       style={{ cursor: "pointer" }}
@@ -251,11 +257,10 @@ function DetailStudent() {
               </tbody>
             </table>
 
-            {/* تفاصيل الجروب */}
             <div className="mt-4">
-              <h3>Group Name</h3>
-              {groupDetails.map((group) => (
-                <div key={group._id} className="card mb-3">
+              <h3>Group</h3>
+              {groupDetails.map((group, index) => (
+                <div key={index} className="card mb-3">
                   <div className="card-body">
                     <h5 className="card-title">{group.title}</h5>
                     <p className="card-text">
@@ -265,22 +270,20 @@ function DetailStudent() {
                       className="btn btn-primary"
                       onClick={() => showDetailsStd(group._id)}
                     >
-                      Show Details Student
+                      Show Details Group
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        handleStopUser(studentId, currentStatus, group._id)
-                      }
+                      onClick={() => handleStopUser(studentId, group._id)}
                       className={`btn ${
-                        currentStatus === "approved"
+                        currentStatus[group._id] === "approved"
                           ? "btn-danger"
                           : "btn-success"
-                      }  ms-3`}
+                      } ms-3`}
                     >
-                      {currentStatus === "approved"
-                        ? "Rejected User"
-                        : "Approved User"}
+                      {currentStatus[group._id] === "approved"
+                        ? "Reject User"
+                        : "Approve User"}
                     </button>
                   </div>
                 </div>
@@ -288,57 +291,80 @@ function DetailStudent() {
             </div>
           </div>
 
-          <div className="col-lg-3 col-md-6 col-sm-12 mb-3">
-            <div className="card p-3">
-              {/* الحضور والغياب */}
-              <h3 className="text-center">Attendance</h3>
-              <p>
-                <strong>Present:</strong> {attendance.present}
-              </p>
-              <p>
-                <strong>Absent:</strong> {attendance.absent}
-              </p>
-              <div>
-                {Array.isArray(attendanceData) &&
-                  attendanceData.map((item, index) => (
-                    <li key={index}>
-                      <strong>Lecture {index + 1}</strong>:
-                      <span
-                        className={
-                          item.status === "present"
-                            ? "text-success"
-                            : "text-danger"
-                        }
-                      >
-                        {item.status === "present" ? " Attended" : " Absent"}
-                      </span>
-                    </li>
-                  ))}
+          {loading ? (
+            <div
+              style={{
+                textAlign: "center",
+              }}
+            >
+              <svg
+                className="loading"
+                viewBox="25 25 50 50"
+                style={{ width: "3.25em" }}
+              >
+                <circle r="20" cy="50" cx="50"></circle>
+              </svg>
+            </div>
+          ) : (
+            <>
+              <div className="col-lg-3 col-md-6 col-sm-12 mb-3">
+                <div className="card p-3">
+                  <h3 className="text-center">Attendance</h3>
+                  <p>
+                    <strong>Present:</strong> {attendance.present || 0}
+                  </p>
+                  <p>
+                    <strong>Absent:</strong> {attendance.absent || 0}
+                  </p>
+                  <div>
+                    {Array.isArray(attendanceData) &&
+                      attendanceData.map((item, index) => (
+                        <li key={index}>
+                          <strong>Lecture {index + 1}</strong>:
+                          <span
+                            className={
+                              item.status === "present"
+                                ? "text-success"
+                                : "text-danger"
+                            }
+                          >
+                            {item.status === "present"
+                              ? " Attended"
+                              : " Absent"}
+                          </span>
+                        </li>
+                      ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="col-lg-3 col-md-6 col-sm-12 mb-3">
-            <div className="card p-3">
-              {/* المهام */}
-              <h3 className="text-center">Tasks</h3>
-              <ol>
-                {Array.isArray(taskData) &&
-                  taskData.map((item, index) => (
-                    <li key={index}>
-                      <span
-                        className={
-                          item.score > 0 ? "text-success" : "text-danger"
-                        }
-                      >
-                        {item.score > 0 ? "Done" : "Not Submit"} -{" "}
-                        {item.score || 0}
-                      </span>
-                    </li>
-                  ))}
-              </ol>
-            </div>
-          </div>
+              <div className="col-lg-3 col-md-6 col-sm-12 mb-3">
+                <div className="card p-3">
+                  <h3 className="text-center">Tasks</h3>
+                  <div>
+                    {taskData &&
+                      taskData.map((item, index) => {
+                        return (
+                          <li key={index}>
+                            <strong>{item.taskName || "No Task Name"} :</strong>
+                            <span
+                              className={
+                                item.score / 2 > 0
+                                  ? "text-success"
+                                  : "text-danger"
+                              }
+                            >
+                              {item.score || 0} -
+                              {item.feedback || "No Feedback"}
+                            </span>
+                          </li>
+                        );
+                      })}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="row mt-3">
@@ -358,7 +384,6 @@ function DetailStudent() {
               disabled
               className="border rounded p-2 m-2 col-12"
             />
-
             <select
               value={dataUpdateStudent.role}
               className="border rounded p-2 m-2 w-100"
@@ -372,7 +397,6 @@ function DetailStudent() {
               <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
-
             <div className="row p-4">
               <button
                 type="submit"

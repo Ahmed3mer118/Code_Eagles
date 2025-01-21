@@ -7,8 +7,10 @@ import { Helmet } from "react-helmet-async";
 function EmailReq() {
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
   const [email, setEmail] = useState();
+  const [loading,setLoading] = useState(false)
 
   useEffect(() => {
+    setLoading(true)
     axios
       .get(`${URLAPI}/api/users/pending-users`, {
         headers: {
@@ -16,7 +18,7 @@ function EmailReq() {
         },
       })
       .then((res) => {
-        console.log(res.data);
+        setLoading(false)
         if (res.data) {
           setEmail(res.data);
         } else {
@@ -57,7 +59,7 @@ function EmailReq() {
       groupId: requestId,
       userId: id,
     };
-
+    setLoading(true)
     try {
       await axios.post(`${URLAPI}/api/users/reject-join-request`, rejectedReq, {
         headers: {
@@ -75,6 +77,26 @@ function EmailReq() {
       );
     }
   };
+  if (loading) {
+    return (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "70vh",
+    }}
+  >
+    <svg
+      className="loading"
+      viewBox="25 25 50 50"
+      style={{ width: "3.25em" }}
+    >
+      <circle r="20" cy="50" cx="50"></circle>
+    </svg>
+  </div>
+    );
+  }
 
 
   return (
