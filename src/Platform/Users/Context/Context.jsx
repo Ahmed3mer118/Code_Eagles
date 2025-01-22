@@ -21,7 +21,7 @@ function Context({ children }) {
   };
   // const [URLAPI] = useState("https://api-codeeagles-cpq8.vercel.app");
   const URLAPI = import.meta.env.VITE_API_URL;
-  console.log(URLAPI)
+
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
