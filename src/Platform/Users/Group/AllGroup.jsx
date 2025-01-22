@@ -53,7 +53,7 @@ function AllGroup() {
           <h1 className="text-center my-4">All Groups</h1>
           <div className="row g-4">
             {groups ? (
-              groups.map((group) => (
+              Array.isArray( groups) &&groups.map((group) => (
                 <div className="col-md-4" key={group._id}>
                   <div className="card shadow-sm">
                     <div className="card-body text-center">
