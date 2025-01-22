@@ -19,9 +19,8 @@ function Context({ children }) {
     const token = localStorage.getItem("token"); // أو أي طريقة أخرى للتحقق من تسجيل الدخول
     return !!token; // تُرجع true إذا كان token موجودًا، و false إذا لم يكن موجودًا
   };
-  // const [URLAPI] = useState("https://api-codeeagles-cpq8.vercel.app");
-  const URLAPI = import.meta.env.VITE_API_URL;
-
+  const URLAPI ="https://api-codeeagles-cpq8.vercel.app";
+  // const URLAPI = import.meta.env.VITE_API_URL;
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
