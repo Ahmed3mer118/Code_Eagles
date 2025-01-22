@@ -47,13 +47,14 @@ function AllGroup() {
 
   return (
     <>
-    <ToastContainer />
+      <ToastContainer />
       {showAllGroup && (
-        <div className="container mb-3" style={{width:"80%"}}>
+        <div className="container mb-3" style={{ width: "80%" }}>
           <h1 className="text-center my-4">All Groups</h1>
           <div className="row g-4">
-            {groups ? (
-              Array.isArray( groups) &&groups.map((group) => (
+         
+          {    Array.isArray(groups) &&
+              groups.map((group) => (
                 <div className="col-md-4" key={group._id}>
                   <div className="card shadow-sm">
                     <div className="card-body text-center">
@@ -65,17 +66,15 @@ function AllGroup() {
                         className="btn btn-success"
                         onClick={() => handleJoinGroup(group._id)}
                         disabled={loading}
-                          aria-label="Submit Form"
+                        aria-label="Submit Form"
                       >
-                        {loading?"Loading" :"Join Group"}
+                        {loading ? "Loading" : "Join Group"}
                       </button>
                     </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <h1>No Group</h1>
-            )}
+              ))}
+           
           </div>
         </div>
       )}

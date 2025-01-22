@@ -67,7 +67,7 @@ function Context({ children }) {
         (element) => element.groupId == groupId
       );
 
-      for (let i = 0; i < FilterMember; i++) {
+      for (let i = 0; i < FilterMember.length; i++) {
         const element = FilterMember[i];
 
         if (element.status == "approved") {
