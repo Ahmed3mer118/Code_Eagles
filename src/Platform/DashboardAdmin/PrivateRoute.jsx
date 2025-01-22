@@ -1,12 +1,16 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext ";
 
 function PrivateRoute({ element }) {
   const { isLoggedIn } = useAuth();
-
-
-  return isLoggedIn ? element : <Navigate to="/login/admin" replace />;
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isLoggedIn == false) {
+      return navigate("/login/admin");
+    }
+  }, []);
+  return element;
 }
 
 export default PrivateRoute;

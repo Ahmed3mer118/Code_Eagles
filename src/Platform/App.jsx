@@ -64,6 +64,7 @@ import AllCourse from "./Users/Lecture/AllCourse.jsx";
 import "../App.css"
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PrivateUser from "./Users/PrivateUser.jsx";
 const helmetContext = {};
 
 function App() {
@@ -181,7 +182,8 @@ function App() {
 
     {
       path: "/",
-      element: <Layout />,
+      element : <PrivateUser element={<Layout />}/>,
+      // element: <Layout />,
       children: [
         {
           index: true,
@@ -210,8 +212,7 @@ function App() {
         {
           path: "/my-courses",
           element: <AllCourse />,
-        },
-        
+        },      
         {
           path:"/content/course/:courseDetails",
           element:<CourseDetail/>
@@ -224,8 +225,7 @@ function App() {
           path: "/course/:groupId/lecture/:lecCourse",
           element: <Courses />,
         },
-       
-
+      
         {
           path: "/course/:groupId/lecture?/:lecCourse/Add-Task/:taskId",
           element: <AddTask />,

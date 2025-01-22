@@ -8,7 +8,7 @@ import { Helmet } from "react-helmet-async";
 
 function AllCourse() {
   const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const navigate = useNavigate();
 
@@ -20,6 +20,7 @@ function AllCourse() {
   // Fetch all groups and filter approved ones
   useEffect(() => {
     const fetchCourses = async () => {
+      setLoading(true)
       try {
         if (!getTokenUser) {
           toast.error("Please login to view your courses.");
@@ -63,8 +64,9 @@ function AllCourse() {
       } catch (err) {
         console.error("Error fetching courses:", err);
         toast.error("Failed to fetch courses.");
+        return
       } finally {
-        setLoading(false);
+        setLoading(false);  
       }
     };
 
