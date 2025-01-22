@@ -21,7 +21,6 @@ function Context({ children }) {
   };
   // const [URLAPI] = useState("https://api-codeeagles-cpq8.vercel.app");
   const URLAPI = import.meta.env.VITE_API_URL;
-
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,7 +67,7 @@ function Context({ children }) {
         (element) => element.groupId == groupId
       );
 
-      for (let i = 0; i < FilterMember.length; i++) {
+      for (let i = 0; i < FilterMember; i++) {
         const element = FilterMember[i];
 
         if (element.status == "approved") {
