@@ -62,6 +62,8 @@ import ProfileAdmin from "./DashboardAdmin/ProfileAdmin/Profile.jsx";
 import AllCourse from "./Users/Lecture/AllCourse.jsx";
 
 import "../App.css"
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const helmetContext = {};
 
 function App() {
@@ -256,6 +258,7 @@ function App() {
     <HelmetProvider context={helmetContext}>
       <AuthProvider>
         <DataProvider>
+          <ToastContainer />
           <RouterProvider router={router} />
         </DataProvider>
       </AuthProvider>

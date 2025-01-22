@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { DataContext } from "../Context/Context";
 import { ToastContainer } from "react-toastify";
-
+import "react-toastify/dist/ReactToastify.css";
 function AllGroup() {
   const { URLAPI, handleJoinGroup } = useContext(DataContext);
   const [groups, setGroups] = useState([]);
@@ -74,7 +74,7 @@ function AllGroup() {
                 </div>
               ))
             ) : (
-              <h1 className="text-center">No Group</h1>
+              <h1>No Group</h1>
             )}
           </div>
         </div>

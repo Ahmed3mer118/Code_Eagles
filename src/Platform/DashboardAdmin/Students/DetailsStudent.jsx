@@ -183,7 +183,7 @@ function DetailStudent() {
   };
 
   // show Details Student
-  const showDetailsStd = async (groupId) => {
+  const showDetailsStd = async (studentId , groupId) => {
     try {
       setLoading(true);
       const attendanceResponse = await axios.get(
@@ -205,17 +205,19 @@ function DetailStudent() {
         absent: notAttendedLecturesCount,
       });
 
-      const res = await axios.get(`${URLAPI}/api/users/${studentId}`, {
+      const res = await axios.get(`${URLAPI}/api/lectures/${groupId}/${studentId}/get-user-tasks-in-group`, {
         headers: {
           Authorization: `${getTokenAdmin}`,
         },
       });
-      console.log(res.data.groups)
-      if (res.data.groups && res.data.groups.length > 0) {
-        setGroupIdByStd(res.data.groups);
-        const allTasks = res.data.groups.flatMap((group) => group.tasks || []);
-        setTaskData(allTasks);
-      }
+      // console.log(res.data.tasks)
+      setTaskData(res.data.tasks)
+      // if (res.data.groups && res.data.groups.length > 0) {
+      //   setGroupIdByStd(res.data.groups);
+      //   const allTasks = res.data.groups.map((group) => group.tasks || []);
+      //   console.log(allTasks)
+      //   setTaskData(allTasks);
+      // }
       setLoading(false);
     } catch (err) {
       toast.info("Error: " + err.message);
@@ -268,7 +270,7 @@ function DetailStudent() {
                     </p>
                     <button
                       className="btn btn-primary"
-                      onClick={() => showDetailsStd(group._id)}
+                      onClick={() => showDetailsStd(studentId,group._id)}
                     >
                       Show Details Group
                     </button>
@@ -355,7 +357,7 @@ function DetailStudent() {
                               }
                             >
                               {item.score || 0} -
-                              {item.feedback || "No Feedback"}
+                              {item.feedback || " No Feedback"}
                             </span>
                           </li>
                         );

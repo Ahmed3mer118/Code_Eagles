@@ -87,27 +87,29 @@ function Context({ children }) {
       toast.success(
         "Your request to join has been sent successfully. Please wait for the request to be accepted."
       );
+      return
     } catch (err) {
       console.error("Error sending join request:", err);
       toast.error("Failed to send join request. Please try again.");
-    } finally {
       setLoading(false);
-    }
+    } 
   };
 
   // Memoize values for better performance
-  const memoizedUserGroups = useMemo(() => userGroups, [userGroups]);
-  const memoizedHandleJoinGroup = useCallback(handleJoinGroup, [getTokenUser, userGroups, URLAPI]);
+  // const memoizedUserGroups = useMemo(() => userGroups, [userGroups]);
+  // const memoizedHandleJoinGroup = useCallback(handleJoinGroup, [getTokenUser, userGroups, URLAPI]);
 
   return (
     <DataContext.Provider
       value={{
         URLAPI,
-        handleJoinGroup: memoizedHandleJoinGroup,
+        // handleJoinGroup: memoizedHandleJoinGroup,
+        handleJoinGroup,
         getTokenAdmin,
         getTokenUser,
         loading,
-        userGroups: memoizedUserGroups,
+        // userGroups: memoizedUserGroups,
+        userGroups
       }}
     >
       {children}

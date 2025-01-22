@@ -30,7 +30,6 @@ function OutletCourse() {
       })
       .then((res) => {
         setLecture(res.data.lecture);
-
         // close task after deadline
         const TimeDeadling = res.data.lecture.tasks;
         for (let i = 0; i < TimeDeadling.length; i++) {
@@ -61,17 +60,17 @@ function OutletCourse() {
         console.error("Error fetching lecture data:", err);
       });
   }, [lecCourse, getTokenUser, URLAPI]);
-useEffect(()=>{
-  axios
-  .get(`${URLAPI}/api/groups/${groupId}`, {
-    headers: {
-      Authorization: `${getTokenUser}`,
-    },
-  })
-  .then((res) => {
-    setGroupName(res.data.title);
+  useEffect(() => {
+    axios
+      .get(`${URLAPI}/api/groups/${groupId}`, {
+        headers: {
+          Authorization: `${getTokenUser}`,
+        },
+      })
+      .then((res) => {
+        setGroupName(res.data.title);
+      });
   });
-})
   // تسجيل الحضور
   const handleAttend = (e) => {
     e.preventDefault();
@@ -128,19 +127,37 @@ useEffect(()=>{
         <div
           style={{ position: "relative", width: "100%", marginBottom: "30px" }}
         >
-          <video
-            src="https://mega.nz/file/HAABDSwK#3O1Lo9NWjXmysN2QyxWR89qqbnEHFc1ba1Es2taKxfY"
-            // src={lectureVideo}
-            controls
-            controlsList="nodownload"
-            disablePictureInPicture
-            onContextMenu={(e) => e.preventDefault()}
-            style={{
-              width: "100%",
-              borderRadius: "10px",
-              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
-            }}
-          ></video>
+          {!lecture.resources == [] ? (
+            <iframe
+              src={lecture.resources}
+              loading="lazy"
+              style={{
+                width: "100%",
+                height: "400px",
+                borderRadius: "10px",
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+              }}
+              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+              allowFullScreen
+            ></iframe>
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                height: "400px",
+                borderRadius: "10px",
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+                backgroundColor: "#f0f0f0",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontSize: "1.2rem",
+                color: "#555",
+              }}
+            >
+              ⚠️ الفيديو غير متوفر حاليًا.
+            </div>
+          )}
 
           {/* العلامة المائية */}
           <div

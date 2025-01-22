@@ -22,7 +22,7 @@ function DashboardIndex() {
       })
       .then((res) => {
         setRequestsCount(res.data.length || 0);
-      });
+      }).catch((err)=> console.log("No pending Users"))
 
     // جلب عدد التسليمات
     // axios
@@ -71,10 +71,10 @@ function DashboardIndex() {
       </div>
 
       {/* عدد التسليمات */}
-      <div className="card p-2 m-2">
+      {/* <div className="card p-2 m-2">
         <h3>Submissions: {submissionsCount}</h3>
         <Link to="/admin/submissions"  aria-label="link">See All Submissions</Link>
-      </div>
+      </div> */}
 
       {/* عدد الرسائل */}
       <div className="card p-2 m-2">

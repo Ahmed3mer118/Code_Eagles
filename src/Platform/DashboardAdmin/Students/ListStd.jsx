@@ -21,14 +21,14 @@ function ListStd() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true)
     const fetchData = async () => {
       try {
-        setLoading(true)
         const groupsResponse = await axios.get(`${URLAPI}/api/groups`, {
           headers: { Authorization: getTokenAdmin },
         });
         setGroups(groupsResponse.data);
-        
+        setLoading(false)
         const studentsResponse = await axios.get(
           `${URLAPI}/api/users/get-allowed-emails`,
           {
@@ -42,7 +42,7 @@ function ListStd() {
         setAllStudentInList(filteredGroups);
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("Failed to fetch data.");
+
       }
     };
 
@@ -56,7 +56,6 @@ function ListStd() {
   // add Email
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(studentData);
     axios
       .post(`${URLAPI}/api/users/add-allowed-emails`, studentData, {
         headers: { Authorization: `${getTokenAdmin}` },
@@ -93,41 +92,41 @@ function ListStd() {
       groupId: studentData.groupId,
     };
   
-    console.log(updateStd)
-    // axios
-    //   .put(`${URLAPI}/api/users/update-allowed-emails`, updateStd, {
-    //     headers: { Authorization: `${getTokenAdmin}` },
-    //   })
-    //   .then((res) => {
-    //     toast.success("Student Updated successfully!");
-    //     setShowForm(false);
-    //     setIsEditing(false);
-    //     setStudentData({
-    //       groupId: "",
-    //       allowedEmails: "",
-    //     });
+    // console.log(updateStd)
+    axios
+      .put(`${URLAPI}/api/users/update-allowed-emails`, updateStd, {
+        headers: { Authorization: `${getTokenAdmin}` },
+      })
+      .then((res) => {
+        toast.success("Student Updated successfully!");
+        setShowForm(false);
+        setIsEditing(false);
+        setStudentData({
+          groupId: "",
+          allowedEmails: "",
+        });
   
-    //     // تحديث الحالة لتعكس التغييرات
-    //     setAllStudentInList((prevList) =>
-    //       prevList.map((group) => {
-    //         if (group.groupId === studentData.groupId) {
-    //           return {
-    //             ...group,
-    //             allowedEmails: group.allowedEmails.map((item) =>
-    //               item.email === currentStudent.email
-    //                 ? { ...item, email: studentData.allowedEmails }
-    //                 : item
-    //             ),
-    //           };
-    //         }
-    //         return group;
-    //       })
-    //     );
-    //   })
-      // .catch((error) => {
-      //   console.error("Error updating student:", error);
-      //   toast.error("Failed to update student.");
-      // });
+        // تحديث الحالة لتعكس التغييرات
+        setAllStudentInList((prevList) =>
+          prevList.map((group) => {
+            if (group.groupId === studentData.groupId) {
+              return {
+                ...group,
+                allowedEmails: group.allowedEmails.map((item) =>
+                  item.email === currentStudent.email
+                    ? { ...item, email: studentData.allowedEmails }
+                    : item
+                ),
+              };
+            }
+            return group;
+          })
+        );
+      })
+      .catch((error) => {
+        console.error("Error updating student:", error);
+        toast.error("Failed to update student.");
+      });
   };
   // delete Email
   const handleDelete = (group, item) => {
@@ -140,8 +139,6 @@ function ListStd() {
         Authorization: `${getTokenAdmin}`,
       },
     };
-    console.log(payload)
-
     axios
       .delete(`${URLAPI}/api/users/remove-allowed-email`, payload)
       .then(() => {
@@ -274,7 +271,7 @@ function ListStd() {
                   </td>
                 </tr>
               ))
-            )}
+            ) }
         </tbody>
       </table>
     </div>

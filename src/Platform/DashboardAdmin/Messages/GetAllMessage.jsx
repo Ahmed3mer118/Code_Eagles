@@ -24,7 +24,6 @@ function GetAllMessage() {
         });
         setLoading(false)
         setMessages(res.data.messages);
-        console.log(res.data.messages);
       } catch (error) {
         toast.error("Failed to fetch messages. Please try again.");
       }
