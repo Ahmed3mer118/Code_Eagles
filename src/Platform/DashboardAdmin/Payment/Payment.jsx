@@ -1,93 +1,92 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-function PaymentComponent() {
+const PaymentComponent = () => {
   const [amount, setAmount] = useState(0);
-  const [paymentStatus, setPaymentStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const API_KEY =
-    "ZXlKaGJHY2lPaUpJVXpVeE1pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmpiR0Z6Y3lJNklrMWxjbU5vWVc1MElpd2ljSEp2Wm1sc1pWOXdheUk2TVRBeE5UZzBNU3dpYm1GdFpTSTZJakUzTXpVNE5ETTVPRFV1TkRNek5qYzRJbjAuVWQwbV9qSDY1TUNWTm9pTmIwNTFxam1vd1VsUUhrblBNX1VvUDlmMXMzVDVxUFRKV2s3V1NXTS1UUVFPb0FYNHZma2xYX1VVZTBINzJNa1JTdTk5NGc=AB5C4DF526A2CBBED0979CAB6BAA8FAF"; // Replace with your API Key
-  const SECRET_KEY = "AB5C4DF526A2CBBED0979CAB6BAA8FAF";
+  const [error, setError] = useState(null);
+
+  const API_TOKEN = "ZXlKaGJHY2lPaUpJVXpVeE1pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SjFjMlZ5WDJsa0lqb3hPRGt6TmpnNUxDSmhiVzkxYm5SZlkyVnVkSE1pT2pFd01EQXNJbU4xY25KbGJtTjVJam9pUlVkUUlpd2lhVzUwWldkeVlYUnBiMjVmYVdRaU9qUTVNVFl6TWpRc0ltOXlaR1Z5WDJsa0lqb3lPRGd4TURNeE5qVXNJbUpwYkd4cGJtZGZaR0YwWVNJNmV5Sm1hWEp6ZEY5dVlXMWxJam9pU205b2JpSXNJbXhoYzNSZmJtRnRaU0k2SWtSdlpTSXNJbk4wY21WbGRDSTZJakV5TXlCVGRISmxaWFFpTENKaWRXbHNaR2x1WnlJNklqRXlJaXdpWm14dmIzSWlPaUl6SWl3aVlYQmhjblJ0Wlc1MElqb2lOU0lzSW1OcGRIa2lPaUpEWVdseWJ5SXNJbk4wWVhSbElqb2lUa0VpTENKamIzVnVkSEo1SWpvaVJVY2lMQ0psYldGcGJDSTZJbXB2YUc0dVpHOWxRR1Y0WVcxd2JHVXVZMjl0SWl3aWNHaHZibVZmYm5WdFltVnlJam9pS3pJd01USXpORFUyTnpnNU1DSXNJbkJ2YzNSaGJGOWpiMlJsSWpvaVRrRWlMQ0psZUhSeVlWOWtaWE5qY21sd2RHbHZiaUk2SWs1QkluMHNJbXh2WTJ0ZmIzSmtaWEpmZDJobGJsOXdZV2xrSWpwbVlXeHpaU3dpWlhoMGNtRWlPbnQ5TENKemFXNW5iR1ZmY0dGNWJXVnVkRjloZEhSbGJYQjBJanBtWVd4elpTd2laWGh3SWpveE56TTNOVFUwTlRnM0xDSndiV3RmYVhBaU9pSXhNREl1TVRnNExqRTVOaTQyTWlKOS5oRXd5RS05TWNlQUE4RVpLQ1FzYThTSGpDTUQ2bXpuSDBtVkp2aGxUejVfTE1XdHEzbzBudTltRWdCNG83ZGR5TXlqdEVPbmloa2V3MGl6LXBjTTVMUQ=="; // استبدل بالـ Token الذي حصلت عليه
+  const INTEGRATION_ID = "4916386"; // استبدل بمعرف التكامل الخاص بك
+  const IFRAME_ID = "891699"; // استبدل بمعرف الإطار الخاص بك
 
   const handlePayment = async () => {
     setLoading(true);
-    setPaymentStatus("");
+    setError(null);
 
     try {
-      // 1. Create payment order
+      // 1. إنشاء طلب (Order)
       const orderResponse = await axios.post(
-        "https://accept.paymob.com/api/ecommerce/orders/transaction_inquiry",
+        "https://accept.paymob.com/api/ecommerce/orders",
         {
-          amount: amount,
+          auth_token: API_TOKEN,
+          delivery_needed: "false",
+          amount_cents: amount * 100, // تحويل المبلغ إلى قروش
           currency: "EGP",
-        },
+          items: [],
+        }
+      );
+
+      // console.log(orderResponse.data)
+      const orderId = orderResponse.data.id; // Order ID
+
+      // 2. إنشاء مفتاح دفع (Payment Key)
+      const paymentKeyResponse = await axios.post(
+        "https://accept.paymob.com/api/acceptance/payment_keys",
         {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${API_KEY}`, // Ensure to use Bearer
+          auth_token: API_TOKEN,
+          amount_cents: amount * 100, // تحويل المبلغ إلى قروش
+          expiration: 3600, // مدة صلاحية المفتاح بالثواني
+          order_id: orderId,
+          billing_data: {
+            apartment: "803",
+            email: "claudette09@exa.com",
+            floor: "42",
+            first_name: "Clifford",
+            street: "Ethan Land",
+            building: "8028",
+            phone_number: "+86(8)9135210487",
+            shipping_method: "PKG",
+            postal_code: "01898",
+            city: "Jaskolskiburgh",
+            country: "CR",
+            last_name: "Nicolas",
+            state: "Utah",
           },
+          currency: "EGP",
+          integration_id: INTEGRATION_ID,
         }
       );
 
-      const orderData = orderResponse.data;
-      if (orderData.id) {
-        // 2. Prepare payment link
-        const paymentLinkResponse = await axios.post(
-          "https://accept.paymob.com/api/acceptance/payment_keys",
-          {
-            amount: amount,
-            order_id: orderData.id,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${SECRET_KEY}`, // Ensure to use Bearer
-            },
-          }
-        );
+      const paymentKey = paymentKeyResponse.data.token; // Payment Key
+      // console.log(paymentKeyResponse.data)
 
-        const paymentLinkData = paymentLinkResponse.data;
-        if (paymentLinkData && paymentLinkData.token) {
-          window.location.href = `https://accept.paymob.com/api/acceptance/iframes/891699?payment_token=${paymentLinkData.token}`;
-        }
-      }
-    } catch (error) {
-      console.error("Payment error:", error);
-      setPaymentStatus(
-        "An error occurred while processing the payment. Please try again."
-      );
+      // 3. توجيه المستخدم إلى صفحة الدفع
+      const paymentUrl = `https://accept.paymob.com/api/acceptance/iframes/${IFRAME_ID}?payment_token=${paymentKey}`;
+      window.location.href = paymentUrl;
+    } catch (err) {
+      setError("حدث خطأ أثناء إنشاء عملية الدفع. يرجى المحاولة مرة أخرى.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center">Payment for Course</h2>
-      <div className="form-group">
-        <label htmlFor="amount">Set Course Price (EGP):</label>
-        <input
-          type="number"
-          className="form-control"
-          id="amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="Enter course price"
-        />
-      </div>
-      <p className="text-center">Course Price: {amount} EGP</p>
-      <button
-        className="btn btn-primary btn-block"
-        onClick={handlePayment}
-        disabled={loading}
-      >
-        {loading ? "Processing..." : "Pay Now"}
+    <div>
+      <h1>دفع عبر Paymob</h1>
+      <input
+        type="number"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        placeholder="المبلغ بالجنيه"
+      />
+      <button onClick={handlePayment} disabled={loading}>
+        {loading ? "جاري التحميل..." : "ابدأ الدفع"}
       </button>
-      {paymentStatus && (
-        <p className="text-danger text-center">{paymentStatus}</p>
-      )}
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
-}
+};
 
 export default PaymentComponent;

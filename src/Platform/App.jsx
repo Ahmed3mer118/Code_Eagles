@@ -246,6 +246,10 @@ function App() {
           path: "/notification",
           element: <Notification />,
         },
+        // {
+        //   path: "/pay",
+        //   element: <PaymentComponent />,
+        // },
       ],
     },
     {

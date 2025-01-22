@@ -1,4 +1,10 @@
-import React, { createContext, useState, useEffect, useMemo, useCallback } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -7,14 +13,15 @@ export const DataContext = createContext();
 function Context({ children }) {
   let getTokenAdmin, getTokenUser;
 
-    getTokenAdmin = JSON.parse(localStorage.getItem("tokenAdmin") || "null");
-    getTokenUser = JSON.parse(localStorage.getItem("tokenUser") || "null");
-const token = () => {
-  
-  const token = localStorage.getItem("token"); // أو أي طريقة أخرى للتحقق من تسجيل الدخول
-  return !!token; // تُرجع true إذا كان token موجودًا، و false إذا لم يكن موجودًا
-};
-  const [URLAPI] = useState("https://api-codeeagles-cpq8.vercel.app");
+  getTokenAdmin = JSON.parse(localStorage.getItem("tokenAdmin") || "null");
+  getTokenUser = JSON.parse(localStorage.getItem("tokenUser") || "null");
+  const token = () => {
+    const token = localStorage.getItem("token"); // أو أي طريقة أخرى للتحقق من تسجيل الدخول
+    return !!token; // تُرجع true إذا كان token موجودًا، و false إذا لم يكن موجودًا
+  };
+  // const [URLAPI] = useState("https://api-codeeagles-cpq8.vercel.app");
+  const URLAPI = import.meta.env.VITE_API_URL;
+
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -91,12 +98,12 @@ const token = () => {
       toast.success(
         "Your request to join has been sent successfully. Please wait for the request to be accepted."
       );
-      return
+      return;
     } catch (err) {
       console.error("Error sending join request:", err);
       toast.error("Failed to send join request. Please try again.");
       setLoading(false);
-    } 
+    }
   };
 
   // Memoize values for better performance
@@ -114,7 +121,7 @@ const token = () => {
         loading,
         token,
         // userGroups: memoizedUserGroups,
-        userGroups
+        userGroups,
       }}
     >
       {children}
