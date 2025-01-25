@@ -177,6 +177,10 @@ function App() {
             },
           ],
         },
+                {
+          path: "/admin/pay",
+          element: <PaymentComponent />,
+        },
       ],
     },
 
@@ -245,11 +249,7 @@ function App() {
         {
           path: "/notification",
           element: <Notification />,
-        },
-        // {
-        //   path: "/pay",
-        //   element: <PaymentComponent />,
-        // },
+        }
       ],
     },
     {

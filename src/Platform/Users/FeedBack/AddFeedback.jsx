@@ -3,6 +3,7 @@ import { toast, ToastContainer } from "react-toastify";
 
 import { DataContext } from "../Context/Context";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 function AddFeedback() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [formData, setFormData] = useState({
@@ -13,23 +14,32 @@ function AddFeedback() {
   useEffect(()=>{
     window.scrollTo(0,0)
   })
+  const navigate = useNavigate()
 
   const handleSubmit = (e) => {
-    console.log(formData)
     e.preventDefault();
+
     if (getTokenUser) {
       axios
-        .post(`${URLAPI}/api/users/submit-feedback`, formData)
+        .post(`${URLAPI}/api/users/submit-feedback`, formData, {
+          headers:{
+            Authorization:getTokenUser
+          }
+        })
         .then(() => {
           toast.success("Feedback submitted successfully! Thanks");
           setTimeout(() => {
+            
             setFormData({
               name: "",
               email: "",
               feedback: "",
             });
+            navigate("/")
           }, 2500);
-        });
+        }).catch((err)=>{
+          toast.error(err.message)
+        })
     } else {
       setTimeout(() => {
         toast.error("You must log in to submit feedback.");
