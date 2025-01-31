@@ -6,7 +6,7 @@ const PaymentComponent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const API_TOKEN = "ZXlKaGJHY2lPaUpJVXpVeE1pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmpiR0Z6Y3lJNklrMWxjbU5vWVc1MElpd2ljSEp2Wm1sc1pWOXdheUk2TVRBeE5UZzBNU3dpY0doaGMyZ2lPaUl6TldZMk5UZzNNREpqT0RBd09UWTBNRE5rTm1NMk5XTXhZekprTkRRNU9UazBZelF5WVdKaE4yVTFNelZsTWpaaU9XRTJPRFUyTUdRek1USXdZMkV3SWl3aVpYaHdJam94TnpNM056STVOelU1ZlEuXzAyNUJLV2xNcllIY2duc3FtdkZSV1VGMFkzR3ZxZl9uSzF5b3FiSzB3YXpsaHhoTlBPNkJXTGlzSm9xbnJmOS12RzZta2pMajdVV0JkNXBvQmx6aGc="; // استبدل بالـ Token الذي حصلت عليه
+  const API_TOKEN = "ZXlKaGJHY2lPaUpJVXpVeE1pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmpiR0Z6Y3lJNklrMWxjbU5vWVc1MElpd2ljSEp2Wm1sc1pWOXdheUk2TVRBeE5UZzBNU3dpY0doaGMyZ2lPaUl6TldZMk5UZzNNREpqT0RBd09UWTBNRE5rTm1NMk5XTXhZekprTkRRNU9UazBZelF5WVdKaE4yVTFNelZsTWpaaU9XRTJPRFUyTUdRek1USXdZMkV3SWl3aVpYaHdJam94TnpNNE1ESXhNemN4ZlEuZnppQmk4M2pveEl5ZjdTLURNTkl0ZGZyZ05iQllpNjNSUVVLdndGcTJKU0thN2Vud0h0RlBKRVNrclVGR0RGdWlScFQzd2pEb0xOemJlZ3ktZUxma1E=";
   const INTEGRATION_ID = "4916386"; // استبدل بمعرف التكامل الخاص بك
   const IFRAME_ID = "891699"; // استبدل بمعرف الإطار الخاص بك
 
@@ -27,7 +27,7 @@ const PaymentComponent = () => {
         }
       );
 
-      const orderId = orderResponse.data.id; // Order ID
+      // const orderId = orderResponse.data.id; // Order ID
 
       // 2. إنشاء مفتاح دفع (Payment Key)
       const paymentKeyResponse = await axios.post(
@@ -36,7 +36,7 @@ const PaymentComponent = () => {
           auth_token: API_TOKEN,
           amount_cents: amount * 100,
           expiration: 600000, 
-          order_id: orderId,
+          order_id: 288107765,
           billing_data: {
             apartment: "803",
             email: "amer73090@gmail.com",

@@ -29,7 +29,6 @@ function AddFeedback() {
         .then(() => {
           toast.success("Feedback submitted successfully! Thanks");
           setTimeout(() => {
-            
             setFormData({
               name: "",
               email: "",

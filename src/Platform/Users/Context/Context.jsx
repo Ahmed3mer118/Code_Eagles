@@ -13,10 +13,12 @@ export const DataContext = createContext();
 function Context({ children }) {
   let getTokenAdmin, getTokenUser;
 
-  getTokenAdmin = JSON.parse(localStorage.getItem("tokenAdmin") || "null");
+  getTokenAdmin = JSON.parse(localStorage.getItem("token") || "null");
   getTokenUser = JSON.parse(localStorage.getItem("tokenUser") || "null");
  
   const URLAPI = "https://api-codeeagles-cpq8.vercel.app";
+  // const URLAPI = "http://localhost:8000";
+
 
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);

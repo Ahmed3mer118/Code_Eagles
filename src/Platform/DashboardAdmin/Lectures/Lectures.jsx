@@ -202,14 +202,14 @@ function Lectures() {
                     View Task
                   </Link>
                 </li> */}
-                <li className="list-group-item">
+                {/* <li className="list-group-item">
                   <Link
                     to={`/admin/${groupId}/lectures/Qr-code/${item._id}`}
                     className="text-light  btn btn-success"
                   >
                     Create QR
                   </Link>
-                </li>
+                </li> */}
 
                 <li className="list-group-item">
                   <Link

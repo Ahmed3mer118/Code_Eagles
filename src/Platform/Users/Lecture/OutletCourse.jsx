@@ -124,9 +124,7 @@ function OutletCourse() {
           {lecCourse ? `Title: ${lecture.title}` : `Course : ${groupName}`}
         </h1>
 
-        <div
-          style={{ position: "relative", width: "100%", marginBottom: "30px" }}
-        >
+        <div style={{ position: "relative", marginBottom: "30px" }}>
           {!lecture.resources == [] ? (
             <iframe
               src={lecture.resources}
@@ -136,10 +134,12 @@ function OutletCourse() {
                 height: "400px",
                 borderRadius: "10px",
                 boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+
               }}
-              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; aspect-ratio"
               allowFullScreen
             ></iframe>
+       
           ) : (
             <div
               style={{

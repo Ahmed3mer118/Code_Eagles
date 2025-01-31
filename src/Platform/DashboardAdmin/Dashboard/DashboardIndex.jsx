@@ -55,7 +55,7 @@ function DashboardIndex() {
       .then((res) => {
         setFeedbackCount(res.data.feedbacks.length || 0);
       });
-  }, [URLAPI, getTokenAdmin]);
+  }, [ getTokenAdmin]);
 
   return (
     <div>

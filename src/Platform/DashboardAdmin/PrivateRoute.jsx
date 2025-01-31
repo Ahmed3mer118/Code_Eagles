@@ -7,7 +7,7 @@ function PrivateRoute({ element }) {
   const { getTokenAdmin } = useContext(DataContext);
   const location = useLocation(); 
   const navigate = useNavigate();
-
+const expirationAdmin = JSON.parse(localStorage.getItem("tokenExpirationAdmin"))
 
     const isLoggedIn = !!getTokenAdmin;
 
@@ -24,7 +24,7 @@ function PrivateRoute({ element }) {
     );
   
     // إذا كان المستخدم غير مسجل وحاول الوصول إلى مسار محمي
-    if (!isLoggedIn && isProtected) {
+    if (!isLoggedIn && isProtected && expirationAdmin) {
       return <Navigate to="/login/admin" state={{ from: location }} />;
     }
   

@@ -22,6 +22,7 @@ function Login() {
     e.preventDefault();
     setLoading(true);
    
+    // console.log(login)
     try {
       const res = await axios.post(`${URLAPI}/api/users/login`, {
         email: login.email,
@@ -42,8 +43,8 @@ function Login() {
         const expirationTime = currentTime + 3 * 60 * 60 * 1000;
         if (res.data.user.role === "admin" && res.data.token) {
           // localStorage.setItem("tokenAdmin", encryptedToken);
-          localStorage.setItem("tokenAdmin", JSON.stringify(token));
-          localStorage.setItem("tokenExpirationAdmin", expirationTime);
+          localStorage.setItem("token", JSON.stringify(token));
+          localStorage.setItem("tokenExpiration", expirationTime);
           // Cookies.set("tokenAdmin", token, {
           //   expires: 3 * 60 * 60 * 1000,
           // });
