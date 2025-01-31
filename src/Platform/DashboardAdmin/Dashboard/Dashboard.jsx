@@ -12,6 +12,7 @@ function Dashboard() {
     online: true,
     offline: true,
   });
+  const [loading, setLoading] = useState(false);
 
   const expiration = localStorage.getItem("tokenExpirationAdmin");
   if (getTokenAdmin && expiration) {
@@ -23,7 +24,7 @@ function Dashboard() {
       setTimeout(() => {
         window.location.href = "/login";
       }, 3000);
-      return
+      return;
     }
   }
 
@@ -43,10 +44,12 @@ function Dashboard() {
   // get type course
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const response = await axios.get(`${URLAPI}/api/groups`, {
         headers: { Authorization: `${getTokenAdmin}` },
       });
 
+      setLoading(false);
       if (response.data) {
         const onlineGroup = response.data.filter(
           (item) => item.type_course === "online"
@@ -77,7 +80,15 @@ function Dashboard() {
             <IoMenu />
           </button>
         </div>
-        <ul className={`dashboard-left p-2 m-0 ${toggleNav ? "" : "toggle"}`}>
+        <ul
+          className={` p-2 m-0 ${toggleNav ? "" : "toggle"}`}
+          style={{
+            backgroundColor: "#004643",
+            color: "white",
+            minHeight: "100vh",
+            transition: "0.6s",
+          }}
+        >
           <li className="d-flex align-items-center">
             <button className="btn btn-warning text-dark" aria-label="submit">
               <Link to="/admin/newGroup" className="text-dark">
@@ -92,7 +103,7 @@ function Dashboard() {
             <Link
               to="/admin/allGroups"
               className="btn btn-warning text-dark w-100 text-start"
-               aria-label="link"
+              aria-label="link"
             >
               All Groups
             </Link>
@@ -101,7 +112,7 @@ function Dashboard() {
             <Link
               to="/admin/allStudent"
               className="btn btn-warning text-dark w-100 text-start"
-               aria-label="link"
+              aria-label="link"
             >
               All Students
             </Link>
@@ -131,7 +142,7 @@ function Dashboard() {
             <Link
               to="/admin/emails"
               className="btn btn-warning text-dark w-100 text-start"
-               aria-label="link"
+              aria-label="link"
             >
               All Request Emails
             </Link>
@@ -140,7 +151,7 @@ function Dashboard() {
             <Link
               to="/admin/get-all-message-by-admin"
               className="btn btn-warning text-dark w-100 text-start"
-               aria-label="link"
+              aria-label="link"
             >
               All Message Emails
             </Link>
@@ -149,7 +160,7 @@ function Dashboard() {
             <Link
               to="/admin/list-for-Students-by-admin"
               className="btn btn-warning text-dark w-100 text-start"
-               aria-label="link"
+              aria-label="link"
             >
               List For Students
             </Link>
@@ -167,7 +178,7 @@ function Dashboard() {
             <Link
               to="/admin/profile-admin"
               className="btn btn-warning text-dark w-100 text-start"
-               aria-label="link"
+              aria-label="link"
             >
               Profile
             </Link>
@@ -175,7 +186,24 @@ function Dashboard() {
         </ul>
       </div>
       <div className={`col outlet ${dark ? "bg-dark text-light" : ""}`}>
-        <Outlet />
+        {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "70vh",
+              }}
+            >
+              <svg
+                className="loading"
+                viewBox="25 25 50 50"
+                style={{ width: "3.25em" }}
+              >
+                <circle r="20" cy="50" cx="50"></circle>
+              </svg>
+            </div>
+          ) : <Outlet />}
       </div>
     </div>
   );

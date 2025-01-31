@@ -10,6 +10,7 @@ function Tasks() {
   const { groupId, lectureId } = useParams(); // يتم استخدام lectureId بدلاً من taskId هنا
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
   const [dataLecture, setDataLecture] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   if (!getTokenAdmin) {
     toast.error("Unauthorized. Please log in.");
@@ -17,6 +18,7 @@ function Tasks() {
   }
 
   useEffect(() => {
+    setLoading(true)
     axios
       .get(`${URLAPI}/api/lectures/group/${groupId}`, {
         headers: {
@@ -24,6 +26,7 @@ function Tasks() {
         },
       })
       .then((res) => {
+        setLoading(false)
         console.log(res.data.lectures)
         const filterTaskGroup = res.data.lectures.filter((item) => {
           return  item.tasks && item.tasks.length > 0;
@@ -36,13 +39,29 @@ function Tasks() {
       });
   }, [groupId, getTokenAdmin]);
 
+
   return (
     <>
       <Helmet>
         <title>Tasks</title>
       </Helmet>
       <ToastContainer />
-      <table className="table text-center mt-2 mb-2">
+      {loading ?      <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "70vh",
+              }}
+            >
+              <svg
+                className="loading"
+                viewBox="25 25 50 50"
+                style={{ width: "3.25em" }}
+              >
+                <circle r="20" cy="50" cx="50"></circle>
+              </svg>
+            </div> :   <table className="table text-center mt-2 mb-2">
         <thead>
           <tr>
             <th className="border p-2">Lecture</th>
@@ -89,7 +108,8 @@ function Tasks() {
             </React.Fragment>
           ))}
         </tbody>
-      </table>
+      </table>}
+    
     </>
   );
 }

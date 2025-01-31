@@ -4,6 +4,7 @@ import Tasks from '../Tasks/Tasks'
 import Lectures from '../Lectures/Lectures'
 
 function GroupComp() {
+  
   return (
     <>
       <Students />

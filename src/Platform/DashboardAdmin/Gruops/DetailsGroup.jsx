@@ -9,14 +9,16 @@ function DetailsGroup() {
   const [showDetailsGroup, setShowDetailsGroup] = useState([]);
   const [loading, setLoading] = useState(false);
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
+
   useEffect(() => {
+
     axios
       .get(`${URLAPI}/api/groups/${groupId}`, {
         headers: {
           Authorization: `${getTokenAdmin}`,
         },
       })
-      .then((res) => setShowDetailsGroup(res.data), setLoading(true))
+      .then((res) => { setLoading(true) ,setShowDetailsGroup(res.data)})
       .catch((err) => console.log("No Group : " + err));
   }, [groupId]);
 
@@ -45,16 +47,32 @@ function DetailsGroup() {
               } - ${showDetailsGroup.start_date?.slice(0, 10)} `
             : " loading.."}
         </h1>
-        <NavLink to={`/admin/${groupId}/students`} className={getLinkClassName} aria-label="link">
+        <NavLink
+          to={`/admin/${groupId}/students`}
+          className={getLinkClassName}
+          aria-label="link"
+        >
           Students
         </NavLink>
-        <NavLink to={`/admin/${groupId}/lectures`} className={getLinkClassName} aria-label="link">
+        <NavLink
+          to={`/admin/${groupId}/lectures`}
+          className={getLinkClassName}
+          aria-label="link"
+        >
           Lectures
         </NavLink>
-        <NavLink to={`/admin/${groupId}/tasks`} className={getLinkClassName} aria-label="link">
+        <NavLink
+          to={`/admin/${groupId}/tasks`}
+          className={getLinkClassName}
+          aria-label="link"
+        >
           Tasks
         </NavLink>
-        <NavLink to={`/admin/${groupId}/update`} className={getLinkClassName} aria-label="link">
+        <NavLink
+          to={`/admin/${groupId}/update`}
+          className={getLinkClassName}
+          aria-label="link"
+        >
           Update
         </NavLink>
       </div>
