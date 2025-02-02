@@ -3,12 +3,14 @@ import React, { useContext, useEffect, useState } from "react";
 import { DataContext } from "../../Users/Context/Context";
 import { toast, ToastContainer } from "react-toastify";
 import { Helmet } from "react-helmet-async";
+import { AuthContext } from "../context/AuthContext ";
 
 function ProfileAdmin() {
   const [profileAdmin, setProfileAdmin] = useState(null); 
   const [loading, setLoading] = useState(true); 
   const [isEditing, setIsEditing] = useState(false); 
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
+  const {logout} = useContext(AuthContext)
 
   // جلب بيانات الملف الشخصي
   useEffect(() => {
@@ -164,7 +166,7 @@ function ProfileAdmin() {
           </div>
         </div>
       )}
-      <button className="btn btn-outline-info m-3">Logout</button>
+      <button className="btn btn-outline-info m-3" onClick={logout}>Logout</button>
     </div>
   );
 }

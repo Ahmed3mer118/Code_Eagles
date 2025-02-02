@@ -10,7 +10,7 @@ function EmailReq() {
   const [loading,setLoading] = useState(false)
 
   useEffect(() => {
-    setLoading(true)
+    // setLoading(true)
     axios
       .get(`${URLAPI}/api/users/pending-users`, {
         headers: {
@@ -18,15 +18,16 @@ function EmailReq() {
         },
       })
       .then((res) => {
-        setLoading(false)
         if (res.data) {
           setEmail(res.data);
         } else {
           setEmail("");
+
         }
       })
       .catch((error) => {
         console.log("Not Request");
+        console.log(error.message);
         setEmail("");
       });
   }, [getTokenAdmin]);

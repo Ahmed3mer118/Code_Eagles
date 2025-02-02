@@ -1,21 +1,25 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(
-    () => !!localStorage.getItem("tokenAdmin")
+    () => !!localStorage.getItem("token")
   );
 
   const login = (token) => {
-    localStorage.setItem("tokenAdmin", JSON.stringify(token));
+    localStorage.setItem("token", JSON.stringify(token));
     setIsLoggedIn(true);
   };
 
   const logout = () => {
-    localStorage.removeItem("tokenAdmin");
+    localStorage.removeItem("token");
+    setTimeout(() => {
+      
+      window.location.href = "/login"
+    }, 2500);
     setIsLoggedIn(false);
   };
 
