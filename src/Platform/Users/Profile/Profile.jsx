@@ -8,10 +8,7 @@ import { Helmet } from "react-helmet-async";
 function Profile() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [userData, setUserData] = useState(null); // user data
-  // const [tasks, setTasks] = useState([]); // show  tasks
-  // const [attendance, setAttendance] = useState({ present: 0, absent: 0 }); // calc
-  // const [attendacneData, setAttendanceData] = useState([]);
-  // const [totalTaskGrades, setTotalTaskGrades] = useState(0);
+
   const [editing, setEditing] = useState(false);
   const [loading,setLoading] = useState(false)
   const [updatedData, setUpdatedData] = useState({
@@ -78,7 +75,7 @@ function Profile() {
   const handleLoggout = () => {
     localStorage.removeItem("tokenExpirationUser");
     localStorage.removeItem("tokenUser");
-    Cookies.removeItem("refreshTokenUser")
+    Cookies.remove("refreshTokenUser")
     toast.success("logout successfully");
     setTimeout(() => {
       window.location.href = "/";
