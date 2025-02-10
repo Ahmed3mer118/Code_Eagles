@@ -11,7 +11,6 @@ function Context({ children }) {
   getTokenUser = JSON.parse(localStorage.getItem("tokenUser") );
 
   const URLAPI = "https://api-codeeagles-cpq8.vercel.app"
-  // const URLAPI = "http://localhost:8000";
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
