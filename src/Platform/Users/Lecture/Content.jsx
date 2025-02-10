@@ -1,46 +1,44 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
+import About from "../Layout/About";
+import { DataContext } from "../Context/Context";
+import axios from "axios";
+import { ToastContainer } from "react-toastify";
 
-import About from "../Layout/About"
 function Content() {
-  const [courses] = useState([
-    {
-      nameCourse: "HTML",
-      description: "Learn the basics of HTML.",
-      image: "html.webp",
-    },
-    {
-      nameCourse: "CSS",
-      description: "Learn how to style websites with CSS.",
-      image: "css3.png",
-    },
-    {
-      nameCourse: "JavaScript",
-      description: "Master the fundamentals of JavaScript.",
-      image: "javascript.png",
-    },
-    {
-      nameCourse: "Bootstrap",
-      description: "Learn to design responsive websites with Bootstrap.",
-      image: "bootstrap-framework.png",
-    },
-    {
-      nameCourse: "Git & GitHub",
-      description: "Understand version control with Git and GitHub.",
-      image: "git.png",
-    },
-    {
-      nameCourse: "React",
-      description: "Build interactive user interfaces with React.",
-      image: "react.png",
-    },
-  ]);
-  const location = useLocation()
-  const showAbout = location.pathname == "/content"
-
+  const [group, setGroup] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [about, setAbout] = useState([]);
+  const { contentId } = useParams();
+  const { URLAPI, getTokenUser } = useContext(DataContext);
   const [visibleCourses, setVisibleCourses] = useState({});
   const courseRefs = useRef([]);
 
+  const [loading, setLoading] = useState(false);
+  // const showAbout = location.pathname === "/content/?:contentId";
+
+  useEffect(() => {
+    if (contentId) {
+      setLoading(true);
+      axios
+        .get(`${URLAPI}/api/groups/${contentId}`, {
+          headers: {
+            Authorization: getTokenUser,
+          },
+        })
+        .then((res) => {
+          setLoading(false);
+          setGroup(res.data);
+          setCourses(res.data.course_details || []);
+          setAbout(res.data.about_course || []);
+        })
+        .catch((error) => {
+          console.error("Error fetching course details:", error);
+        });
+    }
+  }, [contentId, URLAPI, getTokenUser]); // إضافة المتابعات لتجنب التكرار
+
+  // إعداد IntersectionObserver لعرض العناصر عند التمرير
   const courseBox = (index) => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -71,13 +69,37 @@ function Content() {
   };
 
   useEffect(() => {
-    // Set up the observers for each course
     courseRefs.current.forEach((item, index) => courseBox(index));
   }, [courses]);
 
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
+      >
+        <svg
+          className="loading"
+          viewBox="25 25 50 50"
+          style={{ width: "3.25em" }}
+        >
+          <circle r="20" cy="50" cx="50"></circle>
+        </svg>
+      </div>
+    );
+  }
+
   return (
+    <>
+    <ToastContainer/>
     <div style={{ padding: "20px" }}>
-      <h1 className="text-center">Available Courses</h1>
+      {[group].map((item,index) => (
+        <h1 className="text-center" key={index}>Course : {item.title}</h1>
+      ))}
       <div
         style={{
           display: "flex",
@@ -90,7 +112,7 @@ function Content() {
         {courses.map((course, index) => (
           <div
             key={index}
-            ref={(el) => (courseRefs.current[index] = el)} 
+            ref={(el) => (courseRefs.current[index] = el)}
             style={{
               border: "1px solid #ddd",
               borderRadius: "8px",
@@ -106,8 +128,8 @@ function Content() {
             }}
           >
             <img
-              src={`/images/${course.image}`}
-              alt={course.nameCourse}
+              src={course.image} 
+              alt={course.title}
               style={{
                 width: "100%",
                 height: "200px",
@@ -116,14 +138,18 @@ function Content() {
               }}
               loading="lazy"
             />
-            <h2 className="mt-2">{course.nameCourse}</h2>
-            <p>{course.description}</p>
-            <Link to={`/content/course/${course.nameCourse}`}>See More</Link>
+            <h2 className="mt-2">{course.title}</h2>
+            <p>{course.short_description}</p>
+            <Link to={`/content/${contentId}/course/${course._id}`} >
+              See More
+            </Link>
           </div>
         ))}
       </div>
-     { showAbout && <About />}
+      {/* {showAbout && <About />} */}
+      <About group={group} about={about} courses={courses} loading />
     </div>
+    </>
   );
 }
 

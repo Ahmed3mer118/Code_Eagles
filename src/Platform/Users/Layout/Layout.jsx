@@ -1,78 +1,81 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import Navbar from "./Navbar";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Footer from "../Footer";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Helmet } from "react-helmet-async";
+import { DataContext } from "../Context/Context";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 function Layout() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("tokenUser");
-  const expiration = localStorage.getItem("tokenExpirationUser");
+  const { URLAPI } = useContext(DataContext);
   const location = useLocation();
 
   const showFooter =
-    location.pathname === "/my-courses" || location.pathname === "/profile";
+    location.pathname === "/my-courses" ||
+    location.pathname === "/profile" ||
+    location.pathname === "/courses";
 
-  // التحقق من انتهاء صلاحية الـ token
-  useEffect(() => {
-    if (token && expiration) {
-      const currentTime = Date.now();
-      if (currentTime > expiration) {
-        localStorage.removeItem("tokenUser");
-        localStorage.removeItem("tokenExpirationUser");
-        toast.error("Session expired. Please log in again.");
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 3000);
+  const refreshToken = async () => {
+    try {
+      const refreshTokenLocal = Cookies.get("refreshTokenUser");
+
+      if (!refreshTokenLocal) {
+        throw new Error("No refresh token found");
       }
+
+      const response = await axios.post(`${URLAPI}/api/users/refresh-token`, {
+        refreshToken: refreshTokenLocal,
+      });
+
+      const { accessToken, refreshToken } = response.data;
+      const expirationTime = Date.now() + 15 * 60 * 1000; 
+
+      localStorage.setItem("tokenUser", JSON.stringify(accessToken) );
+      localStorage.setItem("tokenExpirationUser", JSON.stringify(expirationTime));
+      // Cookies.set("refreshTokenUser", refreshToken, { expires: 10 });
+
+      axios.defaults.headers.common["Authorization"] = `${accessToken}`;
+
+      console.log("Token refreshed successfully");
+    } catch (error) {
+      console.error(" Failed to refresh token:", error);
+      handleLogout();
     }
-  }, [token, expiration]);
-
-
-  // دالة لإنشاء سلسلة عشوائية
-  const generateRandomString = (length) => {
-    const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
-
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      result += characters[randomIndex];
-    }
-
-    return result;
   };
 
-  // إضافة مستمعات الأحداث
+  const handleLogout = () => {
+    localStorage.removeItem("tokenUser");
+    localStorage.removeItem("tokenExpirationUser");
+    Cookies.remove("refreshTokenUser");
+
+    toast.error("Session expired. Please log in again.");
+    setTimeout(() => {
+      navigate("/login");
+    }, 2000);
+  };
+
   useEffect(() => {
-    window.addEventListener("paste", (event) => {
-      const pastedText = event.clipboardData.getData("tokenUser");
-      console.log(pastedText);
+    const checkTokenExpiration = () => {
+      const expiration = JSON.parse(localStorage.getItem("tokenExpirationUser"));
+      if (!expiration) return;
 
-      // التحقق مما إذا كان النص الملصق هو الـ token
-      if (pastedText === token) {
-        event.preventDefault(); // منع اللصق الأصلي
-
-        // تغيير القيمة الملصقة
-        const newValue = generateRandomString(100); // إنشاء قيمة عشوائية
-        document.execCommand("insertText", false, newValue);
-
-        console.log("تم تغيير الـ token عند اللصق:", newValue);
+      const timeLeft = expiration - Date.now();
+      if (timeLeft <= 0) {
+        refreshToken();
       }
-    });
-    window.addEventListener("copy", (event) => {
-      const selectedText = window.getSelection().toString();
+    };
 
-      // التحقق مما إذا كان النص المنسوخ هو الـ token
-      if (selectedText === token) {
-        event.preventDefault(); // منع النسخ الأصلي
-        console.log("تم منع نسخ الـ token!");
-      }
-    });
+    checkTokenExpiration();
 
-  }, [token]);
+    
+    const interval = setInterval(checkTokenExpiration,  60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [navigate]);
 
   return (
     <div>

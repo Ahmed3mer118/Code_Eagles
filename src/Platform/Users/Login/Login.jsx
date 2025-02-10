@@ -7,57 +7,48 @@ import "../Register/register.css";
 import { DataContext } from "../Context/Context";
 // import CryptoJS from "crypto-js";
 import FingerprintJs from "@fingerprintjs/fingerprintjs";
-// import Cookies from "js-cookie";
+import Cookies from "js-cookie";
 function Login() {
-  const { URLAPI, secretKey } = useContext(DataContext);
+  const { URLAPI } = useContext(DataContext);
   const [login, setLogin] = useState({
     email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  let currentTime = Date.now();
+  let expirationTime;
 
   //  login Handler
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-   
-    // console.log(login)
     try {
       const res = await axios.post(`${URLAPI}/api/users/login`, {
         email: login.email,
         password: login.password,
-        fingerprint: login.fingerprint ,
+        fingerprint: login.fingerprint,
       });
-      
+
       if (res.data) {
         toast.success("Login successful!");
-        const token = res.data.token;
- 
-        // const encryptedToken = CryptoJS.AES.encrypt(
-        //   token,
-        //   secretKey
-        // ).toString();
-        // console.log(encryptedToken)
-        const currentTime = Date.now();
-        const expirationTime = currentTime + 3 * 60 * 60 * 1000;
-        if (res.data.user.role === "admin" && res.data.token) {
-          // localStorage.setItem("tokenAdmin", encryptedToken);
-          localStorage.setItem("token", JSON.stringify(token));
+        const accessToken = res.data.accessToken;
+        const refreshToken = res.data.refreshToken;
+        
+        expirationTime = currentTime + 15 * 60 * 1000;
+        if (res.data.user.role === "admin" && accessToken) {
+          localStorage.setItem("token", JSON.stringify(accessToken));
+          Cookies.set("refreshToken", refreshToken, { expires: 10 });
           localStorage.setItem("tokenExpiration", expirationTime);
-          // Cookies.set("tokenAdmin", token, {
-          //   expires: 3 * 60 * 60 * 1000,
-          // });
+
           setTimeout(() => {
             navigate("/admin");
           }, 3000);
-        } else {
-          // localStorage.setItem("tokenUser", encryptedToken);
-          localStorage.setItem("tokenUser",  JSON.stringify(token));
+        } else if (res.data.user.role === "user" && accessToken) {
+          localStorage.setItem("tokenUser", JSON.stringify(accessToken));
+          Cookies.set("refreshTokenUser", refreshToken, { expires: 10 });
           localStorage.setItem("tokenExpirationUser", expirationTime);
-          // Cookies.set("tokenUser", token, {
-          //   expires: 3 * 60 * 60 * 1000,
-          // });
+
           setTimeout(() => {
             window.location.href = "/";
           }, 3000);

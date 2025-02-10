@@ -151,12 +151,12 @@ function ProfileAdmin() {
                     disabled
                   />
                 </div>
-                <button type="submit" className="btn btn-success me-2">
+                <button type="submit" className="btn btn-success me-2 mb-2">
                   Save Changes
                 </button>
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn btn-secondary mb-2 "
                   onClick={() => setIsEditing(false)}
                 >
                   Cancel

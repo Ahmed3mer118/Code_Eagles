@@ -3,9 +3,11 @@ import axios from "axios";
 import { DataContext } from "../Context/Context";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
 function AllGroup() {
   const { URLAPI, handleJoinGroup } = useContext(DataContext);
   const [groups, setGroups] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [showAllGroup, setshowAllGroup] = useState(false);
 
@@ -50,7 +52,7 @@ function AllGroup() {
       <ToastContainer />
       {showAllGroup && (
         <div className="container mb-3" style={{ width: "80%" }}>
-          <h1 className="text-center my-4">All Groups</h1>
+          <h1 className="text-center my-4">Available Courses</h1>
           <div className="row g-4">
          
           {    Array.isArray(groups) &&
@@ -58,18 +60,16 @@ function AllGroup() {
                 <div className="col-md-4" key={group._id}>
                   <div className="card shadow-sm">
                     <div className="card-body text-center">
-                      <h5 className="card-title">{group.title}</h5>
-                      <p className="card-text">
-                        Start Date: {group.start_date?.slice(0, 10)}
-                      </p>
-                      <button
-                        className="btn btn-success"
-                        onClick={() => handleJoinGroup(group._id)}
-                        disabled={loading}
-                        aria-label="Submit Form"
-                      >
-                        {loading ? "Loading" : "Join Group"}
-                      </button>
+           
+                    <img src={group.imageCourse} alt="Course Image" loading="lazy" style={{width:"100%", maxHeight:"300px"}} />
+                      <h3 className="card-title">{group.title}</h3>
+                      {/* <p className="card-text">
+                         {group.start_date?.slice(0, 10)}
+                      </p> */}
+
+                    
+                      <h5>Instructor : {group.instructorName || "Ahmed Amer"}</h5>
+                      <Link to={`/content/${group._id}`} className="btn btn-success mt-2" > Read More</Link>
                     </div>
                   </div>
                 </div>

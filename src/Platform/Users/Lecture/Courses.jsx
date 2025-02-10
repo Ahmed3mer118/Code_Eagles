@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { DataContext } from "../Context/Context";
 import OutletCourse from "./OutletCourse";
 import { Helmet } from "react-helmet-async";
@@ -14,11 +14,11 @@ function Courses() {
   const [attendance, setAttendance] = useState({ present: 0, absent: 0 }); // calc
   const [attendanceData, setAttendanceData] = useState([]);
   const [totalTaskGrades, setTotalTaskGrades] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-     
         const attendedLec = await axios.get(
           `${URLAPI}/api/lectures/${groupId}/get-user-attendance-status-in-group`,
           {
@@ -33,12 +33,14 @@ function Courses() {
 
         const lectureAttendName = attendedLec.data.lectures || [];
 
-
         setAttendance({
           present: attendedLectures,
           absent: nonAttendedLectures,
         });
         setAttendanceData(lectureAttendName);
+        if (!tasks) {
+            return
+        }
         const taskGroup = await axios.get(
           `${URLAPI}/api/lectures/groups/${groupId}/tasks`,
           {
@@ -57,21 +59,35 @@ function Courses() {
     fetchData();
   }, [URLAPI, getTokenUser, groupId]);
 
-  useEffect(() => {
+  useEffect(  () => {
+    axios.get(
+      `${URLAPI}/api/lectures/group/${groupId}`,
+      {
+        headers: { Authorization: `${getTokenUser}` },
+      }
+    ).then((response)=>{
+      setLectures(response.data.lectures)
+    })
+  }, [groupId, getTokenUser]);
+ 
+  const handleLeaveGroup = () => {
     axios
-      .get(`${URLAPI}/api/lectures/group/${groupId}`, {
+      .post(`${URLAPI}/api/users/leave-group`, groupId, {
         headers: {
-          Authorization: `${getTokenUser}`,
+          Authorization: getTokenUser,
         },
       })
-      .then((res) => {
-        setLectures(res.data.lectures);
-      })
-      .catch((err) => {
-        setError("Error fetching lectures. Please try again later.");
-        console.log("Error details:", err);
+      .then(() => {
+        // alert
+      const alt =    alert("Are You Sure Leave The Group")
+        if (alt) {
+          console.log("Leave")
+          setTimeout(() => {
+            navigate("/my-courses");
+          }, 3000);
+        }
       });
-  }, [groupId, getTokenUser]);
+  };
 
   return (
     <>
@@ -165,6 +181,9 @@ function Courses() {
                 </div>
               </div>
             </div>
+            {/* <button className="btn btn-danger" onClick={handleLeaveGroup}>
+              Leave Group
+            </button> */}
           </div>
         </div>
       </div>

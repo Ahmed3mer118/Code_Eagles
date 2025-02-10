@@ -37,7 +37,6 @@ function Lectures() {
   useEffect(() => {
     const fetchDataGroup = async () => {
       setLoading(true);
-
       await axios
         .get(`${URLAPI}/api/lectures/group/${groupId}`, {
           headers: {

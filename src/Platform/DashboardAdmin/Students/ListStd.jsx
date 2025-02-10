@@ -19,16 +19,19 @@ function ListStd() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentStudent, setCurrentStudent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lectures, setLectures] = useState([]); // State لتخزين المحاضرات
+  const [lecturesSpecial, setSelectedLectures] = useState([]); // State لتخزين المحاضرات المختارة
 
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     const fetchData = async () => {
       try {
         const groupsResponse = await axios.get(`${URLAPI}/api/groups`, {
           headers: { Authorization: getTokenAdmin },
         });
         setGroups(groupsResponse.data);
-        setLoading(false)
+        setLoading(false);
+
         const studentsResponse = await axios.get(
           `${URLAPI}/api/users/get-allowed-emails`,
           {
@@ -38,26 +41,62 @@ function ListStd() {
         const filteredGroups = studentsResponse.data.groups.filter(
           (group) => group.allowedEmails.length > 0
         );
-        setLoading(false)
+        setLoading(false);
         setAllStudentInList(filteredGroups);
       } catch (error) {
         console.error("Error fetching data:", error);
-
       }
     };
 
     fetchData();
   }, [URLAPI, getTokenAdmin]);
 
+  // استرجاع المحاضرات عند تغيير المجموعة
+  const fetchLectures = async (groupId) => {
+    try {
+      const response = await axios.get(
+        `${URLAPI}/api/lectures/group/${groupId}`,
+        {
+          headers: { Authorization: getTokenAdmin },
+        }
+      );
+      // console.log(response.data)
+      setLectures(response.data.lectures); // تخزين المحاضرات في state
+    } catch (error) {
+      console.error("Error fetching lectures:", error);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setStudentData({ ...studentData, [name]: value });
+
+    // إذا تم تغيير المجموعة، استرجع المحاضرات
+    if (name === "groupId" && value) {
+      fetchLectures(value);
+    }
   };
-  // add Email
+
+  //  اختيار المحاضرات
+  const handleLectureSelection = (lectureId) => {
+    setSelectedLectures((prevSelected) => {
+      if (prevSelected.includes(lectureId)) {
+        return prevSelected.filter((id) => id !== lectureId); 
+      } else {
+        return [...prevSelected, lectureId]; 
+      }
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    let payload ={
+      ...studentData,
+      lecturesSpecial
+    }
+    console.log(payload)
     axios
-      .post(`${URLAPI}/api/users/add-allowed-emails`, studentData, {
+      .post(`${URLAPI}/api/users/add-allowed-emails`, payload, {
         headers: { Authorization: `${getTokenAdmin}` },
       })
       .then((res) => {
@@ -74,7 +113,7 @@ function ListStd() {
         toast.error("Failed to add student.");
       });
   };
-  // update Email
+
   const handleUpdate = (group, item) => {
     setShowForm(true);
     setIsEditing(true);
@@ -84,15 +123,15 @@ function ListStd() {
       groupId: group.groupId,
     });
   };
-
+// Update Student
   const handleUpdateSubmit = (e) => {
     e.preventDefault();
     const updateStd = {
-      allowedEmails: studentData.allowedEmails, 
+      allowedEmails: studentData.allowedEmails,
       groupId: studentData.groupId,
+      lecturesSpecial,
     };
-  
-    // console.log(updateStd)
+
     axios
       .put(`${URLAPI}/api/users/update-allowed-emails`, updateStd, {
         headers: { Authorization: `${getTokenAdmin}` },
@@ -105,8 +144,7 @@ function ListStd() {
           groupId: "",
           allowedEmails: "",
         });
-  
-        // تحديث الحالة لتعكس التغييرات
+
         setAllStudentInList((prevList) =>
           prevList.map((group) => {
             if (group.groupId === studentData.groupId) {
@@ -128,11 +166,11 @@ function ListStd() {
         toast.error("Failed to update student.");
       });
   };
-  // delete Email
+// Delete Student
   const handleDelete = (group, item) => {
     const payload = {
       data: {
-        groupId: group.groupId, 
+        groupId: group.groupId,
         allowedEmails: item.email,
       },
       headers: {
@@ -151,6 +189,7 @@ function ListStd() {
         toast.error("Student Not deleted successfully");
       });
   };
+
   if (loading) {
     return (
       <div
@@ -190,7 +229,7 @@ function ListStd() {
         <div className="transition-form">
           <form
             onSubmit={isEditing ? handleUpdateSubmit : handleSubmit}
-            className="mb-4"
+            className="mb-4" style={{minWidth:"60%"}}
           >
             <div className="form-group mt-2">
               <label>Email : </label>
@@ -220,7 +259,38 @@ function ListStd() {
                 ))}
               </select>
             </div>
+              {/* عرض المحاضرات كـ checkboxes */}
+    
+        
+        <div className="mt-3 w-100">
+     
+          <div className=" p-2">
+            {lectures.map((lecture) => (
+              <div className=" mb-2" key={lecture._id}>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id={lecture._id}
+                    checked={lecturesSpecial.includes(lecture._id)}
+                    onChange={() => handleLectureSelection(lecture._id)}
+                  />
+                  <label className="form-check-label" htmlFor={lecture._id}>
+                    {lecture.title} - {lecture.description}
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+
+
+        {/* زر الإضافة */}
+        {/* <button className="btn btn-primary mt-3" onClick={handleSubmit}>
+          Add Student with Selected Lectures
+        </button> */}
+      </div>
             <button
+             onClick={handleSubmit}
               type="submit"
               className={
                 isEditing
@@ -228,7 +298,7 @@ function ListStd() {
                   : "btn btn-primary mt-3 mb-3"
               }
             >
-              {isEditing ? "Update" : "Submit"}
+              {isEditing ? "Update" : " Add Student with Selected Lectures"}
             </button>
           </form>
         </div>
@@ -252,10 +322,8 @@ function ListStd() {
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>{item.user?.name || "N/A"}</td>
-
                   <td>{item.email || "N/A"}</td>
                   <td>{item.user?.phone_number || "N/A"}</td>
-
                   <td>{group.title || "N/A"}</td>
                   <td className="text-center">
                     <FaPenToSquare
@@ -271,9 +339,11 @@ function ListStd() {
                   </td>
                 </tr>
               ))
-            ) }
+            )}
         </tbody>
       </table>
+
+  
     </div>
   );
 }

@@ -14,7 +14,7 @@ import { GoArrowUp } from "react-icons/go";
 function Main() {
   const handleWhatsAppRedirect = () => {
     const phoneNumber = "201033705805";
-    const message = encodeURIComponent("عايز اعرف تفاصيل الاشتراك ");
+    const message = encodeURIComponent("عايز اعرف تفاصيل شراء الكورس ؟ ");
     const url = `https://api.whatsapp.com/send/?phone=${phoneNumber}&text=${message}&type=phone_number&app_absent=0`;
     window.open(url, "", "heigth=500;width=500");
   };
@@ -67,8 +67,8 @@ function Main() {
             {/* </a> */}
           </div>
         </div>
-        <Content />
-        <About />
+        {/* <Content /> */}
+        {/* <About /> */}
         <Group />
         <AllGroup />
         <FeedBack />

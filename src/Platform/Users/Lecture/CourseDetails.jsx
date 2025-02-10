@@ -1,90 +1,67 @@
-import React, { useEffect, useState } from "react";
+import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
+import { DataContext } from "../Context/Context";
 
 function CourseDetail() {
-  const { courseDetails } = useParams(); // الحصول على اسم الكورس من الرابط
-  const [courses] = useState([
-    {
-      nameCourse: "HTML",
-      description: "Learn the basics of HTML.",
-      image: "html.webp",
-      list: [
-        "Basic Structure: Understanding the basic structure of HTML.",
-        "Elements and Tags: Recognizing different elements like headings, paragraphs, links, and images.",
-        "Forms: Creating forms to collect user data.",
-        "Semantic HTML: Using semantic elements to improve SEO and user experience.",
-      ],
-    },
-    {
-      nameCourse: "CSS",
-      description: "Learn how to style websites with CSS.",
-      image: "css3.png",
-      list: [
-        "Selectors and Properties: Using selectors to apply styles to elements.",
-        "Box Model: Understanding the box model (margin, border, padding, content).",
-        "Flexbox and Grid: Using modern layout techniques for responsive design.",
-        "Responsive Design: Making designs responsive using media queries.",
-      ],
-    },
-    {
-      nameCourse: "JavaScript",
-      description: "Master the fundamentals of JavaScript.",
-      image: "javascript.png",
-      list: [
-        "Basic Concepts: Variables, Data Types, Operators, Control Structures , Array, If statment , Loop.",
-        "DOM (Document Object Model): Interacting with HTML elements, modifying the page, handling events.",
-        "BOM (Browser Object Model): Working with browser objects like window, navigator, and location.",
-        "APIs (Application Programming Interfaces): Using APIs to fetch data from servers.",
-        "AJAX (Asynchronous JavaScript and XML): Making asynchronous requests to fetch data without reloading the page.",
-      ],
-    },
-    {
-      nameCourse: "Bootstrap",
-      description: "Learn to design responsive websites with Bootstrap.",
-      image: "bootstrap-framework.png",
-      list: [
-        "Grid System: Understanding the grid system for layout.",
-        "Components: Using pre-built components like buttons, forms, and dropdowns.",
-        "Utilities: Applying utility classes for quick styling.",
-      ],
-    },
-    {
-      nameCourse: "Git & GitHub",
-      description: "Understand version control with Git and GitHub.",
-      image: "git.png",
-      list: [
-        "Version Control: Understanding the importance of version control.",
-        "Basic Commands: Learning basic commands like git init, git add, git commit, git push, and git pull.",
-        "Branches: Creating and managing branches in Git.",
-        "Collaboration: Working with teams using GitHub, including creating pull requests.",
-      ],
-    },
-    {
-        nameCourse: "React",
-        description: "Build interactive user interfaces with React.",
-        image: "react.png",
-        list: [
-          "Components: Understanding the concept of components and how to create them.",
-          "State and Props: Managing state and passing data between components.",
-          "Lifecycle Methods: Understanding the lifecycle of components.",
-          "Hooks: Using hooks like useState, useEffect, and useContext....",
-          "Routing: Using React Router for navigation.",
-          "Context API: Managing global state with Context API.",
-          "Styling: Using CSS Modules and Styled Components by Bootstrap.",
-        ],
-      
-    },
-  ]);
+  const { courseDetails, contentId } = useParams(); // Get the course name from the URL
+  const [course, setCourse] = useState(null); // State to hold the specific course details
+  const { URLAPI, getTokenUser } = useContext(DataContext);
+  const [loading, setLoading] = useState(false);
+  console.log(contentId);
   useEffect(() => {
+    if (courseDetails) {
+      setLoading(true);
+      axios
+        .get(`${URLAPI}/api/groups/${contentId}`, {
+          headers: {
+            Authorization: getTokenUser,
+          },
+        })
+        .then((res) => {
+          setLoading(false);
+          const foundCourse = res.data.course_details.find(
+            (c) => c._id === courseDetails
+          );
+
+          setCourse(foundCourse || null);
+        })
+        .catch((error) => {
+          console.error("Error fetching course details:", error);
+        });
+    }
 
     window.scrollTo(0, 0);
-  }, []);
-
-  const course = courses.find((c) => c.nameCourse === courseDetails); // البحث عن الكورس
+  }, [courseDetails, URLAPI, getTokenUser]);
 
   if (!course) {
-    return <h2 className="text-center">Course not found</h2>; // إذا لم يتم العثور على الكورس
+    return (
+      <h2 className="text-center">
+        {loading ? (
+          <>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "70vh",
+              }}
+            >
+              <svg
+                className="loading"
+                viewBox="25 25 50 50"
+                style={{ width: "3.25em" }}
+              >
+                <circle r="20" cy="50" cx="50"></circle>
+              </svg>
+            </div>
+          </>
+        ) : (
+        <h1 className=" text-center mt-4 mb-4"> Course not found</h1>
+          
+        )}
+      </h2>
+    ); // If the course is not found
   }
 
   return (
@@ -92,21 +69,23 @@ function CourseDetail() {
       <div className="row">
         <div className="col-md-6 text-center">
           <img
-            src={`/images/${course.image}`}
-            alt={course.nameCourse}
+            src={`${course.image}`}
+            alt={course.title}
             className="img-fluid rounded"
             style={{
               height: "300px",
               objectFit: "cover",
             }}
           />
-          <h1 className="text-center">{course.nameCourse}</h1>
+          <h1 className="text-center">{course.title}</h1>
         </div>
         <div className="col-md-6 mt-3">
           <h3 className="m-3">Course Details:</h3>
           <ul className="list-group">
-            {course.list.map((item, idx) => (
-              <li key={idx} className="list-group-item">{item}</li>
+            {course.description.split(". ").map((item, idx) => (
+              <li key={idx} className="list-group-item">
+                {item}
+              </li>
             ))}
           </ul>
         </div>

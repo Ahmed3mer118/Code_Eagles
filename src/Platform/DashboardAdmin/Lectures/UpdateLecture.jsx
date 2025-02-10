@@ -13,7 +13,7 @@ function UpdateLecture() {
     title: "",
     description: "",
     article: "",
-    resources: "",
+    resources: "" || [],
     link_lecture: "",
     mediaLinks: "",
   });
@@ -32,14 +32,13 @@ function UpdateLecture() {
         },
       })
       .then((res) => {
-        setdataUpdate(res.data.lecture); // تخزين المحاضرة الحالية للتعديل عليها
+        setdataUpdate(res.data.lecture);
       })
       .catch((err) => {
         console.error("Error fetching lecture:", err);
         toast.error("Error fetching lecture");
       });
   }, [lectureId, URLAPI, getTokenAdmin]);
-
 
   // تعديل المحاضرة
   const handleUpdate = (e) => {
@@ -74,63 +73,10 @@ function UpdateLecture() {
       toast.error("Please fill in all fields");
     }
   };
-  // const handleUploadLecture = async () => {
-  //   if (!selectedFile) {
-  //     toast.error("Please select a file to upload");
-  //     return;
-  //   }
-
-  //   const formData = new FormData();
-  //   formData.append("file", selectedFile);
-
-  //   try {
-  //     const response = await axios.post(
-  //       `${URLAPI}/api/lectures/uploadMediaAndUpdateLecture`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           Authorization: `${getTokenAdmin}`,
-  //           "Content-Type": "multipart/form-data",
-  //         },
-  //       }
-  //     );
-  //     // إضافة رابط الفيديو إلى mediaLinks
-  //     setdataUpdate((prevData) => ({
-  //       ...prevData,
-  //       mediaLinks: response.data.url, // تأكد أن الـ URL يتم إرجاعه في الـ response
-  //     }));
-  //     toast.success("Video uploaded successfully");
-  //   } catch (error) {
-  //     console.error("Error uploading file:", error);
-  //     toast.error("Error uploading file");
-  //   }
-  // };
-
-  // التعامل مع تغيير الملف
-  // const handleFileChange = (e) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     setSelectedFile(file); // تخزين الملف قبل رفعه
-  //   }
-  // };
 
   return (
     <>
       <ToastContainer />
-      {/* <div className="p-2">
-        <h3>Upload Video</h3>
-        <input
-          type="file"
-          onChange={handleFileChange}
-          className="form-control w-50 m-2"
-        />
-        <button
-          onClick={handleUploadLecture}
-          className="btn btn-success m-2 col-lg-3 col-md-5 ms-4"
-        >
-          Upload Lecture
-        </button>
-      </div> */}
 
       <form className="row p-2 ms-1 w-100">
         <h2>Update Lecture</h2>
@@ -185,7 +131,11 @@ function UpdateLecture() {
         />
       </form>
 
-      <button className="btn btn-success col-3 m-3"  aria-label="submit" onClick={handleUpdate}>
+      <button
+        className="btn btn-success col-3 m-3"
+        aria-label="submit"
+        onClick={handleUpdate}
+      >
         Update
       </button>
     </>

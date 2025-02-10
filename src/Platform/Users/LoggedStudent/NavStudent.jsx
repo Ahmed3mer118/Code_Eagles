@@ -17,14 +17,18 @@ function NavStudent({ menuOpen, setMenuOpen }) {
         })
         .then((res) => {
           if (res.data) {
-            setLoggedUser(res.data.token);
-            setIsEnrolled(res.data.groups?.length > 0);
+            // console.log(res.data)
+            setLoggedUser(res.data.accessToken);
+            // setIsEnrolled(res.data.groups?.length > 0);
+            setIsEnrolled(true);
             setStatusUser(res.data.groups || []);
+            // setStatusUser(res.data.groups?.length > 0);
           }
         })
         .catch((err) => console.error("Error fetching user data:", err));
-    }
-  }, []);
+      }
+    }, [getTokenUser]);
+
   const closeNavbar = () => {
     setMenuOpen(false);
   };
@@ -46,9 +50,6 @@ function NavStudent({ menuOpen, setMenuOpen }) {
         <li className="nav-item">
           <NavLink
             onClick={closeNavbar}
-            // to={`/${statusUser
-            //   .filter((item) => item.status == "approved")
-            //   .map((item) => item.groupId)}/course`}
             to={`/my-courses`}
             className={({ isActive }) =>
               `nav-link  ${isActive ? "text-success" : "text-dark"}`

@@ -4,7 +4,7 @@ import "./Dashboard.css";
 import axios from "axios";
 import { IoMenu } from "react-icons/io5";
 import { DataContext } from "../../Users/Context/Context";
-
+import Cookies from "js-cookie";
 function Dashboard() {
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
   const [groups, setGroups] = useState({ online: [], offline: [] });
@@ -13,20 +13,7 @@ function Dashboard() {
     offline: true,
   });
   const [loading, setLoading] = useState(false);
-
-  const expiration = localStorage.getItem("tokenExpirationAdmin");
-  if (getTokenAdmin && expiration) {
-    const currentTime = Date.now();
-    if (currentTime > expiration) {
-      localStorage.removeItem("tokenAdmin");
-      localStorage.removeItem("tokenExpirationAdmin");
-      toast.error("Session expired. Please log in again.");
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 3000);
-      return;
-    }
-  }
+  const navigate = useNavigate();
 
   const [dark, setDark] = useState(false);
   const [toggleNav, setToggleNav] = useState(true);
@@ -68,6 +55,65 @@ function Dashboard() {
     setOpenSections((prevState) => ({ ...prevState, [tag]: !prevState[tag] }));
   };
 
+  const refreshToken = async () => {
+    try {
+      const refreshTokenLocal = Cookies.get("refreshToken");
+
+      if (!refreshTokenLocal) {
+        throw new Error("No refresh token found");
+      }
+
+      const response = await axios.post(`${URLAPI}/api/users/refresh-token`, {
+        refreshToken: refreshTokenLocal,
+      });
+
+      const { accessToken, refreshToken } = response.data;
+      const expirationTime = Date.now() + 15 * 60 * 1000; // 10 دقائق
+
+   
+      localStorage.setItem("token", JSON.stringify(accessToken) );
+      localStorage.setItem("tokenExpiration", JSON.stringify(expirationTime));
+      // Cookies.set("refreshToken", refreshToken, { expires: 10 });
+
+
+      axios.defaults.headers.common["Authorization"] = `${accessToken}`;
+
+      console.log("Token refreshed successfully");
+    } catch (error) {
+      console.error(" Failed to refresh token:", error);
+      handleLogout();
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("tokenExpiration");
+    Cookies.remove("refreshToken");
+
+    toast.error("Session expired. Please log in again.");
+    setTimeout(() => {
+      navigate("/login/admin");
+    }, 2000);
+  };
+
+  useEffect(() => {
+    const checkTokenExpiration = () => {
+      const expiration = JSON.parse(localStorage.getItem("tokenExpiration"));
+      if (!expiration) return;
+
+      const timeLeft = expiration - Date.now();
+      if (timeLeft <= 0) {
+        refreshToken();
+      }
+    };
+
+    checkTokenExpiration();
+
+    
+    const interval = setInterval(checkTokenExpiration,  60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [navigate]);
   return (
     <div className="row">
       <div className="col-lg-3 col-md-4 col-sm-12 p-0">
@@ -187,23 +233,25 @@ function Dashboard() {
       </div>
       <div className={`col outlet ${dark ? "bg-dark text-light" : ""}`}>
         {loading ? (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "70vh",
-              }}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "70vh",
+            }}
+          >
+            <svg
+              className="loading"
+              viewBox="25 25 50 50"
+              style={{ width: "3.25em" }}
             >
-              <svg
-                className="loading"
-                viewBox="25 25 50 50"
-                style={{ width: "3.25em" }}
-              >
-                <circle r="20" cy="50" cx="50"></circle>
-              </svg>
-            </div>
-          ) : <Outlet />}
+              <circle r="20" cy="50" cx="50"></circle>
+            </svg>
+          </div>
+        ) : (
+          <Outlet />
+        )}
       </div>
     </div>
   );

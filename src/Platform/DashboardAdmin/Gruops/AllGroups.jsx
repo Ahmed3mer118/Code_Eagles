@@ -54,6 +54,7 @@ function AllGroups() {
             {item.title} - {item.start_date?.slice(0, 10)}
          
         </Link>
+        
      
       </div>
     ));

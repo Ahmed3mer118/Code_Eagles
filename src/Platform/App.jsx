@@ -64,7 +64,8 @@ import AllCourse from "./Users/Lecture/AllCourse.jsx";
 import "../App.css"
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import PrivateUser from "./Users/PrivateUser.jsx";
+import PrivateUser from "./Users/Auth/PrivateUser.jsx";
+import AllGroup from "./Users/Group/AllGroup.jsx";
 const helmetContext = {};
 
 function App() {
@@ -177,13 +178,13 @@ function App() {
             },
           ],
         },
-                {
+         {
           path: "/admin/pay",
           element: <PaymentComponent />,
         },
       ],
     },
-
+// user
     {
       path: "/",
       element : <PrivateUser element={<Layout />}/>,
@@ -210,7 +211,11 @@ function App() {
           element: <ForgetPass />,
         },
         {
-          path: "/content",
+          path: "/Courses",
+          element: <AllGroup />,
+        },
+        {
+          path: "/content/:contentId",
           element: <Content />,
         },
         {
@@ -218,7 +223,7 @@ function App() {
           element: <AllCourse />,
         },      
         {
-          path:"/content/course/:courseDetails",
+          path:"/content/:contentId/course/:courseDetails",
           element:<CourseDetail/>
         },
         {

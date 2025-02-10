@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { DataContext } from "../../Users/Context/Context";
 import "../Tasks/Task.css";
@@ -23,6 +23,9 @@ function DetailStudent() {
   const [groupDetails, setGroupDetails] = useState([]);
   const { studentId } = useParams();
   const navigate = useNavigate();
+  const [lectures, setLectures] = useState([]); // State لتخزين المحاضرات
+  const [lecturesSpecial, setSelectedLectures] = useState([]); // State لتخزين المحاضرات المختارة
+  const location = useLocation();
 
   // Fetch Student Data
   useEffect(() => {
@@ -42,12 +45,21 @@ function DetailStudent() {
 
         if (res.data.groups && res.data.groups.length > 0) {
           setGroupIdByStd(res.data.groups);
-
           const statusMap = {};
           res.data.groups.forEach((group) => {
             statusMap[group.groupId] = group.status || "pending";
           });
+
           setCurrentStatus(statusMap);
+          for (const key in statusMap) {
+            if (
+              statusMap[key] === "special" 
+            ) {
+              for (const key in res.data.groups) {
+                setSelectedLectures(res.data.groups[key].lecturesSpecial);
+              }
+            }
+          }
         } else {
           setGroupIdByStd([]);
           setCurrentStatus({});
@@ -91,23 +103,6 @@ function DetailStudent() {
     }
   }, [groupIdByStd, URLAPI, getTokenAdmin]);
 
-  // Update Student
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.put(`${URLAPI}/api/users/${studentId}`, dataUpdateStudent, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${getTokenAdmin}`,
-        },
-      });
-      toast.success("Student updated successfully");
-    } catch (error) {
-      toast.error("Failed to update student");
-      console.error("Update error:", error);
-    }
-  };
-
   // Delete Student
   const handleDelete = (id) => {
     axios
@@ -150,6 +145,9 @@ function DetailStudent() {
       case "approved":
         newStatus = "pending";
         break;
+      case "special":
+        newStatus = "pending";
+        break;
       default:
         newStatus = "approved";
         break;
@@ -183,48 +181,115 @@ function DetailStudent() {
   };
 
   // show Details Student
-  const showDetailsStd = async (studentId , groupId) => {
+  const showDetailsStd = async (studentId, groupId) => {
+    setLoading(true);
+    navigate("", { state: groupId });
+
     try {
-      setLoading(true);
-      const attendanceResponse = await axios.get(
-        `${URLAPI}/api/lectures/${studentId}/${groupId}/attendance-by-admin`,
-        {
+      await axios
+        .get(
+          `${URLAPI}/api/lectures/${studentId}/${groupId}/attendance-by-admin`,
+          {
+            headers: { Authorization: getTokenAdmin },
+          }
+        )
+        .then((attendanceResponse) => {
+          const attendedLecturesCount =
+            attendanceResponse.data.attendedLecturesCount || 0;
+          const notAttendedLecturesCount =
+            attendanceResponse.data.notAttendedLecturesCount || 0;
+          const lectureAttendName = attendanceResponse.data.groupLectures || [];
+
+          setAttendanceData(lectureAttendName);
+          setAttendance({
+            present: attendedLecturesCount,
+            absent: notAttendedLecturesCount,
+          });
+          setLoading(false);
+        });
+
+      await axios
+        .get(
+          `${URLAPI}/api/lectures/${groupId}/${studentId}/get-user-tasks-in-group`,
+          {
+            headers: {
+              Authorization: `${getTokenAdmin}`,
+            },
+          }
+        )
+        .then((res) => {
+          setLoading(false);
+          setTaskData(res.data.tasks);
+        });
+
+      await axios
+        .get(`${URLAPI}/api/lectures/group/${groupId}`, {
           headers: { Authorization: getTokenAdmin },
-        }
-      );
-
-      const attendedLecturesCount =
-        attendanceResponse.data.attendedLecturesCount || 0;
-      const notAttendedLecturesCount =
-        attendanceResponse.data.notAttendedLecturesCount || 0;
-      const lectureAttendName = attendanceResponse.data.groupLectures || [];
-
-      setAttendanceData(lectureAttendName);
-      setAttendance({
-        present: attendedLecturesCount,
-        absent: notAttendedLecturesCount,
-      });
-
-      const res = await axios.get(`${URLAPI}/api/lectures/${groupId}/${studentId}/get-user-tasks-in-group`, {
-        headers: {
-          Authorization: `${getTokenAdmin}`,
-        },
-      });
-      // console.log(res.data.tasks)
-      setTaskData(res.data.tasks)
-      // if (res.data.groups && res.data.groups.length > 0) {
-      //   setGroupIdByStd(res.data.groups);
-      //   const allTasks = res.data.groups.map((group) => group.tasks || []);
-      //   console.log(allTasks)
-      //   setTaskData(allTasks);
-      // }
-      setLoading(false);
+        })
+        .then((response) => {
+          setLoading(false);
+          setLectures(response.data.lectures);
+        });
     } catch (err) {
       toast.info("Error: " + err.message);
       console.error("Error in showDetailsStd:", err.message);
+      setLoading(false);
     }
   };
+  // update lecture selection
+  const handleLectureSelection = (lectureId) => {
+    setSelectedLectures((prevSelected) => {
+      if (prevSelected.includes(lectureId)) {
+        // إذا كنت تريد السماح بإلغاء الاختيار، استخدم السطر التالي:
+        return prevSelected.filter((id) => id !== lectureId);
 
+        // return prevSelected;
+      } else {
+        return [...prevSelected, lectureId];
+      }
+    });
+  };
+  const handleUpdateLectures = async () => {
+    if (!getTokenAdmin) {
+      toast.error("Unauthorized. Please log in.");
+      return;
+    }
+  
+    // حساب المحاضرات التي يجب إضافتها وحذفها
+    const lecturesToAdd = lecturesSpecial.filter(
+      (lectureId) => lectures.find((lecture) => lecture._id === lectureId)
+    );
+    
+    const lecturesToRemove = lectures
+      .filter((lecture) => !lecturesSpecial.includes(lecture._id))
+      .map((lecture) => lecture._id);
+
+  
+    const payload = {
+      groupId: location.state,
+      userId: studentId,
+      lecturesToAdd : lecturesToAdd || lecturesToRemove,
+    };
+  
+    console.log("Payload to update lectures:", payload);
+  
+    // try {
+    //   await axios.post(`${URLAPI}/api/users/update-user-lectures`, payload, {
+    //     headers: {
+    //       Authorization: `${getTokenAdmin}`,
+    //     },
+    //   });
+  
+    //   toast.success("Lectures updated successfully");
+    //   setTimeout(() => {
+    //     window.location.reload();
+    //   }, 2000);
+    // } catch (error) {
+    //   toast.error("Failed to update lectures");
+    //   console.error("Update lectures error:", error);
+    // }
+  };
+  
   return (
     <>
       <ToastContainer />
@@ -270,7 +335,7 @@ function DetailStudent() {
                     </p>
                     <button
                       className="btn btn-primary"
-                      onClick={() => showDetailsStd(studentId,group._id)}
+                      onClick={() => showDetailsStd(studentId, group._id)}
                     >
                       Show Details Group
                     </button>
@@ -278,12 +343,12 @@ function DetailStudent() {
                       type="button"
                       onClick={() => handleStopUser(studentId, group._id)}
                       className={`btn ${
-                        currentStatus[group._id] === "approved"
+                        currentStatus[group._id] === "approved" || "special"
                           ? "btn-danger"
                           : "btn-success"
                       } ms-3`}
                     >
-                      {currentStatus[group._id] === "approved"
+                      {currentStatus[group._id] === "approved" || "special"
                         ? "Reject User"
                         : "Approve User"}
                     </button>
@@ -370,44 +435,38 @@ function DetailStudent() {
         </div>
 
         <div className="row mt-3">
-          <form className="col-lg-6 p-3" onSubmit={handleUpdate}>
-            <h2 className="text-center">Update Student</h2>
-            <input
-              type="text"
-              placeholder="Name"
-              value={dataUpdateStudent.name}
-              disabled
-              className="border rounded p-2 m-2 col-12"
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={dataUpdateStudent.email}
-              disabled
-              className="border rounded p-2 m-2 col-12"
-            />
-            <select
-              value={dataUpdateStudent.role}
-              className="border rounded p-2 m-2 w-100"
-              onChange={(e) =>
-                setDataUpdateStudent({
-                  ...dataUpdateStudent,
-                  role: e.target.value,
-                })
-              }
-            >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-            <div className="row p-4">
-              <button
-                type="submit"
-                className="btn btn-primary col-lg-6 col-md-10 col-sm-5 ms-2 m-2"
-              >
-                Update
-              </button>
+          <div className="mt-3 w-100">
+            {/* {lecturesSpecial && ( */}
+            <div className=" p-2">
+              <h1>Special lectures</h1>
+              {lectures.map((lecture) => (
+                <div className=" mb-2" key={lecture._id}>
+                  <div className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      id={lecture._id}
+                      checked={lecturesSpecial.includes(lecture._id)}
+                      disabled={lecturesSpecial}
+                      onChange={() => handleLectureSelection(lecture._id)}
+                    />
+                    <label className="form-check-label" htmlFor={lecture._id}>
+                      {lecture.title} - {lecture.description}
+                    </label>
+                  </div>
+                </div>
+              ))}
+              <div className="row p-4">
+                <button
+                  onClick={handleUpdateLectures}
+                  className="btn btn-primary col-lg-6 col-md-10 col-sm-5 ms-2 m-2"
+                >
+                  Update
+                </button>
+              </div>
             </div>
-          </form>
+            {/* )} */}
+          </div>
         </div>
       </div>
     </>

@@ -134,12 +134,13 @@ function OutletCourse() {
                 height: "400px",
                 borderRadius: "10px",
                 boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+                // pointerEvents: "none",
 
               }}
-              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; aspect-ratio"
+              sandbox="allow-scripts allow-same-origin allow-presentation"
               allowFullScreen
             ></iframe>
-       
+ 
           ) : (
             <div
               style={{

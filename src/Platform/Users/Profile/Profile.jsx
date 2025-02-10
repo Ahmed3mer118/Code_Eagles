@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { DataContext } from "../Context/Context";
 import { toast, ToastContainer } from "react-toastify";
-
+import Cookies from "js-cookie"
 import { Helmet } from "react-helmet-async";
 
 function Profile() {
@@ -38,7 +38,9 @@ function Profile() {
         }
         setLoading(false)
       } catch (error) {
+        setLoading(false)
         if (error.response) {
+          setLoading(false)
           console.log("Response data:", error.response.data);
           console.log("Response status:", error.response.status);
           console.log("Response headers:", error.response.headers);
@@ -76,7 +78,7 @@ function Profile() {
   const handleLoggout = () => {
     localStorage.removeItem("tokenExpirationUser");
     localStorage.removeItem("tokenUser");
-    // Cookies.remove("tokenUser")
+    Cookies.removeItem("refreshTokenUser")
     toast.success("logout successfully");
     setTimeout(() => {
       window.location.href = "/";
@@ -151,15 +153,16 @@ function Profile() {
             <h5 className="card-title">Personal Information</h5>
             {!editing ? (
               <>
+  
                 <p>
-                  <strong>Name:</strong> {userData?.name || "N/A"}
+                  <strong>Name:</strong> { userData?.role == "user" &&   userData?.name  || "N/A"}
                 </p>
                 <p>
-                  <strong>Email:</strong> {userData?.email || "N/A"}
+                  <strong>Email:</strong> {userData?.role == "user" && userData?.email || "N/A"}
                 </p>
                 <p>
                   <strong>Phone number:</strong>{" "}
-                  {userData?.phone_number || "N/A"}
+                  {userData?.role == "user" &&   userData?.phone_number || "N/A"}
                 </p>
                 <button
                   className="btn btn-primary"

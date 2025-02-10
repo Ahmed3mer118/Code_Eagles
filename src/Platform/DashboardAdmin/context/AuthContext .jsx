@@ -16,6 +16,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("tokenExpirationAdmin");
+    Cookies.set("refreshToKen")
     setTimeout(() => {
       
       window.location.href = "/login"

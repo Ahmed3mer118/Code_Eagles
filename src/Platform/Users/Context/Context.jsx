@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -13,13 +7,11 @@ export const DataContext = createContext();
 function Context({ children }) {
   let getTokenAdmin, getTokenUser;
 
-  getTokenAdmin = JSON.parse(localStorage.getItem("token") || "null");
-  getTokenUser = JSON.parse(localStorage.getItem("tokenUser") || "null");
- 
-  const URLAPI = "https://api-codeeagles-cpq8.vercel.app";
-  // const URLAPI = "http://localhost:8000";
+  getTokenAdmin = JSON.parse(localStorage.getItem("token") );
+  getTokenUser = JSON.parse(localStorage.getItem("tokenUser") );
 
-
+  // const URLAPI = "https://api-codeeagles-cpq8.vercel.app;
+  const URLAPI = "http://localhost:8000";
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,8 +38,8 @@ function Context({ children }) {
     fetchUserGroups();
   }, [URLAPI, getTokenUser]);
 
-  // Handle join group with groupId
-  const handleJoinGroup = async (groupId) => {
+  // Handle join group with groupId, requestType, and note
+  const handleJoinGroup = async (groupId, requestType, note) => {
     if (!getTokenUser) {
       toast.error("Please login to join the group.");
       return;
@@ -55,21 +47,14 @@ function Context({ children }) {
 
     setLoading(true);
     try {
-      // Fetch user details to get userId
-      const userRes = await axios.get(`${URLAPI}/api/users`, {
-        headers: { Authorization: `${getTokenUser}` },
-      });
-
-      const userId = userRes.data._id;
-
       const FilterMember = userGroups.filter(
-        (element) => element.groupId == groupId
+        (element) => element.groupId === groupId
       );
 
       for (let i = 0; i < FilterMember.length; i++) {
         const element = FilterMember[i];
 
-        if (element.status == "approved") {
+        if (element.status === "approved") {
           toast.info("You are already a member of this group.");
           return;
         } else {
@@ -83,7 +68,8 @@ function Context({ children }) {
       // Send the join request
       const joinRes = {
         groupId,
-        userId,
+        requestType: requestType === "Full Course" ? "join" : "invite",
+        note,
       };
 
       await axios.post(`${URLAPI}/api/users/joinGroupRequest`, joinRes, {
@@ -100,25 +86,22 @@ function Context({ children }) {
     } catch (err) {
       console.error("Error sending join request:", err);
       toast.error("Failed to send join request. Please try again.");
+      return;
+    } finally {
       setLoading(false);
     }
   };
-
-  // Memoize values for better performance
-  // const memoizedUserGroups = useMemo(() => userGroups, [userGroups]);
-  // const memoizedHandleJoinGroup = useCallback(handleJoinGroup, [getTokenUser, userGroups, URLAPI]);
 
   return (
     <DataContext.Provider
       value={{
         URLAPI,
-        // handleJoinGroup: memoizedHandleJoinGroup,
         handleJoinGroup,
         getTokenAdmin,
         getTokenUser,
         loading,
-        // userGroups: memoizedUserGroups,
         userGroups,
+  
       }}
     >
       {children}

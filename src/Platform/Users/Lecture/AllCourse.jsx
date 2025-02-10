@@ -11,16 +11,13 @@ function AllCourse() {
   const [loading, setLoading] = useState(false);
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const navigate = useNavigate();
-
-  var attendedLectures = 0;
-  // let totalLectures = 0;
-  // let percentage = (attendedLectures / totalLectures) * 100;
-  // attendancePercentage
+  const location = useLocation();
+  const showFooter = location.pathname === "/content/?:contentId";
 
   // Fetch all groups and filter approved ones
   useEffect(() => {
     const fetchCourses = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
         if (!getTokenUser) {
           toast.error("Please login to view your courses.");
@@ -40,7 +37,9 @@ function AllCourse() {
         // }
 
         const approvedCourses = userRes.data.groups.filter(
-          (group) => group.status === "approved"
+          (group) =>
+            group.status === "approved" ||
+            group.status == "special" 
         );
 
         // Fetch details for each approved course
@@ -52,6 +51,7 @@ function AllCourse() {
                 headers: { Authorization: getTokenUser },
               }
             );
+    
             return {
               ...res.data,
               attendancePercentage: element.attendancePercentage,
@@ -64,9 +64,9 @@ function AllCourse() {
       } catch (err) {
         console.error("Error fetching courses:", err);
         toast.error("Failed to fetch courses.");
-        return
+        return;
       } finally {
-        setLoading(false);  
+        setLoading(false);
       }
     };
 

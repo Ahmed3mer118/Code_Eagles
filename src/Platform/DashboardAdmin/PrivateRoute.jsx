@@ -5,32 +5,24 @@ import { DataContext } from "../Users/Context/Context";
 
 function PrivateRoute({ element }) {
   const { getTokenAdmin } = useContext(DataContext);
-  const location = useLocation(); 
-  const navigate = useNavigate();
-const expirationAdmin = JSON.parse(localStorage.getItem("tokenExpirationAdmin"))
+  const location = useLocation();
 
-    const isLoggedIn = !!getTokenAdmin;
+  const isLoggedIn = !!getTokenAdmin;
 
-    // قائمة بالأنماط المحمية (يجب أن يكون المستخدم مسجلًا للوصول إليها)
-    const protectedPatterns = [
-      /^\/admin(\/.*)?$/, 
-      /^\/course\/[^\/]+(\/.*)?$/,
 
-    ];
-  
-    // التحقق مما إذا كان المسار الحالي محميًا
-    const isProtected = protectedPatterns.some((pattern) =>
-      pattern.test(location.pathname)
-    );
-  
-    // إذا كان المستخدم غير مسجل وحاول الوصول إلى مسار محمي
-    if (!isLoggedIn && isProtected && expirationAdmin) {
-      return <Navigate to="/login/admin" state={{ from: location }} />;
-    }
-  
-    // إذا كان المستخدم مسجلًا أو المسار غير محمي
-    return element;
+  const protectedPatterns = [   /^\/admin(\/.*)?$/];
 
+  const isProtected = protectedPatterns.some((pattern) => {
+    pattern.test(location.pathname);
+
+  });
+
+
+  if (!isLoggedIn && !isProtected || !isLoggedIn && isProtected) {
+    return <Navigate to="/login/admin" state={{ from: location }} />;
+  }
+
+  return element;
 }
 
 export default PrivateRoute;
