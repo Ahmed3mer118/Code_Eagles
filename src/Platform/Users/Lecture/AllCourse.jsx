@@ -37,9 +37,7 @@ function AllCourse() {
         // }
 
         const approvedCourses = userRes.data.groups.filter(
-          (group) =>
-            group.status === "approved" ||
-            group.status == "special" 
+          (group) => group.status === "approved" || group.status == "special"
         );
 
         // Fetch details for each approved course
@@ -51,14 +49,14 @@ function AllCourse() {
                 headers: { Authorization: getTokenUser },
               }
             );
-    
+
+
             return {
               ...res.data,
               attendancePercentage: element.attendancePercentage,
             };
           })
         );
-
         // Set the courses state with the fetched details
         setCourses(courseDetails);
       } catch (err) {
@@ -114,12 +112,13 @@ function AllCourse() {
           }}
         >
           {courses.length > 0 ? (
+            Array.isArray(courses) &&
             courses.map((course) => {
               const percentage = course.attendancePercentage || 0;
               const startDate = course.start_date
                 ? course.start_date.split("T")[0]
                 : "N/A";
-
+               
               return (
                 <div key={course._id}>
                   <div className="card">

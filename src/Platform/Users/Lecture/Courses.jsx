@@ -47,6 +47,7 @@ function Courses() {
             headers: { Authorization: ` ${getTokenUser}` },
           }
         );
+
         const taskData = taskGroup.data.tasks || [];
         setTasks(taskData);
         setTotalTaskGrades(taskData.reduce((sum, task) => sum + task.score, 0));

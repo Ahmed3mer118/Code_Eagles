@@ -145,10 +145,11 @@ function UpdateGroup() {
       course_details: updateDataGroup.course_details,
       about_course: updateDataGroup.about_course,
       instructorName: updateDataGroup.instructorName,
+      imageCoruse: updateDataGroup.imageCoruse,
     };
 
     setLoading(true);
-    console.log(updateGroup);
+
     try {
       await axios.put(`${URLAPI}/api/groups/${groupId}`, updateGroup, {
         headers: {

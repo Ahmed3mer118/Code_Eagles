@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { DataContext } from "../Context/Context";
 import { toast } from "react-toastify";
 
+
 function About({ group, about, courses, loading }) {
   const { URLAPI, getTokenUser, handleJoinGroup } = useContext(DataContext);
   const [showForm, setShowForm] = useState(false); // حالة لإظهار/إخفاء الفورم
@@ -48,15 +49,7 @@ function About({ group, about, courses, loading }) {
         {showForm && (
           <form
             onSubmit={handleSubmit}
-            className="mt-4 mb-4 "
-            style={{
-              position: "relative",
-              left: "50%",
-              transform: " translate( -50%)",
-              padding: "20px",
-              width: "60%",
-              boxShadow: "0px 2px 10px",
-            }}
+            className="mt-4 mb-4  formBuy"
           >
             <h3 className="text-center mb-4">Join Group Request</h3>
             <div className="form-group">

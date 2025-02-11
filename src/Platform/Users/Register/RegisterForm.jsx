@@ -42,10 +42,10 @@ function RegisterForm() {
 
       if (res.data) {
         toast.success(`Hello ${register.name}, please check your email.`);
-        localStorage.setItem(
-          "verif-email-token",
-          JSON.stringify(res.data.token)
-        );
+        // localStorage.setItem(
+        //   "verif-email-token",
+        //   JSON.stringify(res.data.token)
+        // );
         setTimeout(() => {
           navigate("/register/verif-email", { state: register.email });
         }, 2500);

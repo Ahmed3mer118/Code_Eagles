@@ -8,9 +8,9 @@ function VerificationForm() {
   const [number, setNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const location = useLocation();
-  const { URLAPI } = useContext(DataContext);
+  const { URLAPI ,getTokenUser } = useContext(DataContext);
   const navigate = useNavigate();
-  const verif_email_token = JSON.parse(localStorage.getItem("verif-email-token") );
+
   const handleVerification = async (e) => {
     e.preventDefault();
     const code = number.replace(/\s+/g, "");
@@ -23,14 +23,14 @@ function VerificationForm() {
           email: location.state,
           code,
         },
-        { headers: { Authorization: `${verif_email_token}` } }
+        // { headers: { Authorization: getTokenUser } }
       )
       .then((res) => {
         if (res.data) {
           toast.success("Welcome " + location.state);
           setLoading(false);
           setTimeout(() => {
-            localStorage.removeItem("verif-email-token");
+            // localStorage.removeItem("verif-email-token");
             navigate("/login");
           }, 2000);
         } else {
