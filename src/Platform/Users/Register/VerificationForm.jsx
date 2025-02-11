@@ -8,14 +8,13 @@ function VerificationForm() {
   const [number, setNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const location = useLocation();
-  const { URLAPI ,getTokenUser } = useContext(DataContext);
+  const { URLAPI, getTokenUser } = useContext(DataContext);
   const navigate = useNavigate();
 
   const handleVerification = async (e) => {
     e.preventDefault();
     const code = number.replace(/\s+/g, "");
     setLoading(true);
-
     await axios
       .post(
         `${URLAPI}/api/users/verify-Email`,
@@ -23,7 +22,7 @@ function VerificationForm() {
           email: location.state,
           code,
         },
-        // { headers: { Authorization: getTokenUser } }
+        { headers: { "Content-Type": "application/json" } }
       )
       .then((res) => {
         if (res.data) {

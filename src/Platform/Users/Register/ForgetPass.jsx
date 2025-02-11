@@ -8,12 +8,11 @@ import { DataContext } from "../Context/Context";
 function ForgetPass() {
   const { URLAPI } = useContext(DataContext);
   const [forgetPass, setForgetPass] = useState({
+    email: "",
     resetCode: "",
     newPassword: "",
   });
-  const forget_password_token = JSON.parse(
-    localStorage.getItem("forget-password-token")
-  );
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   // HandleResetPassword
@@ -25,19 +24,18 @@ function ForgetPass() {
       .post(
         `${URLAPI}/api/users/reset-password`,
         {
+          email: forgetPass.email,
           resetCode: code,
           newPassword: forgetPass.newPassword,
         },
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: forget_password_token,
           },
         }
       )
       .then(() => {
         toast.success("Reset Successful");
-        localStorage.removeItem("forget-password-token")
         setTimeout(() => {
           navigate("/login");
         }, 2500);
@@ -67,6 +65,16 @@ function ForgetPass() {
           <h1 className="text-center text-light">Forget Password</h1>
 
           <input
+            type="email"
+            placeholder="Email"
+            className="form-control border rounded mt-3 "
+            required
+            value={forgetPass.email}
+            onChange={(e) =>
+              setForgetPass({ ...forgetPass, email: e.target.value })
+            }
+          />
+          <input
             type="text"
             placeholder="Reset Code"
             className="form-control border rounded mt-3 "
@@ -86,7 +94,11 @@ function ForgetPass() {
           />
 
           <div className="mt-2 p-2">
-            <button className="btn btn-primary   d-block w-100 m-atuo" disabled={loading} aria-label="Submit">
+            <button
+              className="btn btn-primary   d-block w-100 m-atuo"
+              disabled={loading}
+              aria-label="Submit"
+            >
               {loading ? "loading" : "Submit"}
             </button>
           </div>
