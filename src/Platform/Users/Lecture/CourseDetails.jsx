@@ -8,7 +8,6 @@ function CourseDetail() {
   const [course, setCourse] = useState(null); // State to hold the specific course details
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [loading, setLoading] = useState(false);
-  console.log(contentId);
   useEffect(() => {
     if (courseDetails) {
       setLoading(true);
@@ -36,32 +35,29 @@ function CourseDetail() {
 
   if (!course) {
     return (
-      <h2 className="text-center">
+      <div className="text-center">
         {loading ? (
-          <>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "70vh",
-              }}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "70vh",
+            }}
+          >
+            <svg
+              className="loading"
+              viewBox="25 25 50 50"
+              style={{ width: "3.25em" }}
             >
-              <svg
-                className="loading"
-                viewBox="25 25 50 50"
-                style={{ width: "3.25em" }}
-              >
-                <circle r="20" cy="50" cx="50"></circle>
-              </svg>
-            </div>
-          </>
+              <circle r="20" cy="50" cx="50"></circle>
+            </svg>
+          </div>
         ) : (
-        <h1 className=" text-center mt-4 mb-4"> Course not found</h1>
-          
+          <h2 className="text-center mt-4 mb-4">Course not found</h2>
         )}
-      </h2>
-    ); // If the course is not found
+      </div>
+    );
   }
 
   return (
@@ -79,15 +75,18 @@ function CourseDetail() {
           />
           <h1 className="text-center">{course.title}</h1>
         </div>
-        <div className="col-md-6 mt-3">
+        <div className="col-md-6 col mt-3">
           <h3 className="m-3">Course Details:</h3>
-          <ul className="list-group">
+          <ol className="list-group">
             {course.description.split(". ").map((item, idx) => (
-              <li key={idx} className="list-group-item">
-                {item}
+              <li key={idx} className="list-group-item p-2 p-md-3">
+                <div className="d-flex align-items-center">
+                  <i className="fas fa-check-circle text-success me-2"></i>
+                  <span className="text-wrap">{item}</span>
+                </div>
               </li>
             ))}
-          </ul>
+          </ol>
         </div>
       </div>
     </div>
