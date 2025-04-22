@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
 export const AuthContext = createContext();
 
@@ -16,11 +17,10 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("tokenExpirationAdmin");
-    Cookies.set("refreshToKen")
+    localStorage.removeItem("tokenExpiration");
+    Cookies.remove("refreshToken");
     setTimeout(() => {
-      
-      window.location.href = "/login"
+      window.location.href = "/login";
     }, 2500);
     setIsLoggedIn(false);
   };

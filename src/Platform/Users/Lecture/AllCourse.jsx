@@ -29,13 +29,6 @@ function AllCourse() {
           headers: { Authorization: ` ${getTokenUser}` },
         });
 
-        // for (let i = 0; i < userRes.data.groups.length; i++) {
-        //   const element = userRes.data.groups[i];
-        //   attendedLectures = element.attendancePercentage;
-
-        //   console.log(attendedLectures);
-        // }
-
         const approvedCourses = userRes.data.groups.filter(
           (group) => group.status === "approved" || group.status == "special"
         );
@@ -49,7 +42,6 @@ function AllCourse() {
                 headers: { Authorization: getTokenUser },
               }
             );
-
 
             return {
               ...res.data,
@@ -118,7 +110,7 @@ function AllCourse() {
               const startDate = course.start_date
                 ? course.start_date.split("T")[0]
                 : "N/A";
-               
+
               return (
                 <div key={course._id}>
                   <div className="card">

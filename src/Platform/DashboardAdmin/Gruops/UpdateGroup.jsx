@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useContext, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
 import { FaRegWindowClose } from "react-icons/fa";
 
@@ -14,12 +14,14 @@ function UpdateGroup() {
     location: "",
     start_date: "",
     end_date: "",
-    price: "",
+    price: 0,
     course_details: [],
     about_course: [],
     instructorName: "",
+    instructor_id: "",
     imageCourse: "",
   });
+  const [instructors, setInstructors] = useState([]);
   const [offline, setOffline] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -44,7 +46,7 @@ function UpdateGroup() {
           course_details: data.course_details || [],
           about_course: data.about_course || [],
           instructorName: data.instructorName || [],
-          imageCourse: data.imageCourse || [],
+          imageCourse: data.imageCourse || "",
         });
         setOffline(data.type_course === "offline");
       })
@@ -52,6 +54,16 @@ function UpdateGroup() {
         console.error("Error fetching group data:", error);
         toast.error("Failed to fetch group data. Please try again.");
       });
+  }, [groupId, URLAPI, getTokenAdmin]);
+  useEffect(  ()=>{
+          axios.get(`${URLAPI}/api/users/all-instructors`, {
+      headers: {
+        Authorization: `${getTokenAdmin}`,
+      },
+    }).then((res)=>{
+    
+      setInstructors(res.data);
+    })
   }, [groupId, URLAPI, getTokenAdmin]);
 
   // Handle offline/online selection
@@ -193,7 +205,7 @@ function UpdateGroup() {
 
   return (
     <div className="container">
-      <ToastContainer />
+      <Toaster />
       <h1 className="text-center mb-4 mt-3">Update Group</h1>
       <form
         onSubmit={handleUpdateGroup}
@@ -276,7 +288,7 @@ function UpdateGroup() {
         {/* Price */}
         <div className="row">
           <div className="col-md-6">
-            <label className="text-muted mb-2">Instructor</label>
+            <label className="text-muted mb-2">Instructor Name</label>
             <input
               type="text"
               name="instructorName"
@@ -298,6 +310,14 @@ function UpdateGroup() {
               onChange={handleInputChange}
               required
             />
+          </div>
+          <div className="col-md-6">
+            <label className="text-muted mb-2">Instructor Select By ID</label>
+              <select name="instructor_id" id="instructor_id" className="form-control mb-3" value={updateDataGroup.instructor_id} onChange={handleInputChange}>
+                {Array.isArray(instructors) && instructors.map((instructor, index) => (
+                  <option key={index} value={instructor._id}>{instructor.name}</option>
+                ))}
+              </select>
           </div>
         </div>
         <label className="text-muted mb-2">Image Course</label>

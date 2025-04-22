@@ -6,17 +6,24 @@ import { DataContext } from "../Context/Context";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./nav.css";
+import Cookies from "js-cookie";
 
 function Navbar() {
-  const { getTokenUser } = useContext(DataContext);
+  const { URLAPI } = useContext(DataContext);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // حالة تسجيل الدخول
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    if (getTokenUser) {
-      setIsLoggedIn(!isLoggedIn);
-    }
-  }, [getTokenUser]);
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem("tokenUser");
+      const refreshToken = Cookies.get("refreshTokenUser");
+      setIsLoggedIn(!!token && !!refreshToken);
+    };
+
+    checkLoginStatus();
+    window.addEventListener("storage", checkLoginStatus);
+    return () => window.removeEventListener("storage", checkLoginStatus);
+  }, []);
 
   const toggleNavbar = () => {
     setMenuOpen(!menuOpen);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
+import { Toaster , toast } from "react-hot-toast";
 import "react-toastify/dist/ReactToastify.css";
 import { DataContext } from "../Context/Context";
 import { useNavigate, useParams } from "react-router-dom";
@@ -44,7 +44,7 @@ function AddTask() {
 
   return (
     <>
-      <ToastContainer />
+      <Toaster position="top-center" />
       <div className="container mt-5 mb-5">
         <div className="card shadow-sm p-4">
           <h1 className="text-center mb-4">Add a Task Link </h1>

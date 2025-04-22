@@ -8,6 +8,7 @@ import { Helmet } from "react-helmet-async";
 import { DataContext } from "../Context/Context";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { Toaster } from "react-hot-toast";
 
 function Layout() {
   const navigate = useNavigate();
@@ -24,62 +25,84 @@ function Layout() {
       const refreshTokenLocal = Cookies.get("refreshTokenUser");
 
       if (!refreshTokenLocal) {
-        throw new Error("No refresh token found");
+        handleLogout();
+        throw new Error("لم يتم العثور على توكن التحديث");
       }
 
       const response = await axios.post(`${URLAPI}/api/users/refresh-token`, {
         refreshToken: refreshTokenLocal,
       });
 
-      const { accessToken, refreshToken } = response.data;
-      const expirationTime = Date.now() + 15 * 60 * 1000; 
+      const { accessToken, refreshToken: newRefreshToken } = response.data;
+      const expirationTime = Date.now() + 15 * 60 * 1000; // 15 دقائق
 
-      localStorage.setItem("tokenUser", JSON.stringify(accessToken) );
+      localStorage.setItem("tokenUser", JSON.stringify(accessToken));
       localStorage.setItem("tokenExpirationUser", JSON.stringify(expirationTime));
-      // Cookies.set("refreshTokenUser", refreshToken, { expires: 10 });
+      Cookies.set("refreshTokenUser", newRefreshToken, {
+        expires: 7,
+        secure: true,
+        sameSite: "strict",
+      });
 
       axios.defaults.headers.common["Authorization"] = `${accessToken}`;
 
-      console.log("Token refreshed successfully");
+      return true;
     } catch (error) {
-      console.error(" Failed to refresh token:", error);
-      handleLogout();
+      console.error("فشل في تحديث التوكن:", error);
+      if (error.response?.status === 401) {
+        handleLogout();
+      }
+      return false;
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("tokenUser");
-    localStorage.removeItem("tokenExpirationUser");
-    Cookies.remove("refreshTokenUser");
+  const handleLogout = async () => {
+    try {
+      const refreshToken = Cookies.get("refreshTokenUser");
+      if (refreshToken) {
+        await axios.post(`${URLAPI}/api/users/logout`, {
+          refreshToken
+        });
+      }
+          
+      localStorage.removeItem("tokenUser");
+      localStorage.removeItem("tokenExpirationUser");
+      Cookies.remove("refreshTokenUser");
+    
 
-    toast.error("Session expired. Please log in again.");
-    setTimeout(() => {
-      navigate("/login");
-    }, 2000);
+      toast.success("Logged out successfully");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 2000);
+    } catch (err) {
+      console.error("خطأ أثناء تسجيل الخروج:", err);
+      toast.error("حدث خطأ أثناء تسجيل الخروج");
+    }
   };
 
   useEffect(() => {
-    const checkTokenExpiration = () => {
+    const checkTokenExpiration = async () => {
       const expiration = JSON.parse(localStorage.getItem("tokenExpirationUser"));
       if (!expiration) return;
 
       const timeLeft = expiration - Date.now();
-      if (timeLeft <= 0) {
-        refreshToken();
+
+      if (timeLeft <= 15 * 60 * 1000) {
+        const refreshed = await refreshToken();
+        if (!refreshed) {
+          handleLogout();
+        }
       }
     };
 
     checkTokenExpiration();
-
-    
-    const interval = setInterval(checkTokenExpiration,  60 * 1000);
-
+    const interval = setInterval(checkTokenExpiration, 15 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [navigate]);
+  },[navigate]);
 
   return (
     <div>
-      <ToastContainer />
+     
       <Helmet>
         <title>Code Eagles</title>
       </Helmet>

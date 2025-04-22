@@ -3,91 +3,197 @@ import { Helmet } from "react-helmet-async";
 import { DataContext } from "../../Users/Context/Context";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import {toast ,Toaster } from "react-hot-toast";
+import { BiUserPlus } from "react-icons/bi";
+import { FaEnvelope } from "react-icons/fa";
+import { MdFeedback } from "react-icons/md";
 
 function DashboardIndex() {
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
+  const [loading, setLoading] = useState(true);
 
-  const [requestsCount, setRequestsCount] = useState(0); // عدد الطلبات
-  const [submissionsCount, setSubmissionsCount] = useState(0); // عدد التسليمات
-  const [messagesCount, setMessagesCount] = useState(0); // عدد الرسائل
-  const [feedbackCount, setFeedbackCount] = useState(0); // عدد الـ feedback
+  const [stats, setStats] = useState({
+    requests: 0,
+    messages: 0,
+    feedback: 0
+  });
 
   useEffect(() => {
-    // جلب كل الطلبات
-    axios
-      .get(`${URLAPI}/api/users/pending-users`, {
-        headers: {
-          Authorization: `${getTokenAdmin}`,
-        },
-      })
-      .then((res) => {
-        setRequestsCount(res.data.length || 0);
-      }).catch((err)=> console.log("No pending Users"))
+    const fetchDashboardData = async () => {
+      try {
+        // تهيئة المتغيرات
+        let requestsData = [];
+        let messagesData = { messages: [] };
+        let feedbackData = { feedbacks: [] };
 
-    // جلب عدد التسليمات
-    // axios
-    // .get(`${URLAPI}/api/Submissions/get-all-submissions`, {
-    //   headers: {
-    //     Authorization: `${getTokenAdmin}`,
-    //   },
-    // })
-    // .then((res) => {
-    //   setSubmissionsCount(res.data.length || 0);
-    // })
 
-    // جلب عدد الرسائل
-    axios
-      .get(`${URLAPI}/api/contact/contact-us/messages`, {
-        headers: {
-          Authorization: `${getTokenAdmin}`,
-        },
-      })
-      .then((res) => {
-        setMessagesCount(res.data.messages.length || 0);
-      });
+        try {
+          const requestsRes = await axios.get(`${URLAPI}/api/users/pending-users`, {
+            headers: { Authorization: `${getTokenAdmin}` }
+          });
+          requestsData = requestsRes.data;
 
-    axios
-      .get(`${URLAPI}/api/users/get-all-feedback`, {
-        headers: {
-          Authorization: `${getTokenAdmin}`,
-        },
-      })
-      .then((res) => {
-        setFeedbackCount(res.data.feedbacks.length || 0);
-      });
-  }, [ getTokenAdmin]);
+        } catch (error) {
+          console.error("Error fetching pending requests:", error);
+
+        }
+
+
+        try {
+          const messagesRes = await axios.get(`${URLAPI}/api/contact/contact-us/messages`, {
+            headers: { Authorization: `${getTokenAdmin}` }
+          });
+          messagesData = messagesRes.data;
+
+        } catch (error) {
+          console.error("Error fetching messages:", error);
+
+        }
+
+
+        try {
+          const feedbackRes = await axios.get(`${URLAPI}/api/users/get-all-feedback`, {
+            headers: { Authorization: `${getTokenAdmin}` }
+          });
+          feedbackData = feedbackRes.data;
+
+        } catch (error) {
+          console.error("Error fetching feedback:", error);
+
+        }
+
+
+        let requestsCount = 0;
+        if (Array.isArray(requestsData)) {
+          requestsCount = requestsData.length;
+        } else if (requestsData && typeof requestsData === 'object') {
+          requestsCount = requestsData.message === "No pending group requests found" ? 0 : 0;
+        }
+
+        const messagesCount = messagesData.messages ? messagesData.messages.length : 0;
+
+
+
+        const feedbackCount = feedbackData.feedbacks ? feedbackData.feedbacks.length : 0;
+
+
+
+        setStats({
+          requests: requestsCount,
+          messages: messagesCount,
+          feedback: feedbackCount
+        });
+      } catch (error) {
+        console.error("Error in dashboard data processing:", error);
+        toast.error("Failed to process dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [URLAPI, getTokenAdmin]);
+
+  if (loading) {
+    return (
+      <div className="container-fluid py-5">
+        <div className="row justify-content-center">
+          <div className="col-12 text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
+    <div className="container-fluid py-4">
       <Helmet>
-        <title>Dashboard</title>
+        <title>Code Eagles | Admin Dashboard</title>
       </Helmet>
-      <h1 className="text-center m-auto">Dashboard</h1>
 
-      {/* عدد الطلبات */}
-      <div className="card p-2 m-2">
-        <h3>Requests: {requestsCount}</h3>
-        <Link to="/admin/emails" aria-label="link">See All Requests</Link>
+      <div className="row mb-4">
+        <div className="col-12">
+          <h1 className="display-4 fw-bold text-primary mb-3">Admin Dashboard</h1>
+          <p className="lead text-muted">Welcome to your admin dashboard</p>
+        </div>
       </div>
 
-      {/* عدد التسليمات */}
-      {/* <div className="card p-2 m-2">
-        <h3>Submissions: {submissionsCount}</h3>
-        <Link to="/admin/submissions"  aria-label="link">See All Submissions</Link>
-      </div> */}
+      <div className="row g-4">
+        {/* Requests Card */}
+        <div className="col-12 col-sm-6 col-xl-4">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body">
+              <div className="d-flex align-items-center">
+                <div className="flex-shrink-0">
+                  <div className="bg-primary bg-opacity-10 p-3 rounded">
+                    <BiUserPlus className="text-primary fs-4" />
+                  </div>
+                </div>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="card-subtitle text-muted mb-1">Pending Requests</h6>
+                  <h3 className="card-title mb-0">{stats.requests}</h3>
+                </div>
+              </div>
+            </div>
+            <div className="card-footer bg-transparent border-0">
+              <Link to="/admin/emails" className="btn btn-primary btn-sm">
+                View All Requests
+              </Link>
+            </div>
+          </div>
+        </div>
 
-      {/* عدد الرسائل */}
-      <div className="card p-2 m-2">
-        <h3>Messages: {messagesCount}</h3>
-        <Link to="/admin/get-all-message-by-admin"  aria-label="link">See All Messages</Link>
+        {/* Messages Card */}
+        <div className="col-12 col-sm-6 col-xl-4">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body">
+              <div className="d-flex align-items-center">
+                <div className="flex-shrink-0">
+                  <div className="bg-success bg-opacity-10 p-3 rounded">
+                    <FaEnvelope className="text-success fs-4" />
+                  </div>
+                </div>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="card-subtitle text-muted mb-1">Messages</h6>
+                  <h3 className="card-title mb-0">{stats.messages}</h3>
+                </div>
+              </div>
+            </div>
+            <div className="card-footer bg-transparent border-0">
+              <Link to="/admin/get-all-message-by-admin" className="btn btn-success btn-sm">
+                View All Messages
+              </Link>
+            </div>
+          </div>
       </div>
 
-      {/* عدد الـ feedback */}
-      <div className="card p-2 m-2">
-        <h3>Feedbacks: {feedbackCount}</h3>
-        <Link to="/admin/get-all-feekback-by-admin"  aria-label="link">See All Feedback</Link>
+        {/* Feedback Card */}
+        <div className="col-12 col-sm-6 col-xl-4">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body">
+              <div className="d-flex align-items-center">
+                <div className="flex-shrink-0">
+                  <div className="bg-info bg-opacity-10 p-3 rounded">
+                    <MdFeedback className="text-info fs-4" />
+                  </div>
+                </div>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="card-subtitle text-muted mb-1">Feedbacks</h6>
+                  <h3 className="card-title mb-0">{stats.feedback}</h3>
+                </div>
+              </div>
+            </div>
+            <div className="card-footer bg-transparent border-0">
+              <Link to="/admin/get-all-feekback-by-admin" className="btn btn-info btn-sm">
+                View All Feedback
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
-      
     </div>
   );
 }

@@ -1,16 +1,18 @@
-import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
+import AdminService from "../../classes/AdminService";
+import InstructorService from "../../classes/InstructorService";
 import "../Tasks/Task.css";
 
 function DetailStudent() {
-  const { URLAPI, getTokenAdmin } = useContext(DataContext);
-
-  const [students, setStudents] = useState([]);
+  const { URLAPI, getTokenAdmin, getTokenInstructor } = useContext(DataContext);
+  const [adminService] = useState(new AdminService(URLAPI, getTokenAdmin));
+  const [instructorService] = useState(new InstructorService(URLAPI, getTokenInstructor));
+  const [students, setStudents] = useState({});
   const [groupIdByStd, setGroupIdByStd] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [dataUpdateStudent, setDataUpdateStudent] = useState({
     name: "",
     email: "",
@@ -23,120 +25,136 @@ function DetailStudent() {
   const [groupDetails, setGroupDetails] = useState([]);
   const { studentId } = useParams();
   const navigate = useNavigate();
-  const [lectures, setLectures] = useState([]); // State لتخزين المحاضرات
-  const [lecturesSpecial, setSelectedLectures] = useState([]); // State لتخزين المحاضرات المختارة
+  const [lectures, setLectures] = useState([]);
+  const [lecturesSpecial, setSelectedLectures] = useState([]);
+  
   const location = useLocation();
+
+
 
   // Fetch Student Data
   useEffect(() => {
-    if (!getTokenAdmin) {
-      toast.error("Unauthorized. Please log in.");
+    if (!getTokenAdmin && !getTokenInstructor) {
+      toast.error("Not authorized. Please login.");
+      if (window.location.pathname.includes("/admin")) {
+        navigate("/login");
+      } else {
+        navigate("/login");
+      }
       return;
     }
 
     const fetchStudent = async () => {
       try {
-        const res = await axios.get(`${URLAPI}/api/users/${studentId}`, {
-          headers: {
-            Authorization: `${getTokenAdmin}`,
-          },
-        });
-        setStudents(res.data);
+        setLoading(true);
+    
+        if (!getTokenAdmin && !getTokenInstructor) {
+          throw new Error("No valid service found");
+        }
+        let studentData;
+        if(window.location.pathname.includes("/admin")){
+           studentData = await adminService.getStudentDetails(studentId);
+        }
+        else{
+           studentData = await instructorService.getStudentDetails(studentId);
+           console.log(studentData)
+        }
+        setStudents(studentData);
 
-        if (res.data.groups && res.data.groups.length > 0) {
-          setGroupIdByStd(res.data.groups);
+        if (studentData.groups && studentData.groups.length > 0) {
+          setGroupIdByStd(studentData.groups);
           const statusMap = {};
-          res.data.groups.forEach((group) => {
+          studentData.groups.forEach((group) => {
             statusMap[group.groupId] = group.status || "pending";
           });
-
           setCurrentStatus(statusMap);
-          for (const key in statusMap) {
-            if (
-              statusMap[key] === "special" 
-            ) {
-              for (const key in res.data.groups) {
-                setSelectedLectures(res.data.groups[key].lecturesSpecial);
-              }
+
+          for (const group of studentData.groups) {
+            if (group.status === "special" && group.lecturesSpecial) {
+              setSelectedLectures(group.lecturesSpecial);
+              break;
             }
           }
         } else {
           setGroupIdByStd([]);
           setCurrentStatus({});
         }
-
-        setLoading(false);
       } catch (error) {
-        toast.error("Failed to fetch student data.");
-        console.error(error);
+        console.error("Error fetching student data:", error);
+        toast.error(error.message);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchStudent();
-  }, [studentId, getTokenAdmin]);
+  }, [studentId, getTokenAdmin, getTokenInstructor, URLAPI, navigate]);
 
   // Fetch Group Details
   useEffect(() => {
-    if (groupIdByStd) {
+    if (groupIdByStd && groupIdByStd.length > 0) {
       const fetchGroupDetails = async () => {
         try {
           const details = await Promise.all(
             groupIdByStd.map(async (group) => {
-              const res = await axios.get(
-                `${URLAPI}/api/groups/${group.groupId}`,
-                {
-                  headers: {
-                    Authorization: `${getTokenAdmin}`,
-                  },
-                }
-              );
-              return res.data;
+              try {
+                const groupData = await adminService.getGroupDetails(group.groupId);
+                return groupData;
+              } catch (error) {
+                console.error(`Error fetching group ${group.groupId}:`, error);
+                return null;
+              }
             })
           );
-          setGroupDetails(details);
+          const validDetails = details.filter(detail => detail !== null);
+          setGroupDetails(validDetails);
         } catch (error) {
           console.error("Error fetching group details:", error);
+          toast.error(error.message);
         }
       };
 
       fetchGroupDetails();
     }
-  }, [groupIdByStd, URLAPI, getTokenAdmin]);
+  }, [groupIdByStd]);
 
   // Delete Student
-  const handleDelete = (id) => {
-    axios
-      .delete(`${URLAPI}/api/users/${id}`, {
-        headers: {
-          Authorization: ` ${getTokenAdmin}`,
-        },
-      })
-      .then(() => {
-        toast.success("Deleted Student Successfully");
-        setTimeout(() => {
-          navigate("/admin/allStudent");
-        }, 3000);
-      })
-      .catch((error) => {
-        toast.error("Failed to delete student");
-      });
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this student?")) {
+      return;
+    }
+    
+    try {
+     
+      await adminService.deleteStudent(id);
+      toast.success("Student deleted successfully");
+      setTimeout(() => {
+        navigate("/admin/allStudent");
+      }, 2000);
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      toast.error(error.message);
+    }
   };
 
   // Toggle User Status
   const handleStopUser = async (id, groupId) => {
-    if (!getTokenAdmin) {
-      toast.error("Unauthorized. Please log in.");
+    if (!getTokenAdmin && !getTokenInstructor) {
+      toast.error("Not authorized. Please login.");
+      if (window.location.pathname.includes("/admin")) {
+        navigate("/login/admin");
+      } else {
+        navigate("/login");
+      }
       return;
     }
 
     if (!groupIdByStd || groupIdByStd.length === 0) {
-      toast.error("No group available for this student.");
+      toast.error("No groups available for this student.");
       return;
     }
 
-    // الحصول على الحالة الحالية للمجموعة
     const currentGroupStatus = currentStatus[groupId] || "pending";
-
     let newStatus = "";
     switch (currentGroupStatus) {
       case "pending":
@@ -145,38 +163,40 @@ function DetailStudent() {
       case "approved":
         newStatus = "pending";
         break;
-      case "special":
-        newStatus = "pending";
-        break;
       default:
         newStatus = "approved";
         break;
     }
 
-    const updateStatus = {
-      status: newStatus,
-    };
-
     try {
-      await axios.put(
-        `${URLAPI}/api/users/set-role-to-${newStatus}/${id}/${groupId}`,
-        updateStatus,
-        {
-          headers: {
-            Authorization: `${getTokenAdmin}`,
-          },
-        }
-      );
+      if (!getTokenAdmin && !getTokenInstructor) {
+        throw new Error("No valid service found");
+      }
 
+      if(window.location.pathname.includes("/admin")){
+        await adminService.updateStudentStatus(id, newStatus, groupId);
+      }
+      else{
+        await instructorService.updateStudentStatus(id, newStatus, groupId);
+      }
       setCurrentStatus((prevStatus) => ({
         ...prevStatus,
         [groupId]: newStatus,
       }));
 
-      toast.success(`User status changed to ${newStatus}`);
+      const updatedStudent = await adminService.getStudentDetails(id);
+      if (updatedStudent.groups && updatedStudent.groups.length > 0) {
+        const updatedStatusMap = {};
+        updatedStudent.groups.forEach((group) => {
+          updatedStatusMap[group.groupId] = group.status || "pending";
+        });
+        setCurrentStatus(updatedStatusMap);
+      }
+
+      toast.success(`User status updated to ${newStatus}`);
     } catch (error) {
-      toast.error("Failed to update user status");
       console.error("Status update error:", error);
+      // toast.error(error.message);
     }
   };
 
@@ -186,247 +206,307 @@ function DetailStudent() {
     navigate("", { state: groupId });
 
     try {
-      await axios
-        .get(
-          `${URLAPI}/api/lectures/${studentId}/${groupId}/attendance-by-admin`,
-          {
-            headers: { Authorization: getTokenAdmin },
-          }
-        )
-        .then((attendanceResponse) => {
-          const attendedLecturesCount =
-            attendanceResponse.data.attendedLecturesCount || 0;
-          const notAttendedLecturesCount =
-            attendanceResponse.data.notAttendedLecturesCount || 0;
-          const lectureAttendName = attendanceResponse.data.groupLectures || [];
+      if(window.location.pathname.includes("/admin")){
+        const attendanceData = await adminService.getStudentAttendance( studentId, groupId);
+        console.log(attendanceData);
+        setAttendanceData(attendanceData.groupLectures || []);
+        setAttendance({
+        present: attendanceData.attendedLecturesCount || 0,
+        absent: attendanceData.notAttendedLecturesCount || 0,
+      });
 
-          setAttendanceData(lectureAttendName);
-          setAttendance({
-            present: attendedLecturesCount,
-            absent: notAttendedLecturesCount,
-          });
-          setLoading(false);
-        });
+      const tasksData = await adminService.getGroupTasks(studentId, groupId);
+      setTaskData(tasksData.tasks || []);
 
-      await axios
-        .get(
-          `${URLAPI}/api/lectures/${groupId}/${studentId}/get-user-tasks-in-group`,
-          {
-            headers: {
-              Authorization: `${getTokenAdmin}`,
-            },
-          }
-        )
-        .then((res) => {
-          setLoading(false);
-          setTaskData(res.data.tasks);
-        });
+      const lecturesData = await adminService.getStudentAttendance(studentId,groupId);
+      setLectures(lecturesData.lectures || []);
 
-      await axios
-        .get(`${URLAPI}/api/lectures/group/${groupId}`, {
-          headers: { Authorization: getTokenAdmin },
-        })
-        .then((response) => {
-          setLoading(false);
-          setLectures(response.data.lectures);
-        });
-    } catch (err) {
-      toast.info("Error: " + err.message);
-      console.error("Error in showDetailsStd:", err.message);
+      if (currentStatus[groupId] === "special") {
+        const studentData = await adminService.getStudentDetails(studentId);
+        const specialGroup = studentData.groups.find(g => g.groupId === groupId);
+        if (specialGroup && specialGroup.lecturesSpecial) {
+          setSelectedLectures(specialGroup.lecturesSpecial);
+        }
+      }
+    } 
+    else{
+      const attendanceData = await instructorService.getStudentAttendance( studentId, groupId);
+      console.log(attendanceData);
+      setAttendanceData(attendanceData.groupLectures || []);
+      setAttendance({
+        present: attendanceData.attendedLecturesCount || 0,
+        absent: attendanceData.notAttendedLecturesCount || 0,
+      });
+
+      const tasksData = await instructorService.getGroupTasks(studentId, groupId);
+      setTaskData(tasksData.tasks || []);
+      
+    } 
+  }
+    catch (error) {
+      console.error("Error in showDetailsStd:", error);
+      // toast.error(error.message);
+    } finally {
       setLoading(false);
     }
   };
+
   // update lecture selection
   const handleLectureSelection = (lectureId) => {
     setSelectedLectures((prevSelected) => {
       if (prevSelected.includes(lectureId)) {
-        // إذا كنت تريد السماح بإلغاء الاختيار، استخدم السطر التالي:
         return prevSelected.filter((id) => id !== lectureId);
-
-        // return prevSelected;
       } else {
         return [...prevSelected, lectureId];
       }
     });
   };
-  const handleUpdateLectures = async () => {
-    if (!getTokenAdmin) {
-      toast.error("Unauthorized. Please log in.");
-      return;
-    }
-  
-    // حساب المحاضرات التي يجب إضافتها وحذفها
-    const lecturesToAdd = lecturesSpecial.filter(
-      (lectureId) => lectures.find((lecture) => lecture._id === lectureId)
-    );
-    
-    const lecturesToRemove = lectures
-      .filter((lecture) => !lecturesSpecial.includes(lecture._id))
-      .map((lecture) => lecture._id);
 
+  // const handleUpdateLectures = async () => {
+  //   if (!getTokenAdmin) {
+  //     toast.error("Not authorized. Please login.");
+  //     if (window.location.pathname.includes("/admin")) {
+  //       navigate("/login");
+  //     } else {
+  //       navigate("/login");
+  //     }
+  //     return;
+  //   }
   
-    const payload = {
-      groupId: location.state,
-      userId: studentId,
-      lecturesToAdd : lecturesToAdd || lecturesToRemove,
-    };
+  //   if (!location.state) {
+  //     toast.error("No group selected. Please select a group first.");
+  //     return;
+  //   }
   
-    console.log("Payload to update lectures:", payload);
+  //   const lecturesToAdd = lecturesSpecial.filter(
+  //     (lectureId) => lectures.find((lecture) => lecture._id === lectureId)
+  //   );
+    
+  //   const lecturesToRemove = lectures
+  //     .filter((lecture) => !lecturesSpecial.includes(lecture._id))
+  //     .map((lecture) => lecture._id);
   
-    // try {
-    //   await axios.post(`${URLAPI}/api/users/update-user-lectures`, payload, {
-    //     headers: {
-    //       Authorization: `${getTokenAdmin}`,
-    //     },
-    //   });
+  //   const payload = {
+  //     groupId: location.state,
+  //     userId: studentId,
+  //     lecturesToAdd: lecturesToAdd,
+  //     lecturesToRemove: lecturesToRemove
+  //   };
   
-    //   toast.success("Lectures updated successfully");
-    //   setTimeout(() => {
-    //     window.location.reload();
-    //   }, 2000);
-    // } catch (error) {
-    //   toast.error("Failed to update lectures");
-    //   console.error("Update lectures error:", error);
-    // }
+  //   try {
+  //     await adminService.updateStudentLectures(payload);
+  //     toast.success("Lectures updated successfully");
+      
+  //     await adminService.updateStudentStatus(studentId, location.state, "special");
+      
+  //     setCurrentStatus((prevStatus) => ({
+  //       ...prevStatus,
+  //       [location.state]: "special",
+  //     }));
+      
+  //     setTimeout(() => {
+  //       window.location.reload();
+  //     }, 2000);
+  //   } catch (error) {
+  //     console.error("Update lectures error:", error);
+  //     toast.error(error.message);
+  //   }
+  // };
+
+  // Update Student Role
+  const handleUpdateRole = async (studentId, newRole) => {
+    try {
+      if(window.location.pathname.includes("/admin")){
+        await adminService.updateStudentRole(studentId, newRole);
+      }
+      else{
+        await instructorService.updateStudentRole(studentId, newRole);
+      }
+      const updatedStudent = await adminService.getStudentDetails(studentId);
+      setStudents(updatedStudent);
+      toast.success(`Student role updated to ${newRole}`);
+    } catch (error) {
+      console.error("Error updating student role:", error);
+      toast.error(error.message);
+    }
   };
-  
+
   return (
     <>
-      <ToastContainer />
-      <h1 className="text-center mt-2">Student Name: {students.name}</h1>
-      <div className="container p-1">
-        <div className="row">
-          <div className="col-lg-6 col-md-12 mb-3">
-            <table className="table text-center">
-              <thead>
-                <tr>
-                  <th className="border">Name</th>
-                  <th className="border">Email</th>
-                  <th className="border">Phone Number</th>
-                  <th className="border">Delete</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="border">{students.name?.split(" ")[0]}</td>
-                  <td className="border">{students.email?.split("@")[0]}</td>
-                  <td className="border">{students.phone_number}</td>
-                  <td className="border">
-                    <span
-                      style={{ cursor: "pointer" }}
-                      onClick={() => handleDelete(studentId)}
-                      className="text-danger cursor"
-                    >
-                      Delete
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+    <Toaster />
+      <div className="container-fluid py-4">
+        <div className="row mb-4">
+          <div className="col-12">
+            <h1 className="text-center mb-4">Student Details: {students.name || "Loading..."}</h1>
+          </div>
+        </div>
 
-            <div className="mt-4">
-              <h3>Group</h3>
-              {groupDetails.map((group, index) => (
-                <div key={index} className="card mb-3">
-                  <div className="card-body">
-                    <h5 className="card-title">{group.title}</h5>
-                    <p className="card-text">
-                      Start Date: {group.start_date?.split("T")[0]}
-                    </p>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => showDetailsStd(studentId, group._id)}
-                    >
-                      Show Details Group
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleStopUser(studentId, group._id)}
-                      className={`btn ${
-                        currentStatus[group._id] === "approved" || "special"
-                          ? "btn-danger"
-                          : "btn-success"
-                      } ms-3`}
-                    >
-                      {currentStatus[group._id] === "approved" || "special"
-                        ? "Reject User"
-                        : "Approve User"}
-                    </button>
-                  </div>
+        <div className="row">
+          <div className="col-lg-6 col-md-12 mb-4">
+            <div className="card shadow-sm">
+              <div className="card-body">
+                <h5 className="card-title mb-4">Student Information</h5>
+                <div className="table-responsive">
+                  <table className="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Number</th>
+                        
+                        <th>{getTokenAdmin ? "Role" : ""}</th>
+                        <th>{getTokenAdmin ? "Actions" : ""}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>{students.name?.split(" ")[0] || "Not available"}</td>
+                        <td>{students.email?.split("@")[0] || "Not available"}</td>
+                        <td>{students.phone_number || "Not available"}</td>
+                        <td> 
+                          {
+                            getTokenAdmin && (
+                              <select
+                                className="form-select form-select-sm"
+                            value={students.role || "user"}
+                            onChange={(e) => handleUpdateRole(students._id, e.target.value)}
+                          >
+                            <option value="user">Student</option>
+                            <option value="admin">Admin</option>
+                            <option value="instructor">Instructor</option>
+                          </select>
+                            )
+                          }
+                        </td>
+                        <td>
+                          {getTokenAdmin && (
+                            <button
+                              onClick={() => handleDelete(studentId)}
+                              className="btn btn-danger btn-sm"
+                          >
+                            Delete
+                          </button>
+                          )
+                        }
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-              ))}
+              </div>
+            </div>
+
+            <div className="card shadow-sm mt-4">
+              <div className="card-body">
+                <h5 className="card-title mb-4">Groups</h5>
+                {groupDetails.length === 0 ? (
+                  <div className="alert alert-info">No groups available for this student</div>
+                ) : (
+                  groupDetails.map((group, index) => (
+                    <div key={index} className="card mb-3">
+                      <div className="card-body">
+                        <h6 className="card-title">{group.title || "No title"}</h6>
+                        <p className="card-text">
+                          Start Date: {group.start_date?.split("T")[0] || "Not available"}
+                        </p>
+                        <div className="d-flex gap-2">
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => showDetailsStd(studentId, group._id)}
+                          >
+                            View Details
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleStopUser(studentId, group._id)}
+                            className={`btn btn-sm ${
+                              currentStatus[group._id] === "approved" || currentStatus[group._id] === "special"
+                                ? "btn-success"
+                                : "btn-danger"
+                            }`}
+                          >
+                            {currentStatus[group._id] === "approved" || currentStatus[group._id] === "special"
+                              ? "Approved"
+                              : "Pending"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
           {loading ? (
-            <div
-              style={{
-                textAlign: "center",
-              }}
-            >
-              <svg
-                className="loading"
-                viewBox="25 25 50 50"
-                style={{ width: "3.25em" }}
-              >
-                <circle r="20" cy="50" cx="50"></circle>
-              </svg>
+            <div className="col-12 text-center">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
             </div>
           ) : (
             <>
-              <div className="col-lg-3 col-md-6 col-sm-12 mb-3">
-                <div className="card p-3">
-                  <h3 className="text-center">Attendance</h3>
-                  <p>
-                    <strong>Present:</strong> {attendance.present || 0}
-                  </p>
-                  <p>
-                    <strong>Absent:</strong> {attendance.absent || 0}
-                  </p>
-                  <div>
-                    {Array.isArray(attendanceData) &&
-                      attendanceData.map((item, index) => (
-                        <li key={index}>
-                          <strong>Lecture {index + 1}</strong>:
-                          <span
-                            className={
+              <div className="col-lg-3 col-md-6 col-sm-12 mb-4">
+                <div className="card shadow-sm">
+                  <div className="card-body">
+                    <h5 className="card-title mb-4">Attendance</h5>
+                    <div className="mb-3">
+                      <p className="mb-1">
+                        <strong>Present:</strong> {attendance.present || 0}
+                      </p>
+                      <p className="mb-1">
+                        <strong>Absent:</strong> {attendance.absent || 0}
+                      </p>
+                    </div>
+                    <div className="list-group">
+                      {Array.isArray(attendanceData) && attendanceData.length > 0 ? (
+                        attendanceData.map((item, index) => (
+                          <div
+                            key={index}
+                            className={`list-group-item list-group-item-action ${
                               item.status === "present"
-                                ? "text-success"
-                                : "text-danger"
-                            }
+                                ? "list-group-item-success"
+                                : "list-group-item-danger"
+                            }`}
                           >
-                            {item.status === "present"
-                              ? " Attended"
-                              : " Absent"}
-                          </span>
-                        </li>
-                      ))}
+                            <strong>Lecture {index + 1}</strong>:
+                            {item.status === "present" ? " Present" : " Absent"}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="alert alert-info">No attendance data available</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="col-lg-3 col-md-6 col-sm-12 mb-3">
-                <div className="card p-3">
-                  <h3 className="text-center">Tasks</h3>
-                  <div>
-                    {taskData &&
-                      taskData.map((item, index) => {
-                        return (
-                          <li key={index}>
-                            <strong>{item.taskName || "No Task Name"} :</strong>
-                            <span
-                              className={
-                                item.score / 2 > 0
-                                  ? "text-success"
-                                  : "text-danger"
-                              }
-                            >
-                              {item.score || 0} -
-                              {item.feedback || " No Feedback"}
-                            </span>
-                          </li>
-                        );
-                      })}
+              <div className="col-lg-3 col-md-6 col-sm-12 mb-4">
+                <div className="card shadow-sm">
+                  <div className="card-body">
+                    <h5 className="card-title mb-4">Tasks</h5>
+                    <div className="list-group">
+                      {taskData && taskData.length > 0 ? (
+                        taskData.map((item, index) => (
+                          <div
+                            key={index}
+                            className={`list-group-item list-group-item-action ${
+                              item.score / 2 > 0
+                                ? "list-group-item-success"
+                                : "list-group-item-danger"
+                            }`}
+                          >
+                            <strong>{item.taskName || "No title"}</strong>
+                            <br />
+                            Score: {item.score || 0}
+                            <br />
+                            Feedback: {item.feedback || "No feedback"}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="alert alert-info">No tasks available</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -434,40 +514,44 @@ function DetailStudent() {
           )}
         </div>
 
-        <div className="row mt-3">
-          <div className="mt-3 w-100">
-            {/* {lecturesSpecial && ( */}
-            <div className=" p-2">
-              <h1>Special lectures</h1>
-              {lectures.map((lecture) => (
-                <div className=" mb-2" key={lecture._id}>
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id={lecture._id}
-                      checked={lecturesSpecial.includes(lecture._id)}
-                      disabled={lecturesSpecial}
-                      onChange={() => handleLectureSelection(lecture._id)}
-                    />
-                    <label className="form-check-label" htmlFor={lecture._id}>
-                      {lecture.title} - {lecture.description}
-                    </label>
+        {lectures.length > 0 && (
+          <div className="row mt-4">
+            <div className="col-12">
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title mb-4">Special Lectures</h5>
+                  <div className="list-group">
+                    {lectures.map((lecture) => (
+                      <div className="list-group-item" key={lecture._id}>
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id={lecture._id}
+                            checked={lecturesSpecial.includes(lecture._id)}
+                            onChange={() => handleLectureSelection(lecture._id)}
+                          />
+                          <label className="form-check-label" htmlFor={lecture._id}>
+                            {lecture.title || "No title"} - {lecture.description || "No description"}
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4">
+                    <button
+                      onClick={handleUpdateLectures}
+                      className="btn btn-primary"
+                      disabled={!location.state}
+                    >
+                      Update Lectures
+                    </button>
                   </div>
                 </div>
-              ))}
-              <div className="row p-4">
-                <button
-                  onClick={handleUpdateLectures}
-                  className="btn btn-primary col-lg-6 col-md-10 col-sm-5 ms-2 m-2"
-                >
-                  Update
-                </button>
               </div>
             </div>
-            {/* )} */}
           </div>
-        </div>
+        )}
       </div>
     </>
   );

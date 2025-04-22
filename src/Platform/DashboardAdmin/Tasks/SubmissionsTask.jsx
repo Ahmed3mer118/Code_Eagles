@@ -4,9 +4,10 @@ import axios from "axios";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-
+import InstructorService from "../../classes/InstructorService";
+import AdminService from "../../classes/AdminService";
 function SubmissionsTask() {
-  const { URLAPI, getTokenAdmin } = useContext(DataContext);
+  const { URLAPI, getTokenAdmin, getTokenInstructor } = useContext(DataContext);
   const { lectureId, taskId } = useParams();
   const [submissions, setSubmissions] = useState([]);
   const [taskName, setTaskName] = useState([]);
@@ -14,28 +15,23 @@ function SubmissionsTask() {
     feedback: "",
     score: 0,
   });
+  const [adminService] = useState(new AdminService(URLAPI, getTokenAdmin))
+  const [instructorService] = useState(new InstructorService(URLAPI, getTokenInstructor))
+  const [loading, setLoading] = useState(false)
 
   // get all user submit task
   useEffect(() => {
     if (lectureId && taskId) {
       // Fetch all submissions
-      axios
-        .get(
-          `${URLAPI}/api/lectures/${lectureId}/tasks/${taskId}/submissions`,
-          {
-            headers: {
-              Authorization: `${getTokenAdmin}`,
-            },
-          }
-        )
-        .then((res) => {
-          setSubmissions(res.data.submittedUsers);
-          console.log(res.data);
-          setTaskName(res.data);
-        })
-        .catch((err) => {
-          console.error("Error fetching submissions:", err);
-        });
+      setLoading(true)
+      instructorService.getSubmissionsTask(lectureId, taskId).then((res) => {
+        setSubmissions(res.data.submittedUsers);
+        setLoading(false)
+      })
+      adminService.getSubmissionsTask(lectureId, taskId).then((res) => {
+        setSubmissions(res.data.submittedUsers);
+        setLoading(false)
+      })
     }
   }, [lectureId, taskId, URLAPI, getTokenAdmin]);
 

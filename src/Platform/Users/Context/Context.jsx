@@ -1,15 +1,15 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";  
 
 export const DataContext = createContext();
 
 function Context({ children }) {
-  let getTokenAdmin, getTokenUser;
+  let getTokenAdmin, getTokenUser, getTokenInstructor;
 
   getTokenAdmin = JSON.parse(localStorage.getItem("token") );
   getTokenUser = JSON.parse(localStorage.getItem("tokenUser") );
-
+  getTokenInstructor = JSON.parse(localStorage.getItem("tokenInstructor") );
 
   const URLAPI = "https://api-codeeagles-cpq8.vercel.app";
   const [userGroups, setUserGroups] = useState([]);
@@ -26,7 +26,7 @@ function Context({ children }) {
           });
           setUserGroups(res.data.groups || []);
         } catch (err) {
-          console.error("Error fetching user groups:", err);
+          console.error("Error fetching user groups:", err?.message);
         } finally {
           setLoading(false);
         }
@@ -55,10 +55,10 @@ function Context({ children }) {
         const element = FilterMember[i];
 
         if (element.status === "approved") {
-          toast.info("You are already a member of this group.");
+          toast.promise("You are already a member of this group.");
           return;
         } else {
-          toast.info(
+          toast.success(
             "You have already sent a request. Please wait for approval."
           );
           return;
@@ -75,7 +75,7 @@ function Context({ children }) {
       await axios.post(`${URLAPI}/api/users/joinGroupRequest`, joinRes, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: getTokenUser,
+          Authorization: `${getTokenUser}`,
         },
       });
 
@@ -99,9 +99,9 @@ function Context({ children }) {
         handleJoinGroup,
         getTokenAdmin,
         getTokenUser,
+        getTokenInstructor,
         loading,
         userGroups,
-  
       }}
     >
       {children}

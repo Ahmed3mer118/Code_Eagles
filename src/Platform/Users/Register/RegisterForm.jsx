@@ -128,11 +128,11 @@ function RegisterForm() {
             </Link>
           </button>
         </div>
-        <div>
+        {/* <div>
           <p className="alert alert-warning p-2">
             Use one device on which you registered the email
           </p>
-        </div>
+        </div> */}
       </form>
     </>
   );

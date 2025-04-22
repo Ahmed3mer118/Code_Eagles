@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
 import { Helmet } from "react-helmet-async";
 
@@ -110,7 +110,7 @@ function NewTask() {
 
   return (
     <>
-      <ToastContainer />
+      <Toaster position="top-center" />
       <>
         <Helmet>
           <title>{updateTask ? "Update Task" : "Create Task"}</title>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
 
 function AttendanceList() {
@@ -53,7 +53,7 @@ function AttendanceList() {
     }
   return (
     <div className="container mt-4">
-      <ToastContainer />
+      <Toaster position="top-center" />
       <h3 className="mb-4">Attendance List for "{lectureTitle}"</h3>
       {attendanceData.length > 0 ? (
         <table className="table table-bordered">

@@ -5,9 +5,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { useContext } from "react";
 import { DataContext } from "../Users/Context/Context";
 import { Helmet } from "react-helmet-async";
+import { FaTrash } from "react-icons/fa";
 
 function GetAllFeedback() {
   const [feedbacks, setFeedbacks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
 
   useEffect(() => {
@@ -22,10 +24,8 @@ function GetAllFeedback() {
           }
         );
 
-        // تحقق من الحالة
         if (response.status === 200) {
           const feedbacks = response.data.feedbacks;
-
           if (feedbacks && feedbacks.length > 0) {
             setFeedbacks(feedbacks);
           } else {
@@ -35,21 +35,24 @@ function GetAllFeedback() {
           toast.error("Failed to load feedbacks.");
         }
       } catch (error) {
-        // إذا كان هناك خطأ 404 أو أي خطأ آخر
         if (error.response && error.response.status === 404) {
           toast.info("No feedbacks found.");
         } else {
           toast.error("An error occurred while fetching feedbacks.");
         }
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchFeedbacks();
-  }, []);
+  }, [URLAPI, getTokenAdmin]);
 
-  // حذف فيدباك معين
   const handleDeleteFeedback = async (feedbackId) => {
-    // console.log(feedbackId)
+    if (!window.confirm("Are you sure you want to delete this feedback?")) {
+      return;
+    }
+
     try {
       await axios.delete(`${URLAPI}/api/users/${feedbackId}/feedback`, {
         headers: {
@@ -66,47 +69,76 @@ function GetAllFeedback() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="container-fluid py-5">
+        <div className="row justify-content-center">
+          <div className="col-12 text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mt-4">
-      <ToastContainer />
+    <div className="container-fluid py-4">
+      <ToastContainer position="top-right" />
       <Helmet>
-        <title>All Feedback</title>
+          <title>Code Eagles |Feedback</title>
       </Helmet>
-      <h1 className="text-center">All Feedback</h1>
+
+      <div className="row mb-4">
+        <div className="col-12">
+          <h1 className="display-4 fw-bold text-primary mb-3">Feedback</h1>
+          <p className="lead text-muted">View and manage all feedback from users</p>
+        </div>
+      </div>
+
       {feedbacks.length === 0 ? (
-        <p className="text-center">No feedback available.</p>
+        <div className="alert alert-info text-center">
+              No feedback available.
+        </div>
       ) : (
-        <table className="table table-bordered mt-3">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Feedback</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.isArray(feedbacks) &&
-              feedbacks.map((feedback, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{feedback.name}</td>
-                  <td>{feedback.email}</td>
-                  <td>{feedback.feedback}</td>
-                  <td>
-                    <span
-                      className="text-danger"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => handleDeleteFeedback(feedback.userId)}
-                    >
-                      Delete
-                    </span>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <div className="card border-0 shadow-sm">
+          <div className="card-body">
+            <div className="table-responsive">
+              <table className="table table-hover  table-bordered">
+                <thead className="table-light">
+                  <tr>
+                    <th scope="col" className="text-center">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Feedback</th>
+                    <th scope="col" className="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.isArray(feedbacks) &&
+                    feedbacks.map((feedback, index) => (
+                      <tr key={index}>
+                        <td className="text-center">{index + 1}</td>
+                        <td>{feedback.name}</td>
+                        <td>{feedback.email}</td>
+                        <td>{feedback.feedback}</td>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleDeleteFeedback(feedback.userId)}
+                            title="Delete"
+                          >
+                            <FaTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -27,7 +27,6 @@ import DetailsStudent from "./DashboardAdmin/Students/DetailsStudent";
 // Lectures
 import Lectures from "./DashboardAdmin/Lectures/Lectures";
 import UpdateLecture from "./DashboardAdmin/Lectures/UpdateLecture";
-import LectureQRCode from "./DashboardAdmin/Lectures/LectureQRCode";
 import AttendanceList from "./DashboardAdmin/Lectures/AttendanceList";
 
 // Emails
@@ -57,21 +56,32 @@ import DataProvider from "./Users/Context/Context.jsx";
 import CourseDetail from "./Users/Lecture/CourseDetails.jsx";
 import ListStd from "./DashboardAdmin/Students/ListStd.jsx";
 import Chat from "./DashboardAdmin/Chat/Chat.jsx";
-import AllChats from "./DashboardAdmin/Chat/AllChats.jsx";
 import ProfileAdmin from "./DashboardAdmin/ProfileAdmin/Profile.jsx";
 import AllCourse from "./Users/Lecture/AllCourse.jsx";
 
-import "../App.css"
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import "../App.css";
 import PrivateUser from "./Users/Auth/PrivateUser.jsx";
 import AllGroup from "./Users/Group/AllGroup.jsx";
+import Quiz from "./Users/Quiz/Quiz.jsx";
+import QuizProvider from "./Users/Quiz/QuizProvider.jsx";
+import { Toaster } from "react-hot-toast";
+import CreateQuiz from "./DashboardAdmin/QuizByAdmin/CreateQuiz.jsx";
+import AllQuiz from "./DashboardAdmin/QuizByAdmin/AllQuiz.jsx";
+import UpdateQuiz from "./DashboardAdmin/QuizByAdmin/UpdateQuiz.jsx";
+
+// Instructor Dashboard
+import DashboardInstructor from "./DashboardInstructor/DashboardInstructor";
+import InstructorMessage from "./DashboardInstructor/InstructorMessage.jsx";
+
+// PrivateRouteInstructor
+import PrivateRouteInstructor from "./DashboardInstructor/PrivateRouteInstructor";
+
 const helmetContext = {};
 
 function App() {
   const router = createBrowserRouter([
     {
-      path: "/login/admin",
+      path: "/login",
       element: <Login />,
     },
     {
@@ -147,10 +157,7 @@ function App() {
               path: "/admin/:groupId/lectures/update/:lectureId",
               element: <UpdateLecture />,
             },
-            {
-              path: "/admin/:groupId/lectures/Qr-code?/:lectureId",
-              element: <LectureQRCode />,
-            },
+           
             {
               path: "/admin/:groupId/update",
               element: <UpdateGroup />,
@@ -176,18 +183,30 @@ function App() {
               path: "/admin/:groupId/lectures/:lectureId/tasks/:taskId/submissions",
               element: <SubmissionsTask />,
             },
+            {
+              path: "/admin/:groupId/quiz",
+              element: <AllQuiz />,
+            },
+            {
+              path: "/admin/:groupId/lectures/:lectureId/quiz",
+              element: <CreateQuiz />,
+            },
+            {
+              path: "/admin/:groupId/quiz/edit/:quizId",
+              element: <UpdateQuiz />,
+            },
           ],
         },
-         {
+        {
           path: "/admin/pay",
           element: <PaymentComponent />,
         },
       ],
     },
-// user
+    // user
     {
       path: "/",
-      element : <PrivateUser element={<Layout />}/>,
+      element: <PrivateUser element={<Layout />} />,
       // element: <Layout />,
       children: [
         {
@@ -221,10 +240,10 @@ function App() {
         {
           path: "/my-courses",
           element: <AllCourse />,
-        },      
+        },
         {
-          path:"/content/:contentId/course/:courseDetails",
-          element:<CourseDetail/>
+          path: "/content/:contentId/course/:courseDetails",
+          element: <CourseDetail />,
         },
         {
           path: "/course/:groupId",
@@ -234,10 +253,14 @@ function App() {
           path: "/course/:groupId/lecture/:lecCourse",
           element: <Courses />,
         },
-      
+
         {
           path: "/course/:groupId/lecture?/:lecCourse/Add-Task/:taskId",
           element: <AddTask />,
+        },
+        {
+          path: "/quiz",
+          element: <Quiz />,
         },
         {
           path: "/feedback",
@@ -254,9 +277,85 @@ function App() {
         {
           path: "/notification",
           element: <Notification />,
-        }
+        },
       ],
     },
+    // Instructor Routes
+    {
+      path: "/instructor",
+      element: <PrivateRouteInstructor element={<DashboardInstructor />} />,
+      children: [
+        {
+          index: true,
+          element: <DashboardInstructor />,
+        },
+        {
+          path: "/instructor/:groupId/students",
+
+          element: <Students />,
+        },
+        {
+          path: "/instructor/:groupId/student/:studentId",
+          element: <DetailsStudent />,
+        },
+        {
+          path: "/instructor/:groupId/lectures",
+          element: <Lectures />,
+        },
+       {
+        path: "/instructor/:groupId/tasks",
+        element: <Tasks />,
+       },
+       {
+        path: "/instructor/:groupId/lectures/:lectureId/newTask",
+        element: <NewTask />,
+       },
+       {
+        path: "/instructor/:groupId/lectures/:lectureId/tasks/updateTask/:taskId",
+        element: <NewTask />,
+       },
+       {
+        path: "/instructor/:groupId/lectures/:lectureId/tasks/:taskId/submissions",
+        element: <SubmissionsTask />,
+       },
+        {
+          path: "/instructor/:groupId/quizzes",
+          element: <AllQuiz />,
+        },
+        {
+          path: "/instructor/:groupId/quiz/edit/:quizId",
+          element: <UpdateQuiz />,
+        },
+        {
+          path: "/instructor/:groupId/messages",
+          element: <InstructorMessage />,
+        },
+        {
+          path: "/instructor/:groupId/lectures/:lectureId/attendance",
+          element: <AttendanceList />,
+        },
+        {
+          path: "/instructor/:groupId/lectures/:lectureId/quiz",
+          element: <CreateQuiz />,
+        },
+        {
+          path: "/instructor/:groupId/lectures/:lectureId/tasks",
+          element: <NewTask />,
+        },
+        {
+          path: "/instructor/:groupId/lectures/update/:lectureId",
+          element: <UpdateLecture />,
+        },
+        {
+          path: "/instructor/:groupId/setting",
+          element: <ProfileAdmin />,
+        }
+     
+
+        // يمكن إضافة مسارات أخرى للمحاضر هنا
+      ],
+    },
+ 
     {
       path: "*",
       element: <Error />,
@@ -267,8 +366,10 @@ function App() {
     <HelmetProvider context={helmetContext}>
       <AuthProvider>
         <DataProvider>
-          <ToastContainer />
-          <RouterProvider router={router} />
+          <Toaster />
+          <QuizProvider>
+            <RouterProvider router={router} />
+          </QuizProvider>
         </DataProvider>
       </AuthProvider>
     </HelmetProvider>

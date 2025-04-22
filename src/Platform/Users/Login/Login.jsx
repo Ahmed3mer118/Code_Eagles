@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { Helmet } from "react-helmet-async";
 import "../Register/register.css";
@@ -31,11 +31,11 @@ function Login() {
       });
 
       if (res.data) {
-        toast.success("Login successful!");
+        toast.success("Login Successfully!");
         const accessToken = res.data.accessToken;
         const refreshToken = res.data.refreshToken;
-        
-        expirationTime = currentTime + 15 * 60 * 1000;
+
+        expirationTime = currentTime + 3 * 60 * 1000;
         if (res.data.user.role === "admin" && accessToken) {
           localStorage.setItem("token", JSON.stringify(accessToken));
           Cookies.set("refreshToken", refreshToken, { expires: 10 });
@@ -44,11 +44,24 @@ function Login() {
           setTimeout(() => {
             navigate("/admin");
           }, 3000);
+        } else if (res.data.user.role === "instructor" && accessToken) {
+          localStorage.setItem("tokenInstructor", JSON.stringify(accessToken));
+          Cookies.set("refreshTokenInstructor", refreshToken, { expires: 10 });
+          localStorage.setItem("tokenExpirationInstructor", expirationTime);
+
+          setTimeout(() => {
+            navigate("/instructor");
+          }, 3000);
         } else if (res.data.user.role === "user" && accessToken) {
           localStorage.setItem("tokenUser", JSON.stringify(accessToken));
           Cookies.set("refreshTokenUser", refreshToken, { expires: 10 });
           localStorage.setItem("tokenExpirationUser", expirationTime);
 
+          if (history) {
+            setTimeout(() => {
+              window.history.back()
+            }, 3000);
+          }
           setTimeout(() => {
             window.location.href = "/";
           }, 3000);
@@ -58,14 +71,11 @@ function Login() {
       setLoading(false);
 
       if (error.response) {
-        // إذا كانت بيانات تسجيل الدخول غير صحيحة
-        toast.error("Invalid email or password.");
+        toast.error("The email or password is incorrect");
       } else if (error.response && error.response.status === 500) {
-        // إذا حدث خطأ في الخادم
-        toast.error("Server error. Please try again later.");
+        toast.error("An error occurred on the server. Please try again later");
       } else {
-        // لأي خطأ آخر
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى");
       }
     }
   };
@@ -112,7 +122,7 @@ function Login() {
 
   return (
     <>
-      <ToastContainer />
+      <Toaster position="top-center" />
       <Helmet>
         <title>Login</title>
       </Helmet>

@@ -1,24 +1,26 @@
 import axios from "axios";
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { DataContext } from "../Context/Context";
-import { toast, ToastContainer } from "react-toastify";
+import toast, { Toaster } from "react-hot-toast";
 import Cookies from "js-cookie"
 import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
 
 function Profile() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [userData, setUserData] = useState(null); // user data
-
   const [editing, setEditing] = useState(false);
-  const [loading,setLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [updatedData, setUpdatedData] = useState({
     name: "",
     email: "",
     phone_number: "",
   });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-  
+
     const fetchData = async () => {
       setLoading(true)
       try {
@@ -38,9 +40,7 @@ function Profile() {
         setLoading(false)
         if (error.response) {
           setLoading(false)
-          console.log("Response data:", error.response.data);
-          console.log("Response status:", error.response.status);
-          console.log("Response headers:", error.response.headers);
+
         } else if (error.request) {
           console.log("No response received:", error.request);
         } else {
@@ -52,38 +52,71 @@ function Profile() {
     fetchData();
   }, [URLAPI, getTokenUser]);
 
-  const handleUpdate = async () => {
-    console.log(updatedData);
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
     try {
-      const updateRes = await axios.put(`${URLAPI}/api/users`, updatedData, {
-        headers: { Authorization: `${getTokenUser}` },
-      });
-      setUserData(updateRes.data);
 
-      toast.success("Profile updated successfully!");
-      setTimeout(() => {
-        window.location.reload();
+      if (!getTokenUser) {
+        toast.error("Please log in again");
+        navigate("/login");
+        return;
+      }
 
+      const formData = {
+        name: updatedData.name,
+        phone_number: updatedData.phone_number,
+      }
+
+      const response = await axios.put(
+        `${URLAPI}/api/users`,
+        formData,
+        {
+          headers: {
+            Authorization: `${getTokenUser}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("Update Profile Successfully");
         setEditing(false);
-      }, 3000);
-    } catch (error) {
-      console.error("Error updating user data:", error);
-      toast.error("Failed to update profile.");
+      }
+    } catch (err) {
+
+      if (err.response?.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        navigate("/login");
+      } 
     }
   };
 
-  const handleLoggout = () => {
-    localStorage.removeItem("tokenExpirationUser");
-    localStorage.removeItem("tokenUser");
-    Cookies.remove("refreshTokenUser")
-    toast.success("logout successfully");
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 2000);
+  const handleLoggout = async () => {
+    try {
+      const refreshToken = Cookies.get("refreshTokenUser");
+      if (refreshToken) {
+        await axios.post(`${URLAPI}/api/users/logout`, {
+          refreshToken
+        });
+      }
+
+      localStorage.removeItem("tokenUser");
+      localStorage.removeItem("tokenExpirationUser");
+      Cookies.remove("refreshTokenUser");
+
+      toast.error("Session expired. Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 2000);
+    } catch (err) {
+      console.error("Error during logout:", err);
+      toast.error("Error during logout");
+    }
   };
+  // alert delete account
   const handleDeleteAccount = () => {
     const userConfirmed = window.confirm(
-      "Are you sure you want to delete your account ?"
+      "Are you sure you want to delete your account ? This action cannot be undone."
     );
     if (userConfirmed) {
       toast.info("Deleting your account...");
@@ -93,12 +126,12 @@ function Profile() {
         })
         .then(() => {
           toast.success(
-            "Your account has been deleted successfully. Come back to us again!"
+            "Your account has been deleted successfully. We hope to see you again!"
           );
           localStorage.removeItem("tokenExpirationUser");
           localStorage.removeItem("tokenUser");
-          // Cookies.remove("tokenUser")
-          // إعادة توجيه المستخدم بعد فترة قصيرة
+          Cookies.remove("refreshTokenUser");
+
           setTimeout(() => {
             window.location.href = "/";
           }, 3000);
@@ -107,11 +140,11 @@ function Profile() {
           toast.error(
             "An error occurred while deleting your account. Please try again."
           );
-          return
+          return;
         });
     } else {
       toast.info("Account deletion canceled.");
-      return
+      return;
     }
   };
   if (loading) {
@@ -137,10 +170,11 @@ function Profile() {
 
   return (
     <>
-      <ToastContainer />
+
       <Helmet>
         <title>Profile</title>
       </Helmet>
+
       <div className="container mt-4">
         <h2 className="mb-4">User Dashboard</h2>
 
@@ -150,16 +184,16 @@ function Profile() {
             <h5 className="card-title">Personal Information</h5>
             {!editing ? (
               <>
-  
+
                 <p>
-                  <strong>Name:</strong> { userData?.role == "user" &&   userData?.name  || "N/A"}
+                  <strong>Name:</strong> {userData?.role == "user" && userData?.name || "N/A"}
                 </p>
                 <p>
                   <strong>Email:</strong> {userData?.role == "user" && userData?.email || "N/A"}
                 </p>
                 <p>
                   <strong>Phone number:</strong>{" "}
-                  {userData?.role == "user" &&   userData?.phone_number || "N/A"}
+                  {userData?.role == "user" && userData?.phone_number || "N/A"}
                 </p>
                 <button
                   className="btn btn-primary"
@@ -209,7 +243,7 @@ function Profile() {
                   />
                 </div>
 
-                <button className="btn btn-success" onClick={handleUpdate}>
+                <button className="btn btn-success" onClick={handleUpdateProfile}>
                   Save
                 </button>
                 <button

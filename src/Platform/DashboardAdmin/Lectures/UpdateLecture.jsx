@@ -1,82 +1,86 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast,  Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
+import AdminService from "../../classes/AdminService";
+import InstructorService from "../../classes/InstructorService";
 
 function UpdateLecture() {
   const { groupId, lectureId } = useParams();
   const navigate = useNavigate();
-  const { URLAPI, getTokenAdmin } = useContext(DataContext);
+  const { URLAPI, getTokenAdmin, getTokenInstructor } = useContext(DataContext);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [adminService] = useState(new AdminService(URLAPI, getTokenAdmin));
+  const [instructorService] = useState(new InstructorService(URLAPI, getTokenInstructor));
   const [dataUpdate, setdataUpdate] = useState({
     title: "",
     description: "",
     article: "",
     resources: "" || [],
-    link_lecture: "",
-    mediaLinks: "",
+    groupId: groupId,
   });
 
-  if (!getTokenAdmin) {
-    toast.error("Unauthorized. Please log in.");
-    return;
-  }
+  // التحقق من الصلاحيات
+  useEffect(() => {
+    if (!getTokenAdmin && !getTokenInstructor) {
+      toast.error("Unauthorized. Please log in.");
+      navigate("/login");
+    }
+  }, [getTokenAdmin, getTokenInstructor, navigate]);
 
   // get lecture by id
   useEffect(() => {
-    axios
-      .get(`${URLAPI}/api/lectures/${lectureId}`, {
-        headers: {
-          Authorization: `${getTokenAdmin}`,
-        },
-      })
-      .then((res) => {
-        setdataUpdate(res.data.lecture);
-      })
-      .catch((err) => {
-        console.error("Error fetching lecture:", err);
-        toast.error("Error fetching lecture");
-      });
-  }, [lectureId, URLAPI, getTokenAdmin]);
+    const getLecture = async () => {
+      try {
+        if (window.location.pathname.includes("/admin")) {
+          const response = await adminService.getLectureDetails(lectureId);
+          setdataUpdate(response.lecture);
+        } else {
+          const response = await instructorService.getLectureDetails(lectureId);
+          setdataUpdate(response.lecture);
+   
+        }
+      } catch (error) {
+        console.error("Error fetching lecture:", error);
+        toast.error("Failed to fetch lecture data");
+      }
+    };
+    
+    if (getTokenAdmin || getTokenInstructor) {
+      getLecture();
+    }
+  }, [lectureId, URLAPI, getTokenAdmin, getTokenInstructor, adminService, instructorService, groupId]);
 
   // تعديل المحاضرة
-  const handleUpdate = (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    // التأكد من أن جميع الحقول المطلوبة موجودة
-    if (dataUpdate.title && dataUpdate.description && dataUpdate.article) {
-      axios
-        .put(
-          `${URLAPI}/api/lectures/${lectureId}`,
-          {
-            ...dataUpdate,
-            group_id: groupId, // تضمين الـ group_id
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `${getTokenAdmin}`,
-            },
-          }
-        )
-        .then(() => {
-          toast.success("Lecture updated successfully");
-          setTimeout(() => {
-            navigate(`/admin/${groupId}/lectures`);
-          }, 2000);
-        })
-        .catch((err) => {
-          console.error("Error updating lecture:", err);
-          toast.error("Failed to update lecture");
-        });
-    } else {
+    if (!dataUpdate.title || !dataUpdate.description || !dataUpdate.article) {
       toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      if (window.location.pathname.includes("/admin")) {
+        await adminService.updateLecture(lectureId, dataUpdate);
+      } else {
+        await instructorService.updateLecture(lectureId, dataUpdate);
+      }
+
+      const redirectPath = window.location.pathname.includes("/admin") 
+        ? `/admin/${groupId}/lectures`
+        : `/instructor/${groupId}/lectures`;
+      
+      navigate(redirectPath);
+    } catch (error) {
+      console.error("Error updating lecture:", error);
+      toast.error("Failed to update lecture");
     }
   };
 
   return (
     <>
-      <ToastContainer />
+      <Toaster position="top-center" />
 
       <form className="row p-2 ms-1 w-100">
         <h2>Update Lecture</h2>
@@ -132,7 +136,7 @@ function UpdateLecture() {
       </form>
 
       <button
-        className="btn btn-success col-3 m-3"
+        className="btn btn-primary col-3 m-3"
         aria-label="submit"
         onClick={handleUpdate}
       >

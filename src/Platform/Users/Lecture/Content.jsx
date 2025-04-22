@@ -4,6 +4,7 @@ import About from "../Layout/About";
 import { DataContext } from "../Context/Context";
 import axios from "axios";
 import { ToastContainer } from "react-toastify";
+import { Toaster } from "react-hot-toast";
 
 function Content() {
   const [group, setGroup] = useState([]);
@@ -95,7 +96,7 @@ function Content() {
 
   return (
     <>
-    <ToastContainer/>
+    <Toaster position="top-center"/>
     <div style={{ padding: "20px" }}>
       {[group].map((item,index) => (
         <h1 className="text-center" key={index}>Course : {item.title}</h1>
@@ -132,7 +133,7 @@ function Content() {
               alt={course.title}
               style={{
                 width: "100%",
-                height: "200px",
+                height: "100%",
                 objectFit: "cover",
                 borderRadius: "5px",
               }}

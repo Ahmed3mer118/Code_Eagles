@@ -10,6 +10,7 @@ import Contact from "../Contact/Contact";
 import About from "./About";
 import Content from "../Lecture/Content";
 import { GoArrowUp } from "react-icons/go";
+import { Helmet } from "react-helmet-async";
 
 function Main() {
   const handleWhatsAppRedirect = () => {
@@ -36,11 +37,14 @@ function Main() {
 
   return (
     <>
+      <Helmet>
+        <title>Code Eagles</title>
+      </Helmet>
       <>
         <div className="main-background">
           <div className="main-content">
             {/* <h1 className="cssanimation typing text-center">Web Development Courses Platform</h1> */}
-            <h1 className="text-center">Web Development Courses Platform</h1>
+            <h1 className="text-center">Code Eagles  Platform</h1>
             <p>
               Here you'll find everything you need to learn programming and
               build websites using the latest technologies.
@@ -69,7 +73,7 @@ function Main() {
         </div>
         {/* <Content /> */}
         {/* <About /> */}
-        <Group />
+        {/* <Group /> */}
         <AllGroup />
         <FeedBack />
         {/* <UserChat /> */}

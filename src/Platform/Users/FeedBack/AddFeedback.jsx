@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { Toaster , toast } from "react-hot-toast";
 
 import { DataContext } from "../Context/Context";
 import axios from "axios";
@@ -48,7 +48,7 @@ function AddFeedback() {
 
   return (
     <>
-      <ToastContainer />
+      <Toaster position="top-center" />
       <div className="container mt-4 mb-4">
         <h2 className="text-center mb-4">Add Feedback</h2>
         <form onSubmit={handleSubmit} className="shadow p-4 rounded m-auto">

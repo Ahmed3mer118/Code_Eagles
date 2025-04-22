@@ -1,7 +1,7 @@
 import axios from "axios";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
 import { Helmet } from "react-helmet-async";
 import { FaRegWindowClose } from "react-icons/fa";
@@ -21,11 +21,27 @@ function NewGroup() {
     about_course: [],
     instructorName: "",
     instructorImage: "",
+    instructor_id: "",
     imageCourse: "",
   });
   const [offline, setOffline] = useState(false);
   const navigate = useNavigate();
   const [previewImage, setPreviewImage] = useState(null);
+  const [instructors, setInstructors] = useState([]);
+  // Handle Get All Instructor
+  useEffect(()=>{
+    try {
+         axios.get(`${URLAPI}/api/users/all-instructors`, {
+        headers: {
+          Authorization: ` ${getTokenAdmin}`,
+        },
+      }).then((res)=>{
+        setInstructors(res.data);
+      })
+    } catch (error) {
+      toast.error("Failed to get instructors. Please try again.");
+    }
+  }, []);
 
   // Handle Add New Group
   const handleNewGroup = async (e) => {
@@ -33,9 +49,8 @@ function NewGroup() {
     if (!getTokenAdmin) {
       toast.error("Unauthorized. Please log in.");
       return;
-    }
+    } 
 
-    console.log(newGroup);
     try {
       await axios.post(`${URLAPI}/api/groups`, newGroup, {
         headers: {
@@ -68,12 +83,18 @@ function NewGroup() {
 
   // Handle Image Change
   const handleImageChange = (e, type) => {
-    const file = e.target.files[0];
-    console.log(file);
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
+
+    let file;
+    for (let index = 0; index < e.target.files.length; index++) {
+      file = e.target.files[index];
+    }
 
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      console.log(imageUrl);
+
       if (type === "instructor") {
         setNewGroup({ ...newGroup, instructorImage: imageUrl });
       } else if (type === "course") {
@@ -136,7 +157,7 @@ function NewGroup() {
       <Helmet>
         <title>Code Eagles | New Group</title>
       </Helmet>
-      <ToastContainer />
+      <Toaster />
       <h1 className="text-center mb-4 mt-3">Create New Course</h1>
       <form onSubmit={handleNewGroup} style={{ width: "80%", margin: "auto" }}>
         <div className="row">
@@ -221,10 +242,11 @@ function NewGroup() {
             />
           </div>
         </div>
-
-        {/* Price */}
-        <label className="text-muted mb-2">Price</label>
-        <input
+        <div className="row">   
+          {/* Price */}
+          <div className="col-md-6">
+            <label className="text-muted mb-2">Price</label>
+            <input
           type="number"
           name="price"
           placeholder="Price"
@@ -233,6 +255,23 @@ function NewGroup() {
           onChange={handleInputChange}
           required
         />
+        </div>
+        <div className="col-md-6">  
+
+        <label className="text-muted mb-2">Select Instructor By ID</label>
+        <select
+          className="form-control mb-3"
+          name="instructor_id"
+          value={newGroup.instructor_id}
+          onChange={handleInputChange}
+        >
+          {instructors.map((instructor, index) => (
+            <option key={index} value={instructor._id}>{instructor.name}</option>
+          ))}
+        </select>
+        </div>
+        </div>
+
 
         {/* Instructor  */}
         <div className="row">

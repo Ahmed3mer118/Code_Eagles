@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, Toaster } from "react-hot-toast";
 import "react-toastify/dist/ReactToastify.css";
 import { DataContext } from "../../Users/Context/Context";
 import { MdClose } from "react-icons/md";
@@ -11,31 +11,29 @@ function GetAllMessage() {
   const [messages, setMessages] = useState([]);
   const [reply, setReply] = useState("");
   const [loading, setLoading] = useState(true);
-  const [currentMessage, setCurrentMessage] = useState(null); // Store the current message being replied to
+  const [currentMessage, setCurrentMessage] = useState(null);
   const [showFormReply, setShowFormReply] = useState(false);
 
-  // Fetch all messages
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        setLoading(true)
+        setLoading(true);
         const res = await axios.get(`${URLAPI}/api/contact/contact-us/messages`, {
           headers: { Authorization: `${getTokenAdmin}` },
         });
-        setLoading(false)
+        setLoading(false);
         setMessages(res.data.messages);
       } catch (error) {
         toast.error("Failed to fetch messages. Please try again.");
       }
     };
     fetchMessages();
-  }, [ getTokenAdmin,messages.isReplied]);
+  }, [getTokenAdmin, messages.isReplied]);
 
   const handleReplyChange = (e) => {
     setReply(e.target.value);
   };
 
-  // Handle reply to a message
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!reply) {
@@ -68,144 +66,152 @@ function GetAllMessage() {
     setShowFormReply(!showFormReply);
   };
 
- 
- if (loading) {
+  if (loading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "70vh",
-        }}
-      >
-        <svg
-          className="loading"
-          viewBox="25 25 50 50"
-          style={{ width: "3.25em" }}
-        >
-          <circle r="20" cy="50" cx="50"></circle>
-        </svg>
+      <div className="container-fluid py-5">
+        <div className="row justify-content-center">
+          <div className="col-12 text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-
   return (
-    <div className="container mt-4 position-relative">
-      <ToastContainer />
+    <div className="container-fluid py-4">
+      <Toaster position="top-center" />
       <Helmet>
         <title>All Messages</title>
       </Helmet>
-      <h1 className="text-center">All Messages</h1>
+
+      <div className="row mb-4">
+        <div className="col-12">
+          <h1 className="text-center mb-4">All Messages</h1>
+        </div>
+      </div>
+
       {messages.length === 0 ? (
-        <p className="text-center">No messages available.</p>
+        <div className="alert alert-info text-center">
+          No messages available.
+        </div>
       ) : (
-        <table className="table table-bordered mt-3">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Message</th>
-              <th>Status</th>
-              <th>Reply</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.isArray(messages) &&
-              messages.map((message, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{message.name}</td>
-                  <td>{message.email}</td>
-                  <td>{message.message}</td>
-                  <td
-                    className={
-                      message.isReplied == false
-                        ? "text-danger"
-                        : "text-success"
-                    }
-                  >
-                    {message.isReplied ? "True" : "False"}
-                  </td>
-                  <td>
-                    <span
-                      onClick={() => handleReplyClick(message)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      Reply
-                    </span>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <div className="card shadow-sm">
+          <div className="card-body">
+            <div className="table-responsive">
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.isArray(messages) &&
+                    messages.map((message, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{message.name}</td>
+                        <td>{message.email}</td>
+                        <td>{message.message}</td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              message.isReplied
+                                ? "bg-success"
+                                : "bg-danger"
+                            }`}
+                          >
+                            {message.isReplied ? "Replied" : "Pending"}
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            onClick={() => handleReplyClick(message)}
+                            className="btn btn-primary btn-sm"
+                          >
+                            Reply
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       )}
+
       {showFormReply && currentMessage && (
-        <div
-          className="container mt-3 me-2"
-          style={{
-            position: "absolute",
-            top: "0",
-            backgroundColor: "white",
-            boxShadow: "0 9px 21px #999",
-            padding: "30px",
-            maxWidth: "800px",
-            marginRight: "10px",
-          }}
-        >
-          <div className="d-flex justify-content-between align-items-center">
-            <h2 className="text-center mb-3">Reply to Message</h2>
-            <MdClose
-              style={{ cursor: "pointer", fontSize: "25px" }}
-              onClick={handleReplyClick}
-            />
-          </div>
-          <div className="card">
-            <div className="card-body">
-              <h5 className="card-title">Name: {currentMessage.name}</h5>
-              <p className="card-text">
-                Email: <b>{currentMessage.email}</b>
-              </p>
-              <p className="card-text">
-                Date: <b>{currentMessage.created_at?.slice(0, 10)}</b>
-              </p>
-              <p className="card-text">
-                Message: <b>{currentMessage.message}</b>
-              </p>
-              <p className="card-text">
-                {currentMessage.adminReplies ||currentMessage.adminReply.length > 0  && (
-                  <b className={"text-success"}>
-                    Admin Reply : {currentMessage.adminReply}
-                  </b>
-                )}
-              </p>
+        <div className="modal show d-block" tabIndex="-1">
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Reply to Message</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={handleReplyClick}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="card mb-4">
+                  <div className="card-body">
+                    <h6 className="card-title">Message Details</h6>
+                    <p className="mb-1">
+                      <strong>Name:</strong> {currentMessage.name}
+                    </p>
+                    <p className="mb-1">
+                      <strong>Email:</strong> {currentMessage.email}
+                    </p>
+                    <p className="mb-1">
+                      <strong>Date:</strong>{" "}
+                      {currentMessage.created_at?.slice(0, 10)}
+                    </p>
+                    <p className="mb-1">
+                      <strong>Message:</strong> {currentMessage.message}
+                    </p>
+                    {currentMessage.adminReplies ||
+                      (currentMessage.adminReply.length > 0 && (
+                        <p className="mb-0 text-success">
+                          <strong>Previous Reply:</strong>{" "}
+                          {currentMessage.adminReply}
+                        </p>
+                      ))}
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                  <div className="mb-3">
+                    <label htmlFor="reply" className="form-label">
+                      <strong>Your Reply:</strong>
+                    </label>
+                    <textarea
+                      id="reply"
+                      className="form-control"
+                      rows="4"
+                      value={reply}
+                      onChange={handleReplyChange}
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={reply.trim() === ""}
+                  >
+                    Send Reply
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
-          <form onSubmit={handleSubmit} className="mt-4">
-            <div className="form-group">
-              <label htmlFor="reply" className="mb-2">
-                <b>Your Reply:</b>
-              </label>
-              <textarea
-                id="reply"
-                className="form-control"
-                rows="4"
-                value={reply}
-                onChange={handleReplyChange}
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="btn btn-primary mt-3"
-              disabled={ reply.trim() === ""}
-              onClick={handleSubmit}
-            >
-              Send Reply
-            </button>
-          </form>
         </div>
       )}
     </div>

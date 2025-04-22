@@ -10,7 +10,7 @@ function PrivateRoute({ element }) {
   const isLoggedIn = !!getTokenAdmin;
 
 
-  const protectedPatterns = [   /^\/admin(\/.*)?$/];
+  const protectedPatterns = [   /^\/admin(\/.*)?$/, /^\/instructor(\/.*)?$/];
 
   const isProtected = protectedPatterns.some((pattern) => {
     pattern.test(location.pathname);
@@ -19,7 +19,7 @@ function PrivateRoute({ element }) {
 
 
   if (!isLoggedIn && !isProtected || !isLoggedIn && isProtected) {
-    return <Navigate to="/login/admin" state={{ from: location }} />;
+    return <Navigate to="/login" state={{ from: location }} />;
   }
 
   return element;

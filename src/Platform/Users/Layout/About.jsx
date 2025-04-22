@@ -1,13 +1,13 @@
 import React, { useContext, useState } from "react";
 import { DataContext } from "../Context/Context";
-import { toast } from "react-toastify";
 
+import { Toaster ,toast } from "react-hot-toast";
 
 function About({ group, about, courses, loading }) {
   const { URLAPI, getTokenUser, handleJoinGroup } = useContext(DataContext);
-  const [showForm, setShowForm] = useState(false); // حالة لإظهار/إخفاء الفورم
-  const [requestType, setRequestType] = useState("Full Course"); // حالة لتحديد نوع الطلب
-  const [note, setNote] = useState(""); // حالة لملاحظات المستخدم
+  const [showForm, setShowForm] = useState(false);
+  const [requestType, setRequestType] = useState("Full Course");
+  const [note, setNote] = useState(""); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,7 +18,7 @@ function About({ group, about, courses, loading }) {
 
     try {
       await handleJoinGroup(group._id, requestType, note);
-      setShowForm(false); // إخفاء الفورم بعد الإرسال
+      setShowForm(false); 
     } catch (error) {
       console.error("Error submitting request:", error);
       toast.error("Failed to submit request. Please try again.");
@@ -39,7 +39,7 @@ function About({ group, about, courses, loading }) {
         ))}
         <button
           className="btn btn-success d-block m-auto mt-3 mb-3"
-          onClick={() => setShowForm(!showForm)} // إظهار/إخفاء الفورم
+          onClick={() => setShowForm(!showForm)} 
           disabled={!loading}
           aria-label="Submit Form"
         >

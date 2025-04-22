@@ -1,37 +1,65 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { DataContext } from "../Context/Context";
+import { toast } from "react-hot-toast";
+import Cookies from "js-cookie";
 
 function NavStudent({ menuOpen, setMenuOpen }) {
-  const { URLAPI, getTokenUser } = useContext(DataContext);
+  const { URLAPI } = useContext(DataContext);
   const [loggedUser, setLoggedUser] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [statusUser, setStatusUser] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (getTokenUser) {
-      axios
-        .get(`${URLAPI}/api/users`, {
-          headers: { Authorization: `${getTokenUser}` },
-        })
-        .then((res) => {
-          if (res.data) {
-            // console.log(res.data)
-            setLoggedUser(res.data.accessToken);
-            // setIsEnrolled(res.data.groups?.length > 0);
-            setIsEnrolled(true);
-            setStatusUser(res.data.groups || []);
-            // setStatusUser(res.data.groups?.length > 0);
-          }
-        })
-        .catch((err) => console.error("Error fetching user data:", err));
+    const fetchUserData = async () => {
+      try {
+        const token = JSON.parse(localStorage.getItem("tokenUser"));
+        const refreshToken = Cookies.get("refreshTokenUser");
+
+        if (!token || !refreshToken) {
+          navigate("/login");
+          return;
+        }
+
+        const response = await axios.get(`${URLAPI}/api/users`, {
+          headers: { Authorization: `${token}` },
+        });
+
+        if (response.data) {
+          setLoggedUser(response.data);
+          setIsEnrolled(response.data.groups?.length > 0);
+          setStatusUser(response.data.groups || []);
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+        if (err.response?.status === 401) {
+          localStorage.removeItem("tokenUser");
+          localStorage.removeItem("tokenExpirationUser");
+          Cookies.remove("refreshTokenUser");
+          navigate("/login");
+        }
+      } finally {
+        setIsLoading(false);
       }
-    }, [getTokenUser]);
+    };
+
+    fetchUserData();
+  }, [URLAPI, navigate]);
 
   const closeNavbar = () => {
     setMenuOpen(false);
   };
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!loggedUser) {
+    return null;
+  }
 
   return (
     <ul className={menuOpen ? "nav responsive" : "nav align-items-center"}>
