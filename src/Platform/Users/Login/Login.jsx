@@ -120,7 +120,7 @@ function Login() {
         <title>Login</title>
       </Helmet>
       <div className="bg-form">
-        <form className="p-3 rounded" onSubmit={handleLogin}>
+        <form className="p-3 rounded register-form"  onSubmit={handleLogin}>
           <h1 className="text-center text-light">Login</h1>
 
           <input
