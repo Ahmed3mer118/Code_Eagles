@@ -61,7 +61,7 @@ function AllGroup() {
           </div>
 
           <div className="row g-4">
-            {Array.isArray(groups) && groups.map((group) => (
+            {Array.isArray(groups) && groups?.map((group) => (
               <div className="col-12 col-md-6 col-lg-4" key={group._id}>
                 <div className="card h-100 border-0 shadow-sm hover-shadow transition">
                   <div className="card-body p-0">
@@ -110,7 +110,7 @@ function AllGroup() {
               ))}
           </div>
 
-          {(!Array.isArray(groups) || groups.length === 0) && (
+          {(!Array.isArray(groups) || groups?.length === 0) && (
             <div className="row mt-5">
               <div className="col-12 text-center">
                 <div className="alert alert-info" role="alert">

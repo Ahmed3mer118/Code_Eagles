@@ -58,7 +58,7 @@ function Group() {
               </p>
             </div>
             <div className="row g-4">
-            {groups.map((group) => (
+            {groups?.map((group) => (
               <div key={group._id} className="col-12 col-md-6 col-lg-4">
                 <div className="card h-100 border-0 shadow-sm hover-shadow transition">
                   <div className="card-body d-flex flex-column p-4">
@@ -81,7 +81,7 @@ function Group() {
 
          
 
-          {groups.length === 0 && (
+          {groups?.length === 0 && (
             <div className="row mt-5">
               <div className="col-12 text-center">
                 <div className="alert alert-info" role="alert">

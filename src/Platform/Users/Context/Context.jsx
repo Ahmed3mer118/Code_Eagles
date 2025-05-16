@@ -11,8 +11,7 @@ function Context({ children }) {
   getTokenInstructor = JSON.parse(localStorage.getItem("tokenInstructor") );
   const userService = new UserService(getTokenUser)
 
-  // const URLAPI = import.meta.env.VITE_API_URL;
-  const URLAPI = "https://api-codeeagles-cpq8.vercel.app";
+  const URLAPI = import.meta.env.VITE_API_URL;
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);

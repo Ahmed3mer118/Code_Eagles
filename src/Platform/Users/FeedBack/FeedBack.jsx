@@ -73,7 +73,7 @@ import UserService from "../../classes/UserService";
             </div>
           </div>
 
-          {feedbackList.length > 0 ? (
+          {feedbackList?.length > 0 ? (
             <>
               <div className="row g-4">
                 {feedbackList
