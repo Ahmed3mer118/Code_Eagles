@@ -16,6 +16,7 @@ function EmailReq() {
     if (email) {
       return;
     }
+    
     axios
       .get(`${URLAPI}/api/users/pending-users`, {
         headers: {
@@ -31,8 +32,7 @@ function EmailReq() {
         }
       })
       .catch((error) => {
-        console.log("Not Request");
-        console.log(error.message);
+      
         setEmail("");
         setLoading(false);
       });
@@ -53,7 +53,7 @@ function EmailReq() {
       userId: id,
     };
     let accept = requestStutas === "invite" ? acceptedReq : accceptJoin;
-    console.log(status, accept);
+    console
     try {
       await axios
         .post(`${URLAPI}/api/users/${status}`, accept, {
@@ -79,17 +79,22 @@ function EmailReq() {
       groupId: requestId,
       userId: id,
     };
-    console.log(rejectedReq);
+
     setLoading(true);
     try {
+      const response = await axios.post(`${URLAPI}/api/users/reject-join-request`, rejectedReq, {
+        headers: {
+          Authorization: `${getTokenAdmin}`,
+        },
+      });
       setLoading(true);
       setLoading(false);
-      toast.error("Request Rejected");
-      setEmail(email.filter((item) => item.user_id._id !== id));
+      toast.success(response.data.message);
+      setEmail(email.filter((item) => item.userId !== id));
     } catch (error) {
       toast.error(
-        `Error accepting request: ${
-          error.response.data.message || error.message
+        `Error rejecting request: ${
+           error.message
         }`
       );
     }
@@ -104,7 +109,7 @@ function EmailReq() {
           headers: { Authorization: getTokenAdmin },
         }
       );
-      console.log(response.data.lectures);
+
       setLectures(response.data.lectures);
     } catch (error) {
       console.error("Error fetching lectures:", error);

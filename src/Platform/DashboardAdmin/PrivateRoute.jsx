@@ -4,10 +4,10 @@ import { useAuth } from "./context/AuthContext ";
 import { DataContext } from "../Users/Context/Context";
 
 function PrivateRoute({ element }) {
-  const { getTokenAdmin } = useContext(DataContext);
+  const { getTokenAdmin, getTokenInstructor } = useContext(DataContext);
   const location = useLocation();
 
-  const isLoggedIn = !!getTokenAdmin;
+  const isLoggedIn = !!getTokenAdmin || !!getTokenInstructor;
 
 
   const protectedPatterns = [   /^\/admin(\/.*)?$/, /^\/instructor(\/.*)?$/];

@@ -1,15 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 import { DataContext } from "../Context/Context";
 import "./Courses.css";
 import { Helmet } from "react-helmet-async";
-
+import UserService from "../../classes/UserService";
 function AllCourse() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { URLAPI, getTokenUser } = useContext(DataContext);
+  const { getTokenUser } = useContext(DataContext);
+  const [userService] = useState(new UserService(getTokenUser));
   const navigate = useNavigate();
   const location = useLocation();
   const showFooter = location.pathname === "/content/?:contentId";
@@ -25,26 +26,20 @@ function AllCourse() {
         }
 
         // Fetch user details to get groups
-        const userRes = await axios.get(`${URLAPI}/api/users`, {
-          headers: { Authorization: ` ${getTokenUser}` },
-        });
+        const userRes = await userService.getUserById();
 
-        const approvedCourses = userRes.data.groups.filter(
+
+        const approvedCourses = userRes.groups.filter(
           (group) => group.status === "approved" || group.status == "special"
         );
 
         // Fetch details for each approved course
         const courseDetails = await Promise.all(
           approvedCourses.map(async (element) => {
-            const res = await axios.get(
-              `${URLAPI}/api/groups/${element.groupId}`,
-              {
-                headers: { Authorization: getTokenUser },
-              }
-            );
+            const res = await userService.getGroupById(element.groupId);
 
             return {
-              ...res.data,
+              ...res,
               attendancePercentage: element.attendancePercentage,
             };
           })
@@ -61,7 +56,7 @@ function AllCourse() {
     };
 
     fetchCourses();
-  }, [URLAPI, getTokenUser]);
+  }, [getTokenUser]);
 
   // Handle navigation to course details
   const handleViewCourse = (groupId) => {

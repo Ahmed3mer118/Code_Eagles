@@ -3,9 +3,9 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import About from "../Layout/About";
 import { DataContext } from "../Context/Context";
 import axios from "axios";
-import { ToastContainer } from "react-toastify";
-import { Toaster } from "react-hot-toast";
 
+import { toast, Toaster } from "react-hot-toast";
+import UserService from "../../classes/UserService";  
 function Content() {
   const [group, setGroup] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -14,32 +14,26 @@ function Content() {
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [visibleCourses, setVisibleCourses] = useState({});
   const courseRefs = useRef([]);
-
+  const [userService] = useState(new UserService(getTokenUser));
   const [loading, setLoading] = useState(false);
   // const showAbout = location.pathname === "/content/?:contentId";
 
   useEffect(() => {
-    if (contentId) {
-      setLoading(true);
-      axios
-        .get(`${URLAPI}/api/groups/${contentId}`, {
-          headers: {
-            Authorization: getTokenUser,
-          },
-        })
-        .then((res) => {
-          setLoading(false);
-          setGroup(res.data);
-          setCourses(res.data.course_details || []);
-          setAbout(res.data.about_course || []);
-        })
-        .catch((error) => {
-          console.error("Error fetching course details:", error);
-        });
-    }
-  }, [contentId, URLAPI, getTokenUser]); // إضافة المتابعات لتجنب التكرار
+    const fetchGroup = async () => {
+      if (contentId) {
+        setLoading(true);
+        const response = await userService.getGroupById(contentId);
+        setGroup(response);
+        setCourses(response.course_details || []);
+        setAbout(response.about_course || []);
+        setLoading(false);
+      }
+    };
+    fetchGroup();
+  }, [contentId, getTokenUser]);
 
-  // إعداد IntersectionObserver لعرض العناصر عند التمرير
+
+
   const courseBox = (index) => {
     const observer = new IntersectionObserver(
       ([entry]) => {

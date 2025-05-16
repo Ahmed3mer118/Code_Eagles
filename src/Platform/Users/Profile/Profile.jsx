@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { DataContext } from "../Context/Context";
-import toast, { Toaster } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
 import Cookies from "js-cookie"
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
@@ -104,7 +104,8 @@ function Profile() {
       localStorage.removeItem("tokenExpirationUser");
       Cookies.remove("refreshTokenUser");
 
-      toast.error("Session expired. Please log in again.");
+      // toast.error("Session expired. Please log in again.");
+      toast.success("Logout Successfuly ")
       setTimeout(() => {
         window.location.href = "/";
       }, 2000);

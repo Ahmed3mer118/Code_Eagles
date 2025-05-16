@@ -1,14 +1,15 @@
 import axios from "axios";
-import React, { Fragment, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { DataContext } from "../../Users/Context/Context";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import Cookies from "js-cookie";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
+import AdminService from "../../classes/AdminService";
 
 function Profile() {
-  const { URLAPI, getTokenAdmin , getTokenInstructor } = useContext(DataContext);
-
+  const { URLAPI, getTokenAdmin, getTokenInstructor, maintenanceMode, setMaintenanceMode } = useContext(DataContext);
+  const [adminService] = useState(new AdminService(URLAPI, getTokenAdmin, setMaintenanceMode));
   const [userData, setUserData] = useState(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,18 +18,35 @@ function Profile() {
     email: "",
     phone_number: "",
   });
-
   const navigate = useNavigate();
+
+  // منع الأزرار أثناء الصيانة (ماعدا زر التبديل)
+  useEffect(() => {
+    const buttons = document.querySelectorAll("button");
+    buttons.forEach((btn) => {
+      if (!btn.classList.contains("maintenance-toggle")) {
+        btn.disabled = maintenanceMode;
+      }
+    });
+  }, [maintenanceMode]);
+
+  useEffect(() => {
+    if (maintenanceMode) {
+      adminService.isBlocked = true;
+    } else {
+      adminService.isBlocked = false;
+    }
+  }, [maintenanceMode, adminService]);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (maintenanceMode) return; // منع جلب البيانات وقت الصيانة
       setLoading(true);
       try {
         const res = await axios.get(`${URLAPI}/api/users`, {
           headers: { Authorization: `${getTokenAdmin || getTokenInstructor}` },
         });
         if (res.data) {
-            
           setUserData(res.data);
           setUpdatedData({
             name: res.data.name,
@@ -48,10 +66,14 @@ function Profile() {
     };
 
     fetchData();
-  }, [URLAPI, getTokenAdmin, navigate]);
+  }, [URLAPI, getTokenAdmin, maintenanceMode, getTokenInstructor, navigate]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    if (maintenanceMode) {
+      toast.error("Cannot update profile while in maintenance mode.");
+      return;
+    }
     try {
       if (!getTokenAdmin) {
         toast.error("Please log in again.");
@@ -92,17 +114,22 @@ function Profile() {
   };
 
   const handleLogout = async () => {
+    if (maintenanceMode) {
+      toast.error("Cannot logout during maintenance mode.");
+      return;
+    }
     try {
       const refreshToken = Cookies.get("refreshToken");
       if (refreshToken) {
         await axios.post(`${URLAPI}/api/users/logout`, {
           refreshToken
         });
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("tokenExpiration");
+        Cookies.remove("refreshToken");
       }
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("tokenExpiration");
-      Cookies.remove("refreshToken");
 
       toast.success("Logout successfully");
       setTimeout(() => {
@@ -115,8 +142,12 @@ function Profile() {
   };
 
   const handleDeleteAccount = () => {
+    if (maintenanceMode) {
+      toast.error("Cannot delete account during maintenance mode.");
+      return;
+    }
     const userConfirmed = window.confirm(
-      "Are you sure you want to delete your account ? This action cannot be undone."
+      "Are you sure you want to delete your account? This action cannot be undone."
     );
     if (userConfirmed) {
       toast.info("Deleting your account...");
@@ -143,7 +174,9 @@ function Profile() {
           return;
         });
     } else {
-      toast.info("Account deletion canceled.");
+      toast.loading("Account deletion canceled.", {
+        duration: 2000,
+      });
       return;
     }
   };
@@ -181,30 +214,44 @@ function Profile() {
 
           <div className="row">
             <div className="col-12 col-lg-8 mx-auto">
-              <div className="card border-0 shadow-sm">
+              <div className="card border-0 shadow-sm rounded-3">
                 <div className="card-body p-4">
-                  <h5 className="card-title fw-bold text-primary mb-4">Personal Information</h5>
-                  
+                  <h4 className="fw-bold text-primary mb-4 border-bottom pb-2"> Personal Information</h4>
+
                   {!editing ? (
                     <div className="mb-4">
-                      <div className="mb-3 d-flex alige-items-center">
-                        <strong className="text-dark">Name:</strong>
-                        <p className="text-muted">{userData?.name || "Not available"}</p>
+                      <div className="mb-3 d-flex">
+                        <strong className="text-dark w-25">Name:</strong>
+                        <span className="text-muted">{userData?.name || "Not available"}</span>
                       </div>
-                      <div className="mb-3 d-flex alige-items-center">
-                        <strong className="text-dark">Email:</strong>
-                        <p className="text-muted">{userData?.email || "Not available"}</p>
+                      <div className="mb-3 d-flex">
+                        <strong className="text-dark w-25">Email:</strong>
+                        <span className="text-muted">{userData?.email || "Not available"}</span>
                       </div>
-                      <div className="mb-3 d-flex alige-items-center">
-                        <strong className="text-dark">Phone number:</strong>
-                        <p className="text-muted">{userData?.phone_number || "Not available"}</p>
+                      <div className="mb-4 d-flex">
+                        <strong className="text-dark w-25">Phone:</strong>
+                        <span className="text-muted">{userData?.phone_number || "Not available"}</span>
                       </div>
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => setEditing(true)}
-                      >
-                        Edit Profile
-                      </button>
+
+                      <div className="d-flex flex-wrap gap-2">
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => setEditing(true)}
+                          disabled={maintenanceMode}
+                        >
+                          ✏️ Edit Profile
+                        </button>
+
+                        <button
+                          className={`btn maintenance-toggle ${maintenanceMode ? "btn-danger" : "btn-success"}`}
+                          onClick={() => {
+                            adminService.toggleMaintenanceMode(!maintenanceMode);
+                            setMaintenanceMode(!maintenanceMode);
+                          }}
+                        >
+                          {maintenanceMode ? "🔧 Close Maintenance" : "🔧 Open Maintenance"}
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <form onSubmit={handleUpdateProfile}>
@@ -217,6 +264,7 @@ function Profile() {
                           onChange={(e) =>
                             setUpdatedData({ ...updatedData, name: e.target.value })
                           }
+                          disabled={maintenanceMode}
                         />
                       </div>
                       <div className="mb-3">
@@ -240,43 +288,56 @@ function Profile() {
                               phone_number: e.target.value,
                             })
                           }
+                          disabled={maintenanceMode}
                         />
                       </div>
-                      <div className="d-flex gap-2">
-                        <button type="submit" className="btn btn-success">
-                          Save Changes
+
+                      <div className="d-flex flex-wrap gap-2 mt-3">
+                        <button
+                          type="submit"
+                          className="btn btn-success"
+                          disabled={maintenanceMode}
+                        >
+                          💾 Save Changes
                         </button>
                         <button
                           type="button"
                           className="btn btn-secondary"
                           onClick={() => setEditing(false)}
+                          disabled={maintenanceMode}
                         >
-                          Cancel
+                          ❌ Cancel
                         </button>
                       </div>
                     </form>
                   )}
-                </div>
-              </div>
 
-              <div className="d-flex justify-content-between mt-4">
-                <button
-                  onClick={handleLogout}
-                  className="btn btn-outline-primary"
-                >
-                  Logout
-                </button>
-                <button
-                  onClick={handleDeleteAccount}
-                  className="btn btn-outline-danger"
-                >
-                  Delete Account
-                </button>
+                  <hr className="my-4" />
+                  <div className="d-flex flex-wrap justify-content-between gap-2">
+                    <button
+                      className="btn btn-warning"
+                      onClick={handleLogout}
+                      disabled={maintenanceMode}
+                    >
+                      🚪 Logout
+                    </button>
+                    <button
+                      className="btn btn-danger"
+                      onClick={handleDeleteAccount}
+                      disabled={maintenanceMode}
+                    >
+                      🗑️ Delete Account
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
         </div>
       </div>
+
+      <Toaster position="top-center" reverseOrder={false} />
     </>
   );
 }

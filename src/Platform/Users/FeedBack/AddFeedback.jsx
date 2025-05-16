@@ -4,8 +4,10 @@ import { Toaster , toast } from "react-hot-toast";
 import { DataContext } from "../Context/Context";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import UserService from "../../classes/UserService";
 function AddFeedback() {
-  const { URLAPI, getTokenUser } = useContext(DataContext);
+  const { getTokenUser } = useContext(DataContext);
+  const [userService] = useState(new UserService(getTokenUser));
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,12 +22,7 @@ function AddFeedback() {
     e.preventDefault();
 
     if (getTokenUser) {
-      axios
-        .post(`${URLAPI}/api/users/submit-feedback`, formData, {
-          headers:{
-            Authorization:getTokenUser
-          }
-        })
+        userService.submitFeedback(formData)
         .then(() => {
           toast.success("Feedback submitted successfully! Thanks");
           setTimeout(() => {

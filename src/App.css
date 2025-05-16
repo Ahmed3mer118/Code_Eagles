@@ -7,7 +7,11 @@ svg.loading {
   transform-origin: center;
   animation: rotate4 2s linear infinite;
 }
-
+.blocked button {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 circle {
   fill: none;
   stroke: hsl(214, 97%, 59%);

@@ -10,15 +10,15 @@ import { Helmet } from 'react-helmet-async';
 function InstructorMessage() {
     const { groupId } = useParams();
     const navigate = useNavigate();
-    const {URLAPI , getTokenInstructor} = useContext(DataContext)
+    const { URLAPI, getTokenInstructor } = useContext(DataContext)
     const [messages, setMessages] = useState([]);
-    const [formData, setFormData] = useState({  
-        group_id:groupId,
+    const [formData, setFormData] = useState({
+        group_id: groupId,
         message: "",
         title: "",
         type: "",
         status: "",
-    }); 
+    });
 
     const instructorService = new InstructorService(URLAPI, getTokenInstructor);
 
@@ -36,32 +36,32 @@ function InstructorMessage() {
     }, [groupId]);
 
     const handleChangeMessage = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });  
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await instructorService.addMessage(groupId, formData);  
+            await instructorService.addMessage(groupId, formData);
             setFormData({
-                group_id:groupId,
+                group_id: groupId,
                 message: "",
                 title: "",
                 type: "",
-                status: "", 
+                status: "",
             });
             toast.success("Message sent successfully");
         } catch (error) {
             console.error("Error sending message:", error);
             toast.error("Failed to send message");
         }
-    };  
+    };
 
     return (
         <div className="container-fluid py-4">
             <Helmet>
                 <title>Messages Management</title>
-            </Helmet>   
+            </Helmet>
             <div className="row mb-4">
                 <div className="col-12">
                     <div className="d-flex justify-content-between align-items-center">
@@ -74,9 +74,9 @@ function InstructorMessage() {
                             <h5 className="card-title">Messages</h5>
                         </div>
                     </div>
-                
+
                 </div>
-                      
+
             </div>
         </div>
     );

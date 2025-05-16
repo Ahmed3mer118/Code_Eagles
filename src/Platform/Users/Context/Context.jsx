@@ -3,19 +3,21 @@ import axios from "axios";
 import { toast } from "react-hot-toast";  
 
 export const DataContext = createContext();
-
+import UserService from "../../classes/UserService";
 function Context({ children }) {
   let getTokenAdmin, getTokenUser, getTokenInstructor;
-
   getTokenAdmin = JSON.parse(localStorage.getItem("token") );
   getTokenUser = JSON.parse(localStorage.getItem("tokenUser") );
   getTokenInstructor = JSON.parse(localStorage.getItem("tokenInstructor") );
+  const userService = new UserService(getTokenUser)
 
-  const URLAPI = "https://api-codeeagles-cpq8.vercel.app";
+  const URLAPI = import.meta.env.VITE_API_URL;
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  
   // Fetch user's groups on component mount
+
   useEffect(() => {
     const fetchUserGroups = async () => {
       setLoading(true);
@@ -72,20 +74,15 @@ function Context({ children }) {
         note,
       };
 
-      await axios.post(`${URLAPI}/api/users/joinGroupRequest`, joinRes, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${getTokenUser}`,
-        },
-      });
+      await userService.joinGroupRequest(joinRes);
 
       toast.success(
         "Your request to join has been sent successfully. Please wait for the request to be accepted."
       );
       return;
     } catch (err) {
-      console.error("Error sending join request:", err);
-      toast.error("Failed to send join request. Please try again.");
+    
+      toast.error(err.message);
       return;
     } finally {
       setLoading(false);
@@ -102,6 +99,8 @@ function Context({ children }) {
         getTokenInstructor,
         loading,
         userGroups,
+        maintenanceMode,
+        setMaintenanceMode,
       }}
     >
       {children}

@@ -1,89 +1,216 @@
-import React, { useContext } from "react";
-import { QuizContext } from "./QuizProvider";
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { IoArrowBack, IoArrowForward } from 'react-icons/io5';
+import { toast } from 'react-hot-toast';
+import { useNavigate, useParams } from 'react-router-dom';
+import UserService from '../../classes/UserService';
+import { DataContext } from '../Context/Context';
 
-function ShowQuestions() {
-  const {
-    quiz,
-    currentQuestion,
-    userAnswers,
-    handleAnswer,
-    handleNextQuestion,
-    handlePrevQuestion,
-  } = useContext(QuizContext);
+const QUESTION_TIME = 60; // ثانية لكل سؤال
 
-  if (!quiz) return null;
+const ShowQuestions = ({ quiz, onSubmit }) => {
+  const { getTokenUser } = useContext(DataContext);
+  const { groupId, lecCourse, quizId } = useParams();
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState([]);
+  const [showReview, setShowReview] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
+  const [questionTimes, setQuestionTimes] = useState([]);
+  const timerRef = useRef(null);
+  const navigate = useNavigate();
+  const [userService] = useState(new UserService(getTokenUser));
 
-  const currentQuestionData = quiz.questions[currentQuestion];
-  const progress = ((currentQuestion + 1) / quiz.questions.length) * 100;
+
+  useEffect(() => {
+    const savedAnswers = localStorage.getItem(`quiz_${quizId}_answers`);
+    if (savedAnswers) {
+      setAnswers(JSON.parse(savedAnswers));
+    }
+    window.scrollTo(0, 0);
+  }, [quizId]);
+
+
+  useEffect(() => {
+    localStorage.setItem(`quiz_${quizId}_answers`, JSON.stringify(answers));
+  }, [answers, quizId]);
+
+
+  useEffect(() => {
+    setTimeLeft(QUESTION_TIME);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [currentQuestionIndex]);
+
+
+  useEffect(() => {
+    if (timeLeft === 0) {
+      handleNext(true); 
+    }
+  }, [timeLeft]);
+
+  const handleAnswerSelect = (questionId, answer) => {
+    setAnswers(prevAnswers => {
+      const existingAnswerIndex = prevAnswers.findIndex(
+        ans => ans.questionId === questionId
+      );
+      if (existingAnswerIndex !== -1) {
+        const newAnswers = [...prevAnswers];
+        newAnswers[existingAnswerIndex] = {
+          questionId,
+          answer
+        };
+        return newAnswers;
+      } else {
+        return [...prevAnswers, { questionId, answer }];
+      }
+    });
+    
+    setTimeout(() => handleNext(false), 500);
+  };
+
+
+  const handleNext = (auto = false) => {
+    setQuestionTimes(prev => {
+      const newTimes = [...prev];
+      newTimes[currentQuestionIndex] = QUESTION_TIME - timeLeft;
+      return newTimes;
+    });
+    if (currentQuestionIndex < quiz.questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      setShowReview(true);
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+    }
+  };
+
+  const handleRestart = () => {
+  
+      localStorage.removeItem(`quiz_${quizId}_answers`);
+      setAnswers([]);
+      setCurrentQuestionIndex(0);
+      setQuestionTimes([]);
+      setShowReview(false);
+      setTimeLeft(QUESTION_TIME);
+      toast.success('Quiz Restarted Successfully');
+   
+  };
+
+  const handleReview = async () => {
+    const totalTime = questionTimes.reduce((acc, t) => acc + (t || 0), 0);
+    toast.success(`Total Time: ${totalTime} seconds`);
+    navigate(`/course/${groupId}/lecture/${lecCourse}/quiz/${quizId}/answers`, { state: { answers, totalTime } });
+  };
+
+  const handleQuestionClick = (index) => {
+    setCurrentQuestionIndex(index);
+    setShowReview(false);
+  };
+
+  const currentQuestion = quiz.questions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
+  const totalTime = questionTimes.reduce((acc, t) => acc + (t || 0), 0);
 
   return (
-    <div className="card shadow-lg p-4 mt-4 mb-3 text-center w-80 ms-2 me-2">
-      <div className="progress mb-3" style={{ height: "10px" }}>
-        <div
-          className="progress-bar bg-primary"
-          role="progressbar"
-          style={{ width: `${progress}%` }}
-          aria-valuenow={progress}
-          aria-valuemin="0"
-          aria-valuemax="100"
-        ></div>
-      </div>
-
-      <h2 className="fw-bold text-primary">
-        Question {currentQuestion + 1} of {quiz.questions.length}
-      </h2>
-      <h3 className="mt-4">{currentQuestionData.question}</h3>
-
-      <div className="container mt-3">
-        <div className="row g-2">
-          {currentQuestionData.answers.map((answer, index) => (
-            <div key={answer._id} className="col-12 col-sm-6">
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name={`question${currentQuestion}`}
-                  id={`answer${index}`}
-                  value={index}
-                  checked={userAnswers[currentQuestion] === index}
-                  onChange={() => handleAnswer(index)}
-                  style={{ display: 'none' }}
-                />
-                <label
-                  className={`form-check-label w-100 p-3 fw-bold border rounded-3 ${
-                    userAnswers[currentQuestion] === index
-                      ? 'border-primary bg-primary text-white'
-                      : 'border-secondary'
-                  }`}
-                  htmlFor={`answer${index}`}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {index + 1} - {answer.text}
-                </label>
-              </div>
+    <>
+      {!showReview ? (
+        <>
+          <div className="mb-4 card p-4">
+            <h5>Question {currentQuestionIndex + 1} of {quiz.questions.length}</h5>
+            <p
+              className="lead text-center no-select"
+              onCopy={(e) => e.preventDefault()}
+              onContextMenu={(e) => e.preventDefault()}
+              style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                MozUserSelect: 'none',
+                msUserSelect: 'none',
+              }}
+            >
+              {currentQuestion.question}
+            </p>
+            <div className="mb-2 text-end">
+              <span className="badge bg-warning text-dark">Time Left: {timeLeft} seconds</span>
             </div>
-          ))}
+            <div className="list-group">
+              {currentQuestion.answers && currentQuestion.answers.map((option, index) => {
+                const isSelected = answers.some(
+                  ans => ans.questionId === currentQuestion._id && ans.answer === option.text
+                );
+                return (
+                  <button
+                    key={index}
+                    onCopy={(e) => e.preventDefault()}
+                    onContextMenu={(e) => e.preventDefault()}
+                    className={`list-group-item list-group-item-action ${isSelected ? 'active bg-primary text-white' : ''
+                      }`}
+                    onClick={() => handleAnswerSelect(currentQuestion._id, option.text)}
+                    style={{
+                      transition: 'all 0.3s ease',
+                      border: isSelected ? '2px solid #0d6efd' : '1px solid rgba(0,0,0,.125)',
+                      marginBottom: '5px',
+                      borderRadius: '5px',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
+                      MozUserSelect: 'none',
+                      msUserSelect: 'none',
+                    }}
+                  >
+                    {index + 1}. {option.text}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="d-flex justify-content-between">
+            <button
+              className="btn btn-outline-primary"
+              onClick={handlePrevious}
+              disabled={currentQuestionIndex === 0}
+            >
+              <IoArrowBack /> Previous
+            </button>
+            {isLastQuestion ? (
+              <button
+                className="btn btn-success"
+                onClick={handleReview}
+              >
+                Review & Submit
+              </button>
+            ) : (
+              <button
+                className="btn btn-primary"
+                onClick={() => handleNext(false)}
+              >
+                Next <IoArrowForward />
+              </button>
+            )}
+          </div>
+          {/* <div className="mt-3 text-center">
+            <button className="btn btn-warning" onClick={handleRestart}>
+              Restart Quiz
+            </button>
+          </div> */}
+        </>
+      ) : (
+        <div className="text-center mt-5 card box-shadow p-4 rounded-3">
+          <h4>You have finished the quiz!</h4>
+          <p>Total Time: <span className="fw-bold">{totalTime} seconds</span></p>
+          <button className="btn btn-primary mt-3" onClick={handleReview}>
+            View Answers
+          </button>
         </div>
-      </div>
-
-      <div className="mt-3 d-flex justify-content-between">
-        <button
-          className="btn btn-secondary mx-2"
-          onClick={handlePrevQuestion}
-          disabled={currentQuestion === 0}
-        >
-          Previous
-        </button>
-        <button
-          className="btn btn-success mx-2"
-          onClick={handleNextQuestion}
-          disabled={userAnswers[currentQuestion] === null}
-        >
-          {currentQuestion === quiz.questions.length - 1 ? "Finish" : "Next"}
-        </button>
-      </div>
-    </div>
+      )}
+    </>
   );
-}
+};
 
 export default ShowQuestions;

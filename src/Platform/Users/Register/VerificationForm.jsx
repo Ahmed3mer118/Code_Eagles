@@ -1,8 +1,8 @@
 import React, { useContext, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, Toaster } from "react-hot-toast";
 import axios from "axios";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { DataContext } from "../Context/Context";
+import { DataContext } from "../../Users/Context/Context";
 import "./register.css";
 function VerificationForm() {
   const [number, setNumber] = useState("");
@@ -58,7 +58,7 @@ function VerificationForm() {
 
   return (
     <div className="bg-form">
-      <ToastContainer />
+      <Toaster />
       <form className="p-3 rounded" onSubmit={handleVerification}>
         <h1 className="text-center text-light">Verification</h1>
         <input

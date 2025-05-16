@@ -2,37 +2,29 @@ import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { DataContext } from "../Context/Context";
-
+import UserService from "../../classes/UserService";
 function CourseDetail() {
   const { courseDetails, contentId } = useParams(); // Get the course name from the URL
   const [course, setCourse] = useState(null); // State to hold the specific course details
   const { URLAPI, getTokenUser } = useContext(DataContext);
   const [loading, setLoading] = useState(false);
+  const [userService] = useState(new UserService(getTokenUser));
   useEffect(() => {
-    if (courseDetails) {
-      setLoading(true);
-      axios
-        .get(`${URLAPI}/api/groups/${contentId}`, {
-          headers: {
-            Authorization: getTokenUser,
-          },
-        })
-        .then((res) => {
-          setLoading(false);
-          const foundCourse = res.data.course_details.find(
-            (c) => c._id === courseDetails
-          );
+    const fetchCourse = async () => {
+      if (courseDetails) {
+        setLoading(true);
+        const response = await userService.getGroupById(contentId);
+        setCourse(response.course_details.find(
+        (c) => c._id === courseDetails
+      ));
+        setLoading(false);
+      }
+      window.scrollTo(0, 0);
+    };
+    fetchCourse();
+  }, [courseDetails, contentId, getTokenUser]);
 
-          setCourse(foundCourse || null);
-        })
-        .catch((error) => {
-          console.error("Error fetching course details:", error);
-        });
-    }
-
-    window.scrollTo(0, 0);
-  }, [courseDetails, URLAPI, getTokenUser]);
-
+  
   if (!course) {
     return (
       <div className="text-center">

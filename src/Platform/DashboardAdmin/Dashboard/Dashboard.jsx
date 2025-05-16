@@ -7,9 +7,10 @@ import { DataContext } from "../../Users/Context/Context";
 import Cookies from "js-cookie";
 import { Helmet } from "react-helmet-async";
 import {toast ,Toaster } from "react-hot-toast";
-
+import AdminService from "../../classes/AdminService";
 function Dashboard() {
-  const { URLAPI, getTokenAdmin } = useContext(DataContext);
+  const { getTokenAdmin } = useContext(DataContext);
+  const [adminService] = useState(new AdminService(getTokenAdmin));
   const [groups, setGroups] = useState({ online: [], offline: [] });
   const [openSections, setOpenSections] = useState({
     online: true,
@@ -36,15 +37,13 @@ function Dashboard() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${URLAPI}/api/groups`, {
-          headers: { Authorization: `${getTokenAdmin}` },
-        });
+        const response = await adminService.getAllGroups();
 
-        if (response.data) {
-          const onlineGroup = response.data.filter(
+        if (response) {
+          const onlineGroup = response.filter(
             (item) => item.type_course === "online"
           );
-          const offlineGroup = response.data.filter(
+          const offlineGroup = response.filter(
             (item) => item.type_course !== "online"
           );
           setGroups({ online: onlineGroup, offline: offlineGroup });
@@ -58,7 +57,7 @@ function Dashboard() {
     };
 
     fetchData();
-  }, [URLAPI, getTokenAdmin]);
+  }, [ getTokenAdmin]);
 
   const handleOpen = (tag) => {
     setOpenSections((prevState) => ({ ...prevState, [tag]: !prevState[tag] }));
@@ -67,31 +66,31 @@ function Dashboard() {
   const refreshTokenAdmin = async () => {
     try {
       const refreshTokenLocal = Cookies.get("refreshToken");
-   
-
       if (!refreshTokenLocal) {
         console.error("No refresh token found");
+        handleAdminLogout();
         return false;
       }
 
-      const response = await axios.post(`${URLAPI}/api/users/refresh-token`, {
-        refreshToken: refreshTokenLocal,
-      });
-    
-      const { accessToken, refreshToken } = response.data;
+      const response = await adminService.refreshToken(refreshTokenLocal);
+      const { accessToken, refreshToken } = response;
       const expirationTime = Date.now() + 15 * 60 * 1000; // 15 minutes
 
       localStorage.setItem("token", JSON.stringify(accessToken));
       localStorage.setItem("tokenExpiration", JSON.stringify(expirationTime));
-      Cookies.set("refreshToken", refreshToken);
-
+      Cookies.set("refreshToken", refreshToken, {
+        expires: 7,
+        secure: true,
+        sameSite: "strict"
+      });
+      
       axios.defaults.headers.common["Authorization"] = `${accessToken}`;
-
       console.log("Admin Token refreshed successfully");
       return true;
     } catch (error) {
       console.error("Failed to refresh admin token:", error);
-      // return false;
+      handleAdminLogout();
+      return false;
     }
   };
   
@@ -99,56 +98,47 @@ function Dashboard() {
     try {
       const refreshToken = Cookies.get("refreshToken");
       if (refreshToken) {
-        await axios.post(`${URLAPI}/api/users/logout`, {
-          refreshToken
-        });
+        await adminService.logout(refreshToken);
       }
-
+    } catch (err) {
+      console.error("Error during logout:", err);
+    } finally {
       localStorage.removeItem("token");
       localStorage.removeItem("tokenExpiration");
       Cookies.remove("refreshToken");
-
       toast.success("Logout successfully");
       setTimeout(() => {
-        window.location.href = "/login/admin";
+        window.location.href = "/login";
       }, 2000);
-    } catch (err) {
-      console.error("Error logging out:", err);
-      toast.error("An error occurred while logging out");
     }
-  
-    toast.error("Session expired. Redirecting to admin login...", {
-      onClose: () => navigate("/login/admin"),
-    });
   };
   
   useEffect(() => {
     const checkAdminTokenExpiration = () => {
       const expiration = JSON.parse(localStorage.getItem("tokenExpiration"));
-      if (!expiration) return;
-  
+      if (!expiration) {
+        handleAdminLogout();
+        return;
+      }
+
       const timeLeft = expiration - Date.now();
-      
-      if (timeLeft <= 30 * 1000) { 
+      if (timeLeft <= 30 * 1000) {
         refreshTokenAdmin();
       }
     };
 
-   
     const token = localStorage.getItem("token");
     const refreshToken = Cookies.get("refreshToken");
     
     if (!token && !refreshToken) {
-  
       handleAdminLogout();
       return;
     }
+
     checkAdminTokenExpiration();
-    
     const interval = setInterval(checkAdminTokenExpiration, 60 * 1000);
-    
     return () => clearInterval(interval);
-  }, [navigate]);
+  }, []);
 
   return (
     <Fragment>
@@ -184,22 +174,20 @@ function Dashboard() {
               </button>
             </li>
             <li>
-              <Link
-                to="/admin/allGroups"
+              <button
                 className="btn btn-warning text-dark w-100 text-start"
-                aria-label="link"
+                aria-label="su"
               >
-                All Groups
-              </Link>
+                <Link to="/admin/allGroups" className="text-dark">All Groups</Link>
+              </button>
             </li>
             <li>
-              <Link
-                to="/admin/allStudent"
+              <button
                 className="btn btn-warning text-dark w-100 text-start"
-                aria-label="link"
+                aria-label="su"
               >
-                All Students
-              </Link>
+                <Link to="/admin/allStudent" className="text-dark">All Students</Link>
+              </button>
             </li>
             {["online", "offline"].map((type) => (
               <li key={type}>
@@ -223,40 +211,36 @@ function Dashboard() {
             ))}
 
             <li>
-              <Link
-                to="/admin/emails"
+              <button
                 className="btn btn-warning text-dark w-100 text-start"
-                aria-label="link"
+                aria-label="submit"
               >
-                All Request Emails
-              </Link>
+                <Link to="/admin/emails" className="text-dark">All Request Emails</Link>
+              </button>
             </li>
             <li>
-              <Link
-                to="/admin/get-all-message-by-admin"
+              <button
                 className="btn btn-warning text-dark w-100 text-start"
-                aria-label="link"
+                aria-label="submit"
               >
-                All Message Emails
-              </Link>
+                <Link to="/admin/get-all-message-by-admin" className="text-dark">All Message Emails</Link>
+              </button>
             </li>
             <li>
-              <Link
-                to="/admin/list-for-Students-by-admin"
+              <button
                 className="btn btn-warning text-dark w-100 text-start"
-                aria-label="link"
+                aria-label="submit"
               >
-                List For Students
-              </Link>
+                <Link to="/admin/list-for-Students-by-admin" className="text-dark">List For Students</Link>
+              </button>
             </li>
             <li>
-              <Link
-                to="/admin/profile-admin"
+              <button
                 className="btn btn-warning text-dark w-100 text-start"
-                aria-label="link"
+                aria-label="submit"
               >
-                Profile
-              </Link>
+                <Link to="/admin/profile-admin" className="text-dark">Profile</Link>
+              </button>
             </li>
           </ul>
         </div>

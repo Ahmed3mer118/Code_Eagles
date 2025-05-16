@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
 import axios from "axios";
 import { Helmet } from "react-helmet-async";
 import "../Register/register.css";
@@ -8,8 +8,10 @@ import { DataContext } from "../Context/Context";
 // import CryptoJS from "crypto-js";
 import FingerprintJs from "@fingerprintjs/fingerprintjs";
 import Cookies from "js-cookie";
+import UserService from "../../classes/UserService";
+
 function Login() {
-  const { URLAPI } = useContext(DataContext);
+  const { getTokenUser } = useContext(DataContext);
   const [login, setLogin] = useState({
     email: "",
     password: "",
@@ -18,25 +20,22 @@ function Login() {
   const navigate = useNavigate();
   let currentTime = Date.now();
   let expirationTime;
+  const userService = new UserService(getTokenUser);
 
   //  login Handler
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post(`${URLAPI}/api/users/login`, {
-        email: login.email,
-        password: login.password,
-        fingerprint: login.fingerprint,
-      });
+        const res = await userService.login(login.email, login.password);
 
-      if (res.data) {
+      if (res) {
         toast.success("Login Successfully!");
-        const accessToken = res.data.accessToken;
-        const refreshToken = res.data.refreshToken;
+        const accessToken = res.accessToken;
+        const refreshToken = res.refreshToken;
 
         expirationTime = currentTime + 3 * 60 * 1000;
-        if (res.data.user.role === "admin" && accessToken) {
+        if (res.user.role === "admin" && accessToken) {
           localStorage.setItem("token", JSON.stringify(accessToken));
           Cookies.set("refreshToken", refreshToken, { expires: 10 });
           localStorage.setItem("tokenExpiration", expirationTime);
@@ -44,7 +43,7 @@ function Login() {
           setTimeout(() => {
             navigate("/admin");
           }, 3000);
-        } else if (res.data.user.role === "instructor" && accessToken) {
+        } else if (res.user.role === "instructor" && accessToken) {
           localStorage.setItem("tokenInstructor", JSON.stringify(accessToken));
           Cookies.set("refreshTokenInstructor", refreshToken, { expires: 10 });
           localStorage.setItem("tokenExpirationInstructor", expirationTime);
@@ -52,7 +51,7 @@ function Login() {
           setTimeout(() => {
             navigate("/instructor");
           }, 3000);
-        } else if (res.data.user.role === "user" && accessToken) {
+        } else if (res.user.role === "user" && accessToken) {
           localStorage.setItem("tokenUser", JSON.stringify(accessToken));
           Cookies.set("refreshTokenUser", refreshToken, { expires: 10 });
           localStorage.setItem("tokenExpirationUser", expirationTime);
@@ -75,7 +74,7 @@ function Login() {
       } else if (error.response && error.response.status === 500) {
         toast.error("An error occurred on the server. Please try again later");
       } else {
-        toast.error("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى");
+        toast.error("Invaild Email Or Password ");
       }
     }
   };
@@ -98,26 +97,20 @@ function Login() {
       toast.error("Please enter your email.");
     } else {
       setLoading(true);
-
-      await axios
-        .post(`${URLAPI}/api/users/forgot-password`, {
-          email: login.email,
-        })
-        .then((res) => {
-          // toast.success("The password has been reset successfully");
-          toast.success("Password reset email sent. Please check your inbox.");
-          localStorage.setItem(
+      const res = await userService.forgotPassword(login.email);
+     if(res){
+        toast.success("Password reset email sent. Please check your inbox.");
+        localStorage.setItem(
             "forget-password-token",
-            JSON.stringify(res.data.token)
+            JSON.stringify(res.token)
           );
           setTimeout(() => {
             navigate("/forgetpassword");
           }, 2500);
-        })
-        .catch((err) => {
-          setLoading(false);
-        });
-    }
+        }
+      }
+      setLoading(false);
+    
   };
 
   return (

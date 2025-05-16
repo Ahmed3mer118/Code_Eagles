@@ -4,14 +4,17 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { DataContext } from "../Context/Context";
 import { toast } from "react-hot-toast";
 import Cookies from "js-cookie";
+import UserService from "../../classes/UserService";
 
 function NavStudent({ menuOpen, setMenuOpen }) {
-  const { URLAPI } = useContext(DataContext);
+  const {  getTokenUser } = useContext(DataContext);
   const [loggedUser, setLoggedUser] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [statusUser, setStatusUser] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const [userService] = useState(new UserService(getTokenUser));
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -24,14 +27,13 @@ function NavStudent({ menuOpen, setMenuOpen }) {
           return;
         }
 
-        const response = await axios.get(`${URLAPI}/api/users`, {
-          headers: { Authorization: `${token}` },
-        });
+     
+        const response = await userService.getUserById();
 
-        if (response.data) {
-          setLoggedUser(response.data);
-          setIsEnrolled(response.data.groups?.length > 0);
-          setStatusUser(response.data.groups || []);
+        if (response) {
+          setLoggedUser(response);
+          setIsEnrolled(response.groups?.length > 0);
+          setStatusUser(response.groups || []);
         }
       } catch (err) {
         console.error("Error fetching user data:", err);
@@ -47,7 +49,7 @@ function NavStudent({ menuOpen, setMenuOpen }) {
     };
 
     fetchUserData();
-  }, [URLAPI, navigate]);
+  }, [ navigate]);
 
   const closeNavbar = () => {
     setMenuOpen(false);

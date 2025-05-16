@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { Toaster , toast } from "react-hot-toast";
-import "react-toastify/dist/ReactToastify.css";
 import { DataContext } from "../Context/Context";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { Helmet } from "react-helmet-async";
+import UserService from "../../classes/UserService";
 function AddTask() {
-  const { URLAPI, getTokenUser } = useContext(DataContext);
-
+  const { getTokenUser } = useContext(DataContext);
+  const [userService] = useState(new UserService(getTokenUser));
   const [taskData, setTaskData] = useState({
     submissionLink: "",
   });
@@ -16,35 +16,33 @@ function AddTask() {
   const navigate = useNavigate();
 
   // send task by user
-  const handleTaskSubmit = () => {
+  const handleTaskSubmit = async () => {
     if (!taskData.submissionLink.trim()) {
       toast.error("Please enter a valid submission link.");
       return;
     }
 
     setLoading(true); 
-    axios
-      .post(`${URLAPI}/api/lectures/${lecCourse}/submit-task/${taskId}`, taskData, {
-        headers: { Authorization: `${getTokenUser}` },
-      })
-      .then(() => {
-        toast.success("Task submitted successfully!");
-        setTaskData({ submissionLink: "" });
-        setTimeout(() => {
+
+    const response = await userService.submitTask(lecCourse, taskId, taskData);
+    console.log(response.message)
+    if (response) {
+      toast.success("Task submitted successfully!");
+      setTaskData({ submissionLink: "" });
+      setTimeout(() => {
           window.history.back();
         }, 2500);
-      })
-      .catch((err) => {
-        toast.error(
-          "Error submitting task: " + err.response?.data?.message || err.message
-        );
-      })
-      .finally(() => setLoading(false));
-  };
+    } else {
+      toast.error(response.message);
+    }
+  }
 
   return (
     <>
       <Toaster position="top-center" />
+      <Helmet>
+        <title>Add Task</title>
+      </Helmet>
       <div className="container mt-5 mb-5">
         <div className="card shadow-sm p-4">
           <h1 className="text-center mb-4">Add a Task Link </h1>

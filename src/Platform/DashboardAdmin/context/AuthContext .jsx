@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => !!localStorage.getItem("token")
   );
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
 
   const login = (token) => {
     localStorage.setItem("token", JSON.stringify(token));

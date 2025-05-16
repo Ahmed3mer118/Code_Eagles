@@ -1,42 +1,70 @@
-import React, { useContext, useEffect, useState } from "react";
-import { QuizContext } from "./QuizProvider";
-import { toast } from "react-hot-toast";
-import { useNavigate, useParams } from "react-router-dom";
-import { DataContext } from "../Context/Context";
-import axios from "axios";
+import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { DataContext } from '../Context/Context';
+import UserService from '../../classes/UserService';
+import { toast } from 'react-hot-toast';
 
-function ShowAnswers({ onFinish }) {
-  const { quiz, userAnswers, setShowResult, setShowAnswers, setCurrentQuestion } = useContext(QuizContext);
-  const { URLAPI, getTokenUser } = useContext(DataContext);
-  const { lecCourse } = useParams();
+const ShowAnswers = () => {
+  const { quizId, lecCourse, groupId } = useParams();
   const navigate = useNavigate();
-  const [quizScore, setQuizScore] = useState(null);
+  const location = useLocation();
+  const { getTokenUser } = useContext(DataContext);
+  const [userService] = useState(new UserService(getTokenUser));
+  const [quiz, setQuiz] = useState(null);
+  const [studentAnswers, setStudentAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
 
   useEffect(() => {
-    const fetchQuizScore = async () => {
+    const fetchQuiz = async () => {
       try {
-        const response = await axios.get(
-          `${URLAPI}/api/quizzes/score/${quiz._id}`,
-          { headers: { Authorization: getTokenUser } }
-        );
-        setQuizScore(response.data.quizScore);
-      } catch (error) {
-        console.error("Error fetching quiz score:", error);
-        toast.error("Error fetching quiz score");
-      } finally {
+        const dataLecture = await userService.getQuizzesByLectureId(lecCourse);
+        const answersFromState = location.state?.answers || [];
+        setStudentAnswers(answersFromState);
+        setQuiz(dataLecture);
         setLoading(false);
+      } catch (err) {
+        console.log(err.message);
+        setLoading(false);
+        toast.error('Failed to load quiz');
       }
     };
 
-    if (quiz?._id) {
-      fetchQuizScore();
-    }
-  }, [quiz?._id, URLAPI, getTokenUser]);
+    fetchQuiz();
+  }, [lecCourse, location.state]);
 
-  if (!quiz || loading) {
+  const handleFinishQuiz = async () => {
+    try {
+      const result = await userService.solveQuiz(quizId, studentAnswers);
+      if (parseInt(result.score) >= 50) {
+        toast.success('Congratulations! You passed the quiz');
+        navigate(`/course/${groupId}/lecture/${lecCourse}/quiz/${quizId}/result`);
+        handleRestart();
+      } else {
+        toast.error('You need to score 50% or more to pass');
+        handleRestart();
+        setTimeout(() => {
+          navigate(`/course/${groupId}/lecture/${lecCourse}/quiz/${quizId}/questions`);
+        }, 2000);
+      }
+    } catch (err) {
+      toast.error('Failed to submit quiz');
+    }
+  };
+  const handleRestart = () => {
+      localStorage.removeItem(`quiz_${quizId}_answers`);
+      toast.success('Quiz Restarted Successfully');
+   
+  };
+
+  const handleShowQuestions = () => {
+    navigate(`/course/${groupId}/lecture/${lecCourse}/quiz/${quizId}/questions`);
+  };
+
+  if (loading) {
     return (
-      <div className="text-center p-4">
+      <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -44,52 +72,82 @@ function ShowAnswers({ onFinish }) {
     );
   }
 
-  const handleGoToQuestion = (index) => {
-    setCurrentQuestion(index);
-    setShowAnswers(false);
-  };
+  if (error) {
+    return (
+      <div className="text-center p-4 text-danger">
+        <h4>Error</h4>
+        <p>{error}</p>
+        <button className="btn btn-primary mt-3" onClick={() => navigate(`/course/${groupId}/lecture/${lecCourse}/quiz/${quizId}/questions`)}>
+          Back to questions
+        </button>
+      </div>
+    );
+  }
+
+  if (!quiz || !quiz.questions) {
+    return null;
+  }
 
   return (
-    <div className="card shadow-lg p-4 mt-4 mb-3 text-center w-80 mx-auto">
-      <h2 className="fw-bold text-primary mb-4">Quiz Answers</h2>
-
-
-      <div className="list-group">
-        {quiz.questions.map((question, index) => {
-          const userAnswer = userAnswers[index];
-          const correctAnswer = question.answers.find(answer => answer.correct);
-          const isCorrect = userAnswer === correctAnswer?.text;
-          
-          return (
-            <div key={index} className="list-group-item mb-2">
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <h5 className="mb-0">Question {index + 1}</h5>
-                {/* <span className={`badge ${isCorrect ? "bg-success" : "bg-danger"}`}>
-                  {isCorrect ? "Correct" : "Wrong"}
-                </span> */}
-              </div>
-              <p className="mb-2">{question.question}</p>
-              <div className="mb-2">
-                {/* <p className="mb-1">Your Answer: {userAnswer || "Not answered"}</p> */}
-                <p className="mb-1">Correct Answer: {correctAnswer?.text || "No correct answer found"}</p>
-              </div>
-            
+    <div className="container py-5">
+      <div className="row justify-content-center">
+        <div className="col-md-8">
+          <div className="card shadow">
+            <div className="card-header bg-primary text-white">
+              <h4 className="mb-0">Your Answers</h4>
             </div>
-          );
-        })}
-      </div>
 
-      <div className="mt-4 d-flex justify-content-between">
-  
-        <button
-          className="btn btn-secondary"
-          onClick={() => setShowAnswers(false)}
-        >
-          Back to Questions
-        </button>
+            <div className="card-body" onCopy={(e) => e.preventDefault()} style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
+              {quiz.questions.map((question, index) => {
+                const studentAnswer = studentAnswers.find(
+                  answer => answer.questionId === question._id
+                )?.answer;
+
+                return (
+                  <div key={question._id} className="mb-4">
+                    <h5>Question {index + 1}</h5>
+                    <p className="lead">{question.question}</p>
+
+                    <div className="list-group">
+                      {question.answers && question.answers.map((answer) => (
+                        <div
+                          key={answer._id}
+                          className={`list-group-item ${answer.text === studentAnswer ? 'bg-secondary text-white' : ''
+                            }`}
+                          onCopy={(e) => e.preventDefault()}
+                          style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+                        >
+                          {answer.text}
+                          {answer.text === studentAnswer && (
+                            <span className="float-end">Your Answer</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div className="d-flex justify-content-center gap-3">
+                <button
+                  className="btn btn-success"
+                  onClick={handleFinishQuiz}
+                >
+                  Finish Quiz
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleShowQuestions}
+                >
+                  Show Questions
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default ShowAnswers;

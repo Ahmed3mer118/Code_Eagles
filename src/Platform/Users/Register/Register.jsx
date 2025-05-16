@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { ToastContainer } from "react-toastify";
+import { toast , Toaster } from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
 import RegisterForm from "./RegisterForm";
 
@@ -9,7 +9,7 @@ function Register() {
  
   return (
     <>
-      <ToastContainer />
+      <Toaster />
       <Helmet>
         <title>Register</title>
       </Helmet>

@@ -1,116 +1,113 @@
-import React, { useContext, useEffect, useState } from "react";
-import { QuizContext } from "./QuizProvider";
-import toast, { Toaster } from "react-hot-toast";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { DataContext } from "../Context/Context";
-import axios from "axios";
-function ShowResult({ cardStyles, lectures, setShowQuiz , onComplete }) {
-  const { quiz, score, handleRestart, setShowAnswers } = useContext(QuizContext);
+import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { DataContext } from '../Context/Context';
+import UserService from '../../classes/UserService';
+import { toast } from 'react-hot-toast';
+
+const ShowResult = () => {
+  const { quizId, lecCourse, groupId } = useParams();
   const navigate = useNavigate();
-  const { groupId } = useParams();
-  const location = useLocation();
-  let path = location.pathname;
-  const lectureId = path.replace(/^.*\/lecture\//, "");
-  const { URLAPI, getTokenUser } = useContext(DataContext);
+  const { getTokenUser } = useContext(DataContext);
+  const [userService] = useState(new UserService(getTokenUser));
+  const [score, setScore] = useState(null);
+  const [quiz, setQuiz] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [nextLectureId, setNextLectureId] = useState(null);
 
-  // تحديد index المحاضرة الحالية
-  const currentLectureIndex = lectures.findIndex(lecture => lecture._id === lectureId);
+  useEffect(() => {
+ 
 
-  if (!quiz) return null;
+    const fetchQuiz = async () => {
+      const dataAllLectures = await userService.getLectures(groupId);
+      const dataLecture = await userService.getQuizzesByLectureId(lecCourse);
+      const solveQuiz = await userService.getScore(quizId);
 
+      try {
 
-  const totalQuestions = quiz.questions.length;
-  const percentage = Math.round((score / totalQuestions) * 100);
-  const isPassed = percentage >= 50;
-
-  const getMessage = () => {
-    if (percentage >= 90) return "Excellent! Great work! ";
-    if (percentage >= 70) return "Good!";
-    if (percentage >= 50) return "Passed!";
-    return "You need more practice";
-  };
-
-  const handleFinish = async () => {
-    try {
-      const response = await axios.get(
-        `${URLAPI}/api/quizzes/score/${quiz._id}`,
-        { headers: { Authorization: getTokenUser } }
-      );
-      
-      const score = parseInt(response.data.quizScore.score);
-      onComplete(score);
-
-      if (score >= 50) {
-        if (currentLectureIndex !== -1 && currentLectureIndex < lectures.length - 1) {
-          const nextLecture = lectures[currentLectureIndex + 1];
-          toast.success("success quiz");
-          localStorage.setItem("ShowQuiz", "false");
-          setShowQuiz(false);
-        } else {
-          toast.success("congratulations! you have completed all the lectures!");
-          setShowQuiz(false);
+        const currentLectureIndex = dataAllLectures.lectures.findIndex(
+          lecture => lecture._id === lecCourse
+        );
+        
+        if (currentLectureIndex !== -1 && currentLectureIndex < dataAllLectures.lectures.length - 1) {
+          setNextLectureId(dataAllLectures.lectures[currentLectureIndex + 1]._id);
         }
-      } else {
-        toast.error("you must get 50% or more to pass the quiz");
-        localStorage.setItem("ShowQuiz", "true");
-        setShowQuiz(true);
+
+        setScore(solveQuiz);
+        setQuiz(dataLecture);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+        toast.error('Failed to load quiz');
       }
-    } catch (error) {
-      console.error("Error checking quiz score:", error);
-      toast.error("error checking quiz score");
+    };
+
+    fetchQuiz();
+  }, [lecCourse]);
+
+  const handleNextLecture = () => {
+    if (nextLectureId) {
+      navigate(`/course/${groupId}/lecture/${nextLectureId}`);
+    } else {
+      toast.error('No next lecture available');
     }
   };
 
-  return (
-    <div className="card shadow-lg p-4 text-center mt-3 mb-4" style={cardStyles}>
-      <Toaster position="top-center" />
-      <h1 className="fw-bold text-primary mb-4">Final result</h1>
+  const handleRetake = () => {
+    navigate(`/course/${groupId}/lecture/${lecCourse}/quiz/${quizId}/questions`);
+    localStorage.removeItem(`quiz_${quizId}_answers`);
+  };
 
-      <div className="mb-4">
-        <div className="progress mb-2" style={{ height: "20px" }}>
-          <div
-            className={`progress-bar ${isPassed ? 'bg-success' : 'bg-danger'}`}
-            role="progressbar"
-            style={{ width: `${percentage}%` }}
-            aria-valuenow={percentage}
-            aria-valuemin="0"
-            aria-valuemax="100"
-          ></div>
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
         </div>
-        <h2 className={`fw-bold ${isPassed ? "text-success" : "text-danger"}`}>
-          {score} of {totalQuestions} ({percentage}%)
-        </h2>
-        <p className="lead">{getMessage()}</p>
       </div>
+    );
+  }
 
-      <div className="mt-3 d-flex flex-wrap justify-content-center gap-3">
-        {score && (<>
-        <button
-          className="btn btn-success fw-bold"
-          onClick={handleFinish}
-        >
-          Finish and go to the next lecture
-        </button>
-          <button
-            className="btn btn-warning px-4 fw-bold"
-            onClick={() => setShowAnswers(true)}
-          >
-            View the correct answers
-          </button>
-        </>
-        )}
-        {
-          !score && (
-            <button className="btn btn-danger px-4 fw-bold" onClick={handleRestart}>
-              Restart the quiz
-            </button>
-          )
-        }
-        
-     
+
+
+  if (!quiz) {
+    return null;
+  }
+
+  return (
+    <div className="container py-5">
+      <div className="row justify-content-center">
+
+        <div className="col-md-8">
+          <div className="card shadow">
+            <div className="card-header bg-primary text-white">
+              <h4 className="mb-0">Quiz Result</h4>
+            </div>
+
+            <div className="card-body text-center">
+              <h3 className="mb-4">Your Score: {parseInt(score.quizScore.score) || 0}%</h3>
+              
+              
+              { parseInt(score.quizScore.score) >= 50 ? (
+                <>
+                  <p className="text-success mb-4">Congratulations! You passed the quiz.</p>
+                  <button
+                    className="btn btn-success"
+                    onClick={handleNextLecture}
+                  >
+                    Go to Next Lecture
+                  </button>
+                </>
+              ) : (
+                <p className="text-danger">You need to score 50% or more to pass.</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default ShowResult;

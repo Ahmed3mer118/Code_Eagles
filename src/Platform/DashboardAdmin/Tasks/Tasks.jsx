@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
-import "./Task.css";
 import { Helmet } from "react-helmet-async";
 import InstructorService from "../../classes/InstructorService";
 import AdminService from "../../classes/AdminService";
@@ -51,7 +50,7 @@ function Tasks() {
   return (
     <>
       <Helmet>
-        <title>Tasks</title>
+        <title>Code Eagel - Tasks</title>
       </Helmet>
       <Toaster />
       {loading ? (
@@ -85,6 +84,7 @@ function Tasks() {
           </thead>
           <tbody>
             {tasks.map((task) => (
+              
               <tr key={task.taskId}>
                 <td className="border p-2">{task.lectureTitle}</td>
                 <td className="border p-2">{task.taskDescription}</td>
@@ -93,6 +93,7 @@ function Tasks() {
                     to={`/${window.location.pathname.includes("/admin") ? "admin" : "instructor"}/${groupId}/lectures/${task.lectureId}/tasks/${task.taskId}/submissions`}
                     aria-label="link"
                   >
+                 
                     {task.submissions?.length || 0}
                   </Link>
                 </td>

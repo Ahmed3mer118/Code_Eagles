@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../Context/Context";
 
 function ForgetPass() {
@@ -56,7 +56,7 @@ function ForgetPass() {
   };
   return (
     <>
-      <ToastContainer />
+      <Toaster />
       <Helmet>
         <title>Forget Password </title>
       </Helmet>

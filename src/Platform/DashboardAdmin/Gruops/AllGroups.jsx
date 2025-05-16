@@ -25,7 +25,7 @@ function AllGroups() {
         
         if (window.location.pathname.includes("/admin")) {
           response = await adminService.getAllGroups();
-        } else {
+        } else if (window.location.pathname.includes("/instructor")) {
           response = await instructorService.getAllGroups();
         }
 

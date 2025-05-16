@@ -9,7 +9,6 @@ import "./nav.css";
 import Cookies from "js-cookie";
 
 function Navbar() {
-  const { URLAPI } = useContext(DataContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 

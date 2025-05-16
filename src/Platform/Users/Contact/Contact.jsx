@@ -1,9 +1,11 @@
 import axios from "axios";
 import React, { useContext, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
+import UserService from "../../classes/UserService";
 function Contact() {
-  const { URLAPI } = useContext(DataContext);
+  const { getTokenUser } = useContext(DataContext);
+  const [userService] = useState(new UserService(getTokenUser));
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,7 +18,7 @@ function Contact() {
     setLoading(true);
 
     try {
-      await axios.post(`${URLAPI}/api/contact/contact-us`, formData);
+      await userService.contactUs(formData);
       toast.success("Thank You For Contacting Us");
       setTimeout(() => {
         setFormData({ name: "", email: "", message: "" }); // إعادة تعيين الحقول
@@ -30,7 +32,7 @@ function Contact() {
 
   return (
     <>
-      <ToastContainer />
+      <Toaster />
       <div className="container-fluid py-5 bg-light">
         <h2 className="text-center mb-4">Contact us</h2>
         <form onSubmit={handleSubmit} className="shadow p-4 rounded m-auto">

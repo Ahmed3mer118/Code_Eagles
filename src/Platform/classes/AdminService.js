@@ -1,9 +1,13 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 class AdminService {
-  constructor(baseURL, token) {
-    this.baseURL = baseURL;
+  constructor(baseURL, token, setMaintenanceMode) {
+    this.baseURL = import.meta.env.VITE_API_URL || baseURL;
     this.token = token;
+    this.isBlocked = false;
+    this.setMaintenanceMode = setMaintenanceMode;
+
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
       headers: {
@@ -11,6 +15,80 @@ class AdminService {
         'Content-Type': 'application/json',
       },
     });
+
+    this.axiosInstance.interceptors.request.use(config => {
+      if (this.isBlocked) {
+        return Promise.reject(new Error("Blocked due to security issue."));
+      }
+      return config;
+    });
+
+    this.axiosInstance.interceptors.response.use(
+      res => res,
+      async (error) => {
+        const originalRequest = error.config;
+
+        // مثال على حالة تفعيل وضع الصيانة
+        if (
+          error.message.includes("suspicious") ||
+          error.response?.status === 403          
+        ) {
+          this.toggleMaintenanceMode();
+        }
+
+        // ريفريش التوكن
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          try {
+            const refreshToken = Cookies.get("refreshToken");
+            if (!refreshToken) throw new Error("No refresh token available");
+
+            const response = await this.refreshToken(refreshToken);
+            const { accessToken, refreshToken: newRefreshToken } = response;
+
+            localStorage.setItem("token", JSON.stringify(accessToken));
+            Cookies.set("refreshToken", newRefreshToken, {
+              expires: 7,
+              secure: true,
+              sameSite: "strict",
+            });
+
+            originalRequest.headers.Authorization = `${accessToken}`;
+            return this.axiosInstance(originalRequest);
+          } catch (refreshError) {
+            console.error("Failed to refresh token:", refreshError);
+            this.handleLogout();
+            throw refreshError;
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+  }
+
+
+  toggleMaintenanceMode(value) {
+    this.isBlocked = value;
+    this.setMaintenanceMode(value);
+  }
+
+  async refreshToken(refreshToken) {
+    try {
+      const response = await this.axiosInstance.post(`/api/users/refresh-token`, {
+        refreshToken: refreshToken
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  }
+
+  handleLogout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("tokenExpiration");
+    Cookies.remove("refreshToken");
+    window.location.href = "/login";
   }
 
   // Groups Methods
@@ -225,7 +303,7 @@ class AdminService {
    
   async getStudentAttendance(userId,groupId) {
     try {
-      const response = await this.axiosInstance.get(`/api/lectures/${userId}/${groupId}/attendance-by-admin`)
+      const response = await this.axiosInstance.get(`/api/lectures/${groupId}/${userId}/attendance-by-admin`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -267,10 +345,10 @@ class AdminService {
     }
   }
 
-  // Attendance Methods
+  // Attendance Methods by admin
   async getAttendance(lectureId) {
     try {
-      const response = await this.axiosInstance.get(`/api/attendance/lecture/${lectureId}`);
+      const response = await this.axiosInstance.get(`/api/lectures/${lectureId}/get-lecture-attendance-details`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);

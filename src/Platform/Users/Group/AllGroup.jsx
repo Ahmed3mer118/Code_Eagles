@@ -4,17 +4,19 @@ import { DataContext } from "../Context/Context";
 import { Link } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
-
+import UserService from "../../classes/UserService";
 function AllGroup() {
-  const { URLAPI } = useContext(DataContext);
+  const { getTokenUser } = useContext(DataContext);
+  const [userService] = useState(new UserService(getTokenUser));
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await axios.get(`${URLAPI}/api/groups`);
-        setGroups(response.data);
+        const response = await userService.getGroups();
+        
+        setGroups(response);
       } catch (err) {
         console.error("Error fetching groups:", err);
       } finally {
@@ -23,7 +25,7 @@ function AllGroup() {
     };
 
     fetchGroups();
-  }, [URLAPI]);
+  }, [getTokenUser]);
 
   if (loading) {
     return (

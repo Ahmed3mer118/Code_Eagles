@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { DataContext } from "./Users/Context/Context.jsx";
 
 // Dashboard
 import Dashboard from "./DashboardAdmin/Dashboard/Dashboard";
@@ -63,11 +64,13 @@ import "../App.css";
 import PrivateUser from "./Users/Auth/PrivateUser.jsx";
 import AllGroup from "./Users/Group/AllGroup.jsx";
 import Quiz from "./Users/Quiz/Quiz.jsx";
-import QuizProvider from "./Users/Quiz/QuizProvider.jsx";
 import { Toaster } from "react-hot-toast";
 import CreateQuiz from "./DashboardAdmin/QuizByAdmin/CreateQuiz.jsx";
 import AllQuiz from "./DashboardAdmin/QuizByAdmin/AllQuiz.jsx";
 import UpdateQuiz from "./DashboardAdmin/QuizByAdmin/UpdateQuiz.jsx";
+import ShowQuestions from "./Users/Quiz/ShowQuestions.jsx";
+import ShowAnswers from "./Users/Quiz/ShowAnswers.jsx";
+import ShowResult from "./Users/Quiz/ShowResult.jsx";
 
 // Instructor Dashboard
 import DashboardInstructor from "./DashboardInstructor/DashboardInstructor";
@@ -75,15 +78,60 @@ import InstructorMessage from "./DashboardInstructor/InstructorMessage.jsx";
 
 // PrivateRouteInstructor
 import PrivateRouteInstructor from "./DashboardInstructor/PrivateRouteInstructor";
+import Maintenance from "./DashboardAdmin/Maintenance"
 
 const helmetContext = {};
 
 function App() {
+  // let maintenanceMode = useContext(DataContext)
+  let maintenanceMode = false;
+  useEffect(() => {
+    const buttons = document.querySelectorAll("button");
+    const links = document.querySelectorAll("a");
+    if (maintenanceMode === true) {
+      buttons.forEach(btn => {
+        btn.disabled = true;
+      });
+
+      links.forEach(link => {
+        link.style.cursor = "not-allowed";
+        link.style.pointerEvents = "none";
+      });
+    }
+
+  }, [maintenanceMode]);
+
+  // useEffect(() => {
+  //   const buttons = document.querySelectorAll("button");
+  //   buttons.forEach(btn => {
+  //     btn.disabled = maintenanceMode;
+  //   });
+
+  //   const linksAndButtons = document.querySelectorAll("a, button");
+  //   linksAndButtons.forEach(el => {
+  //     el.style.cursor = maintenanceMode ? "not-allowed" : "pointer";
+  //     el.style.pointerEvents = maintenanceMode ? "none" : "auto"; 
+  //   });
+
+  //   function preventClicks(e) {
+  //     if (maintenanceMode) {
+  //       const target = e.target.closest("a, button");
+  //       if (target) {
+  //         e.preventDefault();
+  //         e.stopPropagation();
+  //         console.log("Click prevented on", target);
+  //       }
+  //     }
+  //   }
+
+  //   document.addEventListener("click", preventClicks, true);
+
+  //   return () => {
+  //     document.removeEventListener("click", preventClicks, true);
+  //   };
+  // }, [maintenanceMode]);
+
   const router = createBrowserRouter([
-    {
-      path: "/login",
-      element: <Login />,
-    },
     {
       path: "/admin",
       element: <PrivateRoute element={<Dashboard />} />,
@@ -93,6 +141,11 @@ function App() {
           index: true,
           element: <DashboardIndex />,
         },
+        {
+          path: "login",
+          element: <Login />,
+        },
+
         {
           path: "newGroup",
           element: <NewGroup />,
@@ -157,7 +210,7 @@ function App() {
               path: "/admin/:groupId/lectures/update/:lectureId",
               element: <UpdateLecture />,
             },
-           
+
             {
               path: "/admin/:groupId/update",
               element: <UpdateGroup />,
@@ -213,6 +266,7 @@ function App() {
           index: true,
           element: <Main />,
         },
+
         {
           path: "/register",
           element: <Register />,
@@ -255,12 +309,28 @@ function App() {
         },
 
         {
+          path: "/course/:groupId/lecture/:lecCourse/quiz/:quizId",
+          element: <Quiz />,
+          children: [
+            {
+              path: "/course/:groupId/lecture/:lecCourse/quiz/:quizId/questions",
+              element: <ShowQuestions />,
+            },
+            {
+              path: "/course/:groupId/lecture/:lecCourse/quiz/:quizId/answers",
+              element: <ShowAnswers />,
+            },
+            {
+              path: "/course/:groupId/lecture/:lecCourse/quiz/:quizId/result",
+              element: <ShowResult />,
+            },
+          ]
+        },
+
+
+        {
           path: "/course/:groupId/lecture?/:lecCourse/Add-Task/:taskId",
           element: <AddTask />,
-        },
-        {
-          path: "/quiz",
-          element: <Quiz />,
         },
         {
           path: "/feedback",
@@ -290,6 +360,10 @@ function App() {
           element: <DashboardInstructor />,
         },
         {
+          path: "/instructor/login",
+          element: <Login />,
+        },
+        {
           path: "/instructor/:groupId/students",
 
           element: <Students />,
@@ -302,22 +376,22 @@ function App() {
           path: "/instructor/:groupId/lectures",
           element: <Lectures />,
         },
-       {
-        path: "/instructor/:groupId/tasks",
-        element: <Tasks />,
-       },
-       {
-        path: "/instructor/:groupId/lectures/:lectureId/newTask",
-        element: <NewTask />,
-       },
-       {
-        path: "/instructor/:groupId/lectures/:lectureId/tasks/updateTask/:taskId",
-        element: <NewTask />,
-       },
-       {
-        path: "/instructor/:groupId/lectures/:lectureId/tasks/:taskId/submissions",
-        element: <SubmissionsTask />,
-       },
+        {
+          path: "/instructor/:groupId/tasks",
+          element: <Tasks />,
+        },
+        {
+          path: "/instructor/:groupId/lectures/:lectureId/newTask",
+          element: <NewTask />,
+        },
+        {
+          path: "/instructor/:groupId/lectures/:lectureId/tasks/updateTask/:taskId",
+          element: <NewTask />,
+        },
+        {
+          path: "/instructor/:groupId/lectures/:lectureId/tasks/:taskId/submissions",
+          element: <SubmissionsTask />,
+        },
         {
           path: "/instructor/:groupId/quizzes",
           element: <AllQuiz />,
@@ -350,12 +424,12 @@ function App() {
           path: "/instructor/:groupId/setting",
           element: <ProfileAdmin />,
         }
-     
+
 
         // يمكن إضافة مسارات أخرى للمحاضر هنا
       ],
     },
- 
+
     {
       path: "*",
       element: <Error />,
@@ -364,14 +438,14 @@ function App() {
 
   return (
     <HelmetProvider context={helmetContext}>
-      <AuthProvider>
-        <DataProvider>
-          <Toaster />
-          <QuizProvider>
+      <Toaster />
+      {maintenanceMode ? <Maintenance /> : (
+        <AuthProvider>
+          <DataProvider>
             <RouterProvider router={router} />
-          </QuizProvider>
-        </DataProvider>
-      </AuthProvider>
+          </DataProvider>
+        </AuthProvider>
+      )}
     </HelmetProvider>
   );
 }

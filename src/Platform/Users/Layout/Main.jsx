@@ -14,7 +14,7 @@ import { Helmet } from "react-helmet-async";
 
 function Main() {
   const handleWhatsAppRedirect = () => {
-    const phoneNumber = "201033705805";
+    const phoneNumber = import.meta.env.VITE_PHONE_NUMBER;
     const message = encodeURIComponent("عايز اعرف تفاصيل شراء الكورس ؟ ");
     const url = `https://api.whatsapp.com/send/?phone=${phoneNumber}&text=${message}&type=phone_number&app_absent=0`;
     window.open(url, "", "heigth=500;width=500");

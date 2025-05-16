@@ -4,7 +4,7 @@ import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
 import AdminService from "../../classes/AdminService";
 import InstructorService from "../../classes/InstructorService";
-import "../Tasks/Task.css";
+
 
 function DetailStudent() {
   const { URLAPI, getTokenAdmin, getTokenInstructor } = useContext(DataContext);

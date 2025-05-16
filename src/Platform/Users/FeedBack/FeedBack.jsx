@@ -4,9 +4,12 @@ import { Link } from "react-router-dom";
 import { DataContext } from "../Context/Context";
 import { Helmet } from "react-helmet-async";
 import { toast } from "react-hot-toast";
+import UserService from "../../classes/UserService";
 
-function FeedBack() {
-  const { URLAPI } = useContext(DataContext);
+
+    function FeedBack() {
+  const { getTokenUser } = useContext(DataContext);
+  const [userService] = useState(new UserService(getTokenUser));
   const [feedbackList, setFeedbackList] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -14,8 +17,8 @@ function FeedBack() {
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
-        const response = await axios.get(`${URLAPI}/api/users/get-all-feedback`);
-        setFeedbackList(response.data.feedbacks);
+        const response = await userService.getFeedback();
+        setFeedbackList(response.feedbacks);
       } catch (err) {
         console.error("Error fetching feedback:", err);
         toast.error("Failed to load feedback");
@@ -25,7 +28,7 @@ function FeedBack() {
     };
 
     fetchFeedback();
-  }, [URLAPI]);
+  }, [getTokenUser]);
 
   const nextFeedback = () => {
     if (currentIndex + 3 < feedbackList.length) {
