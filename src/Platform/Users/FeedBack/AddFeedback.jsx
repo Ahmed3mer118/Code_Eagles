@@ -5,6 +5,7 @@ import { DataContext } from "../Context/Context";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import UserService from "../../classes/UserService";
+import "../Register/register.css";
 function AddFeedback() {
   const { getTokenUser } = useContext(DataContext);
   const [userService] = useState(new UserService(getTokenUser));
@@ -48,7 +49,7 @@ function AddFeedback() {
       <Toaster position="top-center" />
       <div className="container mt-4 mb-4">
         <h2 className="text-center mb-4">Add Feedback</h2>
-        <form onSubmit={handleSubmit} className="shadow p-4 rounded m-auto">
+        <form onSubmit={handleSubmit} className="shadow p-4 rounded m-auto register-form">
           <div className="mb-3">
             <label htmlFor="name" className="form-label">
               Name

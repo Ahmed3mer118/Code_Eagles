@@ -3,6 +3,7 @@ import React, { useContext, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
 import UserService from "../../classes/UserService";
+import "../Register/register.css";
 function Contact() {
   const { getTokenUser } = useContext(DataContext);
   const [userService] = useState(new UserService(getTokenUser));
@@ -35,7 +36,7 @@ function Contact() {
       <Toaster />
       <div className="container-fluid py-5 bg-light">
         <h2 className="text-center mb-4">Contact us</h2>
-        <form onSubmit={handleSubmit} className="shadow p-4 rounded m-auto">
+        <form onSubmit={handleSubmit} className="shadow p-4 rounded m-auto register-form">
           <div className="mb-3">
             <label htmlFor="name" className="form-label">
               Name
