@@ -30,7 +30,7 @@ function Login() {
         const res = await userService.login(login.email, login.password);
 
       if (res) {
-        toast.success("Login Successfully!");
+        toast.success("Login Successfully");
         const accessToken = res.accessToken;
         const refreshToken = res.refreshToken;
 
@@ -47,7 +47,7 @@ function Login() {
           localStorage.setItem("tokenInstructor", JSON.stringify(accessToken));
           Cookies.set("refreshTokenInstructor", refreshToken, { expires: 10 });
           localStorage.setItem("tokenExpirationInstructor", expirationTime);
-
+        
           setTimeout(() => {
             navigate("/instructor");
           }, 3000);

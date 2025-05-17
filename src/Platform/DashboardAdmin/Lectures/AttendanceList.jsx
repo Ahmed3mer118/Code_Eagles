@@ -6,79 +6,121 @@ import { DataContext } from "../../Users/Context/Context";
 
 function AttendanceList() {
   const { URLAPI, getTokenAdmin } = useContext(DataContext);
-  const { lectureId } = useParams(); // الحصول على معرف المحاضرة من الـ URL
-  const [attendanceData, setAttendanceData] = useState([]);
+  const { lectureId } = useParams();
+  const [attendedUsers, setAttendedUsers] = useState([]);
+  const [notAttendedUsers, setNotAttendedUsers] = useState([]);
   const [lectureTitle, setLectureTitle] = useState("");
-  const [loading,setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
-  // جلب بيانات الحضور
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     if (lectureId) {
       axios
-        .get(`${URLAPI}/api/lectures/${lectureId}/attendance`, {
+        .get(`${URLAPI}/api/lectures/${lectureId}/get-lecture-attendance-details`, {
           headers: { Authorization: `${getTokenAdmin}` },
         })
         .then((res) => {
-          setLoading(false)
-          setAttendanceData(res.data.attendance || []);
-          console.log(res.data.attendance || []);
+          setLoading(false);
+          setAttendedUsers(res.data.attendance || []);
+          setNotAttendedUsers(res.data.notAttendedUsers || []);
           setLectureTitle(res.data.lectureTitle || "Unknown Lecture");
         })
         .catch((err) => {
           console.error("Error fetching attendance data:", err);
           toast.error("Failed to load attendance data!");
+          setLoading(false);
         });
     }
   }, [lectureId, URLAPI, getTokenAdmin]);
- if (loading) {
-      return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "70vh",
-      }}
-    >
-      <svg
-        className="loading"
-        viewBox="25 25 50 50"
-        style={{ width: "3.25em" }}
-      >
-        <circle r="20" cy="50" cx="50"></circle>
-      </svg>
-    </div>
-      );
-    }
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: "70vh" }}>
+        <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mt-4">
       <Toaster position="top-center" />
-      <h3 className="mb-4">Attendance List for "{lectureTitle}"</h3>
-      {attendanceData.length > 0 ? (
-        <table className="table table-bordered">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Attended At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendanceData.map((student, index) => (
-              <tr key={student.userId._id}>
-                <td>{index + 1}</td>
-                <td>{student.userId.name}</td>
-                <td>{student.userId.email}</td>
-                <td>{new Date(student.attendedAt).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No attendance records found for this lecture.</p>
-      )}
+      <h3 className="mb-4 text-center">Attendance List for "{lectureTitle}"</h3>
+
+      <div className="row">
+        {/* جدول الحضور */}
+        <div className="col-md-6 mb-4">
+          <div className="card shadow-sm">
+            <div className="card-header bg-success text-white">
+              <h5 className="mb-0">Present Students ✅</h5>
+            </div>
+            <div className="card-body p-0">
+              {attendedUsers.length > 0 ? (
+                <div className="table-responsive">
+                  <table className="table table-bordered mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Attended At</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {attendedUsers.map((student, index) => (
+                        <tr key={student.userId._id}>
+                          <td>{index + 1}</td>
+                          <td>{student.userId.name}</td>
+                          <td>{student.userId.email}</td>
+                          <td>{new Date(student.attendedAt).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="m-3 text-muted">No attendance yet.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* جدول الغياب */}
+        <div className="col-md-6 mb-4">
+          <div className="card shadow-sm">
+            <div className="card-header bg-danger text-white">
+              <h5 className="mb-0">Absent Students ❌</h5>
+            </div>
+            <div className="card-body p-0">
+              {notAttendedUsers.length > 0 ? (
+                <div className="table-responsive">
+                  <table className="table table-bordered mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {notAttendedUsers.map((student, index) => (
+                        <tr key={student.userId}>
+                          <td>{index + 1}</td>
+                          <td>{student.name}</td>
+                          <td>{student.email}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="m-3 text-muted">No absent students.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

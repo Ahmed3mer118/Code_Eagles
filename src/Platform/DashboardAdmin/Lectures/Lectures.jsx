@@ -69,7 +69,7 @@ function Lectures() {
          response = await adminService.createLecture(formData);
       }
       else {
-         response = await instructorService.createLecture(formData);
+         response = await instructorService.addLecture(formData);
       }
       if (response) {
         toast.success("Lecture created successfully!");

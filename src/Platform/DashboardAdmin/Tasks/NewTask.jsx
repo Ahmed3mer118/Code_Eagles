@@ -4,9 +4,10 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
 import { Helmet } from "react-helmet-async";
-
+import AdminService from "../../classes/AdminService";
+import InstructorService from "../../classes/InstructorService";
 function NewTask() {
-  const { URLAPI, getTokenAdmin } = useContext(DataContext);
+  const { URLAPI, getTokenAdmin, getTokenInstructor } = useContext(DataContext);
   const { groupId, lectureId, taskId } = useParams();
   const [newTask, setNewTask] = useState({
     description_task: "",
@@ -21,39 +22,58 @@ function NewTask() {
   const [switchTask, setSwitchTask] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [adminService] = useState(new AdminService(URLAPI, getTokenAdmin));
+  const [instructorService] = useState(new InstructorService(URLAPI, getTokenInstructor));
 
-  if (!getTokenAdmin) {
-    toast.error("Unauthorized. Please log in.");
-    return;
-  }
+  useEffect(() => {
+    if(window.location.pathname.includes("/admin")){  
+      if (!getTokenAdmin) {
+        toast.error("Unauthorized. Please log in.");
+        return;
+      }
+    }
+    else{
+      if (!getTokenInstructor) {
+        toast.error("Unauthorized. Please log in.");
+        return;
+      }
+    }
+  }, [getTokenAdmin, getTokenInstructor]);
   // إضافة مهمة جديدة
   const handleAddTask = async (e) => {
     e.preventDefault();
-
-    await axios.post(
-      `${URLAPI}/api/lectures/${lectureId}/createtasks`,
-      newTask,
-      {
-        headers: {
-          Authorization: `${getTokenAdmin}`,
-        },
-      }
-    );
+    let response;
+    if(window.location.pathname.includes("/admin")){  
+      response = await adminService.addTask(lectureId, newTask);  
+    }
+    else{
+      response = await instructorService.addTask(lectureId, newTask);  
+    }
+   if (response) {
     toast.success("Task Created Successfully");
     setTimeout(() => {
-      navigate(`/admin/${groupId}/lectures`);
-    }, 3000);
+      if (window.location.pathname.includes("/admin")) {
+        navigate(`/admin/${groupId}/lectures`);
+      } else {
+        navigate(`/instructor/${groupId}/lectures`);
+      }
+      }, 3000);
+    }else{
+      toast.error("Task Created Failed");
+    }
   };
   // جلب المهام
   useEffect(() => {
     if (
       location.pathname ==
-      `/admin/${groupId}/lectures/${lectureId}/tasks/updateTask/${taskId}`
+      `/admin/${groupId}/lectures/${lectureId}/tasks/updateTask/${taskId}` ||
+       location.pathname==`/instructor/${groupId}/lectures/${lectureId}/tasks/updateTask/${taskId}`
     ) {
       setSwitchTask(true);
+      let token = getTokenAdmin || getTokenInstructor;
       axios
         .get(`${URLAPI}/api/lectures/${lectureId}/tasks/${taskId}`, {
-          headers: { Authorization: `${getTokenAdmin}` },
+          headers: { Authorization: `${token}` },
         })
         .then((res) => {
           setUpdateTask(res.data.task);
@@ -66,23 +86,25 @@ function NewTask() {
   // تحديث المهمة
   const handleUpdateTask = async (e) => {
     e.preventDefault();
-    if (taskId) {
-      await axios.put(
-        `${URLAPI}/api/lectures/${lectureId}/edit-task/${taskId}`,
-        updateTask,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `${getTokenAdmin}`,
-          },
-        }
-      );
+    let response;
+    if(window.location.pathname.includes("/admin")){
+      response = await adminService.updateTask(lectureId, taskId, updateTask);  
+    }
+    else{
+      response = await instructorService.updateTask(lectureId, taskId, updateTask);  
+    }
+    if (response) {
       toast.success("Task updated successfully.");
       setTimeout(() => {
-        navigate(`/admin/${groupId}/tasks`);
+        if (window.location.pathname.includes("/admin")) {
+          navigate(`/admin/${groupId}/tasks`);
+        } else {
+          navigate(`/instructor/${groupId}/tasks`);
+        }
       }, 2500);
     } else {
-      toast.error("Don't Found ID Task");
+      toast.error("Task Updated Failed");
+      
     }
   };
 
@@ -92,19 +114,23 @@ function NewTask() {
       toast.error("Task ID is required for deletion.");
       return;
     }
+    let response;
+    if(window.location.pathname.includes("/admin")){
+      response = await adminService.deleteTask(lectureId, taskId);  
+    }
+    else{
+      response = await instructorService.deleteTask(lectureId, taskId);  
+    }
 
-    try {
-      await axios.delete(`${URLAPI}/api/lectures/${lectureId}/tasks/${id}`, {
-        headers: {
-          Authorization: `${getTokenAdmin}`,
-        },
-      });
-      toast.success("Task deleted successfully.");
+    if (response) {
+        toast.success("Task deleted successfully.");
       setTimeout(() => {
-        navigate(`/admin/${groupId}/tasks`);
+        if (window.location.pathname.includes("/admin")) {
+          navigate(`/admin/${groupId}/tasks`);
+        } else {
+          navigate(`/instructor/${groupId}/tasks`);
+        }
       }, 2500);
-    } catch (error) {
-      toast.error("Error deleting task: " + error.message);
     }
   };
 

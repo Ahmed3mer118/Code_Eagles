@@ -5,16 +5,16 @@ import { toast } from "react-hot-toast";
 export const DataContext = createContext();
 import UserService from "../../classes/UserService";
 function Context({ children }) {
+  const URLAPI = import.meta.env.VITE_API_URL;
   let getTokenAdmin, getTokenUser, getTokenInstructor;
   getTokenAdmin = JSON.parse(localStorage.getItem("token") );
   getTokenUser = JSON.parse(localStorage.getItem("tokenUser") );
   getTokenInstructor = JSON.parse(localStorage.getItem("tokenInstructor") );
   const userService = new UserService(getTokenUser)
 
-  const URLAPI = import.meta.env.VITE_API_URL;
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
+
   
   // Fetch user's groups on component mount
 
@@ -99,8 +99,7 @@ function Context({ children }) {
         getTokenInstructor,
         loading,
         userGroups,
-        maintenanceMode,
-        setMaintenanceMode,
+
       }}
     >
       {children}

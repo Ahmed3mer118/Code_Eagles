@@ -76,7 +76,7 @@ function NavStudent({ menuOpen, setMenuOpen }) {
           Home
         </NavLink>
       </li>
-      {isEnrolled && statusUser.some((item) => item.status === "approved") && (
+      {isEnrolled && statusUser.some((item) => item.status === "approved" || item.status === "special") && (
         <li className="nav-item">
           <NavLink
             onClick={closeNavbar}

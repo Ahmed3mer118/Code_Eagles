@@ -21,31 +21,22 @@ function DashboardInstructor() {
     totalTasks: 0,
     totalQuizzes: 0
   });
-  const [instructorService, setInstructorService] = useState(null);
+  const instructorService = new InstructorService(URLAPI, getTokenInstructor);
   const [activeTab, setActiveTab] = useState('home');
 
   useEffect(() => {
     const fetchInstructorData = async () => {
       try {
-        const [groupsRes] = await Promise.all([
-          axios.get(`${URLAPI}/api/groups/get-all-group-by-admin`, {
-            headers: { Authorization: `${getTokenInstructor}` }
-          }),
-
-        ]);
-        setGroups(groupsRes.data);
-        // setStats(statsRes.data);
+      const response = await instructorService.getAllGroups();
+        setGroups(response);
       } catch (err) {
-        console.error("Error fetching instructor data:", err);
-        toast.error("فشل في تحميل البيانات");
+     
+        toast.error("Failed to load data");
       } finally {
         setLoading(false);
       }
     };
 
-    if (getTokenInstructor) {
-      setInstructorService(new InstructorService(URLAPI, getTokenInstructor));
-    }
 
     fetchInstructorData();
   }, [URLAPI, getTokenInstructor]);
@@ -202,6 +193,12 @@ function DashboardInstructor() {
                 <FaUsers className="me-2" /> {isSidebarOpen && 'Home'}
               </Link>
             </button>
+            <button className={`btn btn-link text-white text-decoration-none text-start py-2 px-3 ${activeTab === 'emailRequest' ? 'bg-primary' : ''}`}
+              onClick={() => setActiveTab('emailRequest')}>
+              <Link to={`/instructor/emailRequest`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <FaEnvelope className="me-2" /> {isSidebarOpen && 'Email Request'}
+              </Link>
+            </button>
 
             <button className={`btn btn-link text-white text-decoration-none text-start py-2 px-3 ${activeTab === 'messages' ? 'bg-primary' : ''}`}
               onClick={() => setActiveTab('messages')}>
@@ -212,7 +209,7 @@ function DashboardInstructor() {
 
             <button className={`btn btn-link text-white text-decoration-none text-start py-2 px-3 ${activeTab === 'setting' ? 'bg-primary' : ''}`}
               onClick={() => setActiveTab('setting')}>
-              <Link to={`/instructor/${groupId}/setting`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link to={`/instructor/setting`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <IoMdSettings className="me-2" /> {isSidebarOpen && 'Setting'}
               </Link>
             </button>

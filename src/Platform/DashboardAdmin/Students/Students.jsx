@@ -29,8 +29,8 @@ function Students() {
         setStudents(filterStudentGroup);
         setLoading(false);
       }
-      else {
-        const response = await instructorService.getStudents(groupId);
+      else  {
+        const response = await instructorService.getStudents();
         const filterStudentGroup = response?.filter((item) => {
           return item.groups.some((group) => group.groupId === groupId);
         });
@@ -38,7 +38,7 @@ function Students() {
         setLoading(false);
       }
     } catch (error) {
-      console.error("Error fetching students:", error);
+    
       toast.error(error.message || "Failed to fetch students");
       setLoading(false);
     }
@@ -83,6 +83,7 @@ function Students() {
               <table className="table table-hover">
                 <thead>
                   <tr>
+                    <th>#</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone Number</th>
@@ -92,8 +93,9 @@ function Students() {
                 <tbody>
                   {
                     Array.isArray(students) &&
-                    students.map((student) => (
+                    students?.map((student,index) => (
                       <tr key={student._id}>
+                        <td>{index+1 || 0}</td>
                         <td>{student.name}</td>
                         <td>{student.email}</td>
                         <td>{student.phone_number}</td>

@@ -17,7 +17,7 @@ function PrivateRouteInstructor({ element }) {
   });
 
 
-  if (!isLoggedIn && !isProtected || !isLoggedIn && isProtected) {
+  if (!isLoggedIn  || !isLoggedIn && isProtected) {
     return <Navigate to="/login" state={{ from: location }} />;
   }
 

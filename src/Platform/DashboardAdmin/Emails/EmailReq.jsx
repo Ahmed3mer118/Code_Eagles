@@ -3,39 +3,34 @@ import React, { useContext, useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
 import { Helmet } from "react-helmet-async";
-
+import InstructorService from "../../classes/InstructorService";
+import AdminService from "../../classes/AdminService";
 function EmailReq() {
-  const { URLAPI, getTokenAdmin } = useContext(DataContext);
+  const { URLAPI, getTokenAdmin, getTokenInstructor } = useContext(DataContext);
   const [email, setEmail] = useState();
   const [loading, setLoading] = useState(false);
   const [lectures, setLectures] = useState([]);
   const [lecturesSpecial, setSelectedLectures] = useState([]);
+  const [instructorService] = useState(new InstructorService(URLAPI, getTokenInstructor));
+  const [adminService] = useState(new AdminService(URLAPI, getTokenAdmin));
 
   useEffect(() => {
     setLoading(true);
     if (email) {
       return;
     }
-    
-    axios
-      .get(`${URLAPI}/api/users/pending-users`, {
-        headers: {
-          Authorization: `${getTokenAdmin}`,
-        },
-      })
-      .then((res) => {
-        if (res.data) {
-          setEmail(res.data);
-          setLoading(false);
-        } else {
-          setEmail("");
-        }
-      })
-      .catch((error) => {
-      
-        setEmail("");
-        setLoading(false);
-      });
+    const fetchPendingUsers = async () => {
+      setLoading(false)
+      if (window.location.pathname.includes("/admin")) {
+        response = await adminService.getPendingUsers()
+        setEmail(response)
+      } else {
+        const response = await instructorService.getPendingUsers()
+        setEmail(response)
+      }
+    }
+    fetchPendingUsers()
+
   }, [getTokenAdmin]);
 
   const handleAccept = async (id, requestId, requestStutas) => {
@@ -55,20 +50,19 @@ function EmailReq() {
     let accept = requestStutas === "invite" ? acceptedReq : accceptJoin;
     console
     try {
-      await axios
-        .post(`${URLAPI}/api/users/${status}`, accept, {
-          headers: {
-            Authorization: `${getTokenAdmin}`,
-          },
-        })
-        .then(() => {
-          toast.success("Request Accepted");
-          setEmail(email.filter((item) => item.userId !== id));
-        });
+
+      if (window.location.pathname.includes("/admin")) {
+        await adminService.acceptRequest(status, accept)
+        setEmail(email.filter((item) => item.userId !== id));
+      } else {
+        await instructorService.acceptRequest(status, accept)
+        setEmail(email.filter((item) => item.userId !== id));
+      }
+      toast.success("Request Accepted");
+  
     } catch (error) {
       toast.error(
-        `Error accepting request: ${
-          error.response.data.message || error.message
+        `Error accepting request: ${error.response.data.message || error.message
         }`
       );
     }
@@ -82,31 +76,39 @@ function EmailReq() {
 
     setLoading(true);
     try {
-      const response = await axios.post(`${URLAPI}/api/users/reject-join-request`, rejectedReq, {
-        headers: {
-          Authorization: `${getTokenAdmin}`,
-        },
-      });
-      setLoading(true);
+      
+      let response
+  if(window.location.pathname.includes("/admin")){  
+      response = await adminService.rejectRequest(rejectedReq)
+      }else{
+        response = await instructorService.rejectRequest(rejectedReq)
+      }
+      if(response){
+        toast.success(response.message);
+        setEmail(email.filter((item) => item.userId !== id));
+      }
       setLoading(false);
-      toast.success(response.data.message);
-      setEmail(email.filter((item) => item.userId !== id));
+     
     } catch (error) {
       toast.error(
-        `Error rejecting request: ${
-           error.message
+        `Error rejecting request: ${error.message
         }`
       );
     }
   };
 
   const fetchLectures = async (groupId) => {
-    console.log(groupId);
     try {
+      let token = getTokenAdmin
+      if(window.location.pathname.includes("/admin")){
+        token = getTokenAdmin
+      }else{
+        token = getTokenInstructor
+      }
       const response = await axios.get(
         `${URLAPI}/api/lectures/group/${groupId}`,
         {
-          headers: { Authorization: getTokenAdmin },
+          headers: { Authorization: token },
         }
       );
 
@@ -146,7 +148,7 @@ function EmailReq() {
         <title>All Request Emails</title>
       </Helmet>
       <Toaster />
-      
+
       <div className="container-fluid py-4">
         <div className="row mb-4">
           <div className="col-12">

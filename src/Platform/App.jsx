@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { DataContext } from "./Users/Context/Context.jsx";
@@ -75,61 +75,54 @@ import ShowResult from "./Users/Quiz/ShowResult.jsx";
 // Instructor Dashboard
 import DashboardInstructor from "./DashboardInstructor/DashboardInstructor";
 import InstructorMessage from "./DashboardInstructor/InstructorMessage.jsx";
-
+import ProfileInstructor from "./DashboardInstructor/ProfileInstructor";
 // PrivateRouteInstructor
 import PrivateRouteInstructor from "./DashboardInstructor/PrivateRouteInstructor";
-import Maintenance from "./DashboardAdmin/Maintenance"
-
+  import Maintenance from "./DashboardAdmin/Maintenance"
+import { MaintenanceProvider } from "./DashboardAdmin/context/MaintenanceContext";
 const helmetContext = {};
+import AdminService from "./classes/AdminService";
+let URLAPI = import.meta.env.VITE_API_URL;
 
 function App() {
-  // let maintenanceMode = useContext(DataContext)
-  let maintenanceMode = false;
+  const getTokenAdmin = useContext(DataContext);  
+  const adminService = new AdminService(URLAPI, getTokenAdmin);
+
+  const [maintenanceMode, setMaintenanceMode] = useState(null);
+  useEffect(() => {
+    const fetchMaintenanceMode = async () => {
+      try {
+        const response = await adminService.getLockCode();
+        setTimeout(() => {
+          setMaintenanceMode(response.isActive);
+        }, 1000);
+      
+      } catch (error) {
+        console.error("Error fetching maintenance status", error);
+      }
+    };
+    fetchMaintenanceMode();
+  }, [maintenanceMode]);
+
   useEffect(() => {
     const buttons = document.querySelectorAll("button");
     const links = document.querySelectorAll("a");
+
     if (maintenanceMode === true) {
-      buttons.forEach(btn => {
-        btn.disabled = true;
+      buttons.forEach((btn) => {
+
+        if (!btn.classList.contains("maintenance-toggle")) {
+          btn.disabled = true;
+        }
       });
 
-      links.forEach(link => {
+      links.forEach((link) => {
         link.style.cursor = "not-allowed";
         link.style.pointerEvents = "none";
       });
     }
-
   }, [maintenanceMode]);
 
-  // useEffect(() => {
-  //   const buttons = document.querySelectorAll("button");
-  //   buttons.forEach(btn => {
-  //     btn.disabled = maintenanceMode;
-  //   });
-
-  //   const linksAndButtons = document.querySelectorAll("a, button");
-  //   linksAndButtons.forEach(el => {
-  //     el.style.cursor = maintenanceMode ? "not-allowed" : "pointer";
-  //     el.style.pointerEvents = maintenanceMode ? "none" : "auto"; 
-  //   });
-
-  //   function preventClicks(e) {
-  //     if (maintenanceMode) {
-  //       const target = e.target.closest("a, button");
-  //       if (target) {
-  //         e.preventDefault();
-  //         e.stopPropagation();
-  //         console.log("Click prevented on", target);
-  //       }
-  //     }
-  //   }
-
-  //   document.addEventListener("click", preventClicks, true);
-
-  //   return () => {
-  //     document.removeEventListener("click", preventClicks, true);
-  //   };
-  // }, [maintenanceMode]);
 
   const router = createBrowserRouter([
     {
@@ -364,6 +357,10 @@ function App() {
           element: <Login />,
         },
         {
+          path: "/instructor/emailRequest",
+          element: <EmailReq />,
+        },
+        {
           path: "/instructor/:groupId/students",
 
           element: <Students />,
@@ -420,13 +417,12 @@ function App() {
           path: "/instructor/:groupId/lectures/update/:lectureId",
           element: <UpdateLecture />,
         },
+        ,
         {
-          path: "/instructor/:groupId/setting",
-          element: <ProfileAdmin />,
+          path: "/instructor/setting",
+          element: <ProfileInstructor />,
         }
 
-
-        // يمكن إضافة مسارات أخرى للمحاضر هنا
       ],
     },
 
@@ -439,10 +435,12 @@ function App() {
   return (
     <HelmetProvider context={helmetContext}>
       <Toaster />
-      {maintenanceMode ? <Maintenance /> : (
+      {maintenanceMode && window.location.pathname !== "/admin/profile-admin" ? <Maintenance /> : (
         <AuthProvider>
           <DataProvider>
-            <RouterProvider router={router} />
+            <MaintenanceProvider>
+              <RouterProvider router={router} />
+            </MaintenanceProvider>
           </DataProvider>
         </AuthProvider>
       )}

@@ -1,13 +1,13 @@
 import axios from "axios";
 import React, { Fragment, useContext, useEffect, useState } from "react";
-import { DataContext } from "../Context/Context";
+import { DataContext } from "../Users/Context/Context";
 import { toast, Toaster } from "react-hot-toast";
 import Cookies from "js-cookie"
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 
-function Profile() {
-  const { URLAPI, getTokenUser } = useContext(DataContext);
+function ProfileInstructor() {
+  const { URLAPI, getTokenInstructor } = useContext(DataContext);
   const [userData, setUserData] = useState(null); // user data
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false)
@@ -26,7 +26,7 @@ function Profile() {
       setLoading(true)
       try {
         const res = await axios.get(`${URLAPI}/api/users`, {
-          headers: { Authorization: ` ${getTokenUser}` },
+          headers: { Authorization: ` ${getTokenInstructor}` },
         });
         if (res.data) {
           setUserData(res.data);
@@ -51,13 +51,13 @@ function Profile() {
     };
 
     fetchData();
-  }, [URLAPI, getTokenUser]);
+  }, [URLAPI, getTokenInstructor]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
 
-      if (!getTokenUser) {
+      if (!getTokenInstructor) {
         toast.error("Please log in again");
         navigate("/login");
         return;
@@ -73,7 +73,7 @@ function Profile() {
         formData,
         {
           headers: {
-            Authorization: `${getTokenUser}`,
+            Authorization: `${getTokenInstructor}`,
             "Content-Type": "application/json",
           },
         }
@@ -94,16 +94,16 @@ function Profile() {
 
   const handleLoggout = async () => {
     try {
-      const refreshToken = Cookies.get("refreshTokenUser");
+      const refreshToken = Cookies.get("refreshTokenInstructor");
       if (refreshToken) {
         await axios.post(`${URLAPI}/api/users/logout`, {
           refreshToken
         });
       }
 
-      localStorage.removeItem("tokenUser");
-      localStorage.removeItem("tokenExpirationUser");
-      Cookies.remove("refreshTokenUser");
+      localStorage.removeItem("tokenInstructor");
+      localStorage.removeItem("tokenExpirationInstructor");
+      Cookies.remove("refreshTokenInstructor");
 
       // toast.error("Session expired. Please log in again.");
       toast.success("Logout Successfuly ")
@@ -124,15 +124,15 @@ function Profile() {
       toast.loading("Deleting your account...",{duration: 2000});
       axios
         .delete(`${URLAPI}/api/users`, {
-          headers: { Authorization: `${getTokenUser}` },
+          headers: { Authorization: `${getTokenInstructor}` },
         })
         .then(() => {
           toast.success(
             "Your account has been deleted successfully. We hope to see you again!"
           );
-          localStorage.removeItem("tokenExpirationUser");
-          localStorage.removeItem("tokenUser");
-          Cookies.remove("refreshTokenUser");
+          localStorage.removeItem("tokenExpirationInstructor");
+          localStorage.removeItem("tokenInstructor");
+          Cookies.remove("refreshTokenInstructor");
 
           setTimeout(() => {
             window.location.href = "/";
@@ -178,7 +178,7 @@ function Profile() {
       </Helmet>
 
       <div className="container mt-4">
-        <h2 className="mb-4">User Dashboard</h2>
+        <h2 className="mb-4">Instructor Dashboard</h2>
 
         {/* User Info */}
         <div className="card mb-4">
@@ -188,14 +188,14 @@ function Profile() {
               <>
 
                 <p>
-                  <strong>Name:</strong> {userData?.role == "user" && userData?.name || "N/A"}
+                  <strong>Name:</strong> {userData?.role == "instructor" && userData?.name || "N/A"}
                 </p>
                 <p>
-                  <strong>Email:</strong> {userData?.role == "user" && userData?.email || "N/A"}
+                  <strong>Email:</strong> {userData?.role == "instructor" && userData?.email || "N/A"}
                 </p>
                 <p>
                   <strong>Phone number:</strong>{" "}
-                  {userData?.role == "user" && userData?.phone_number || "N/A"}
+                  {userData?.role == "instructor" && userData?.phone_number || "N/A"}
                 </p>
                 <button
                   className="btn btn-primary"
@@ -335,4 +335,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default ProfileInstructor;

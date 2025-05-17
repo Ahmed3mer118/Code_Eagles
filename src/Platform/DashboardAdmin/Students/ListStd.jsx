@@ -97,22 +97,23 @@ function ListStd() {
     setShowForm(true);
     setIsEditing(true);
     setCurrentStudent(student);
-    setStudentData({ allowedEmails: student.email, groupId: group.groupId });
-    fetchLectures(group.groupId);
+    setStudentData({ allowedEmails: student, groupId: group._id });
+    fetchLectures(group._id);
   };
 
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     try {
       const payload = {
-        allowedEmails: studentData.email,
+        allowedEmails: studentData.allowedEmails,
         groupId: studentData.groupId,
         lecturesSpecial: selectedLectures,
       };
+      console.log(payload);
 
-      await axios.put(`${URLAPI}/api/users/update-allowed-emails`, payload, {
-        headers: { Authorization: getTokenAdmin },
-      });
+      // await axios.put(`${URLAPI}/api/users/update-allowed-emails`, payload, {
+      //   headers: { Authorization: getTokenAdmin },
+      // });
 
       toast.success("Student updated successfully");
       setShowForm(false);
@@ -130,10 +131,11 @@ function ListStd() {
 
   const handleDelete = async (group, student) => {
     try {
-      await axios.delete(`${URLAPI}/api/users/remove-allowed-email`, {
-        data: { groupId: group.groupId, allowedEmails: student.email },
-        headers: { Authorization: getTokenAdmin },
-      });
+
+        await axios.delete(`${URLAPI}/api/users/remove-allowed-email`, {
+          data: { groupId: group._id, allowedEmails: student },
+          headers: { Authorization: getTokenAdmin },
+        });
 
       toast.success("Student removed successfully");
       const updatedGroups = await adminService.getAllGroups();
@@ -265,6 +267,7 @@ function ListStd() {
               ) : (
                 Array.isArray(allStudentInList) && allStudentInList?.map((group, groupIndex) => (
                   group.allowedEmails.map((student, studentIndex) => (
+                  
                     <tr key={`${groupIndex}-${studentIndex}`}>
                       <td>{studentIndex + 1}</td>
                       <td>{student.user?.name || "N/A"}</td>

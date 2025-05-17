@@ -29,10 +29,10 @@ const AllQuiz = () => {
         let response ;
         if (window.location.pathname.includes("/admin")) {
           response = await adminService.getQuizzes(groupId)
-        } else {
+        } else if (window.location.pathname.includes("/instructor")) {
           response = await instructorService.getQuizzes(groupId)
         }
-      
+  
         if (response && Array.isArray(response)) {
           setQuizzes(response);
 

@@ -10,16 +10,26 @@ import AdminService from "../../classes/AdminService";
 function Tasks() {
   const { groupId, lectureId } = useParams(); 
   const { URLAPI, getTokenAdmin, getTokenInstructor } = useContext(DataContext);
-  const [tasks, setTasks] = useState([]);
+  const [tasksState, setTasksState] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [adminService] = useState(new AdminService(URLAPI, getTokenAdmin));
   const [instructorService] = useState(new InstructorService(URLAPI, getTokenInstructor));
 
-  if (!getTokenAdmin || !getTokenInstructor) {
-    toast.error("Unauthorized. Please log in.");
-    return;
-  }
+  useEffect(() => {
+    if(window.location.pathname.includes("/admin")){  
+      if (!getTokenAdmin) {
+        toast.error("Unauthorized. Please log in.");
+        return;
+      }
+    }
+    else{
+      if (!getTokenInstructor) {
+        toast.error("Unauthorized. Please log in.");
+        return;
+      }
+      }
+  }, [getTokenAdmin, getTokenInstructor]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,12 +40,13 @@ function Tasks() {
           response = await adminService.getTasks(groupId);
         } else {
           response = await instructorService.getTasks(groupId);
+         
         }
         
         if (response && response.tasks) {
-          setTasks(response.tasks);
+          setTasksState(response.tasks);
         } else {
-          setTasks([]);
+          setTasksState([]);
         }
       } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -83,7 +94,7 @@ function Tasks() {
             </tr>
           </thead>
           <tbody>
-            {tasks.map((task) => (
+            {tasksState.map((task) => (
               
               <tr key={task.taskId}>
                 <td className="border p-2">{task.lectureTitle}</td>

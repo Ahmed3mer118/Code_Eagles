@@ -265,7 +265,14 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-
+  async showAllQuizzesScore(userId,groupId){
+    try{
+      const response = await this.axiosInstance.get(`/api/quizzes/${groupId}/${userId}/detial-score-by-admin`)
+      return response.data
+    }catch(error){
+      throw this.handleError(error)
+    }
+  }
   // Students Methods
   async getStudents() {
     try {
@@ -294,7 +301,7 @@ class AdminService {
   // update Student Status
   async updateStudentStatus(userId,stutas,groupId){
     try{
-      const response = await this.axiosInstance.put(`/api/users/set-role-to-${stutas == "approved" ? "pending" : "approved"}/${userId}/${groupId}` ,{status:stutas})
+      const response = await this.axiosInstance.put(`/api/users/set-role-${stutas == "approved" ? "pending" : "user"}/${userId}/${groupId}` ,{status:stutas})
       return response.data
     }catch(error){
       throw this.handleError(error)
@@ -344,7 +351,14 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-
+  async getPendingUsers(){
+    try{
+      const response = await this.axiosInstance.get(`/api/users/pending-users`)
+      return response.data
+    }catch(error){
+      throw this.handleError(error)
+    }
+  } 
   // Attendance Methods by admin
   async getAttendance(lectureId) {
     try {
@@ -354,7 +368,22 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-
+  async acceptRequest(status ,acceptData){
+    try{
+      const response = await this.axiosInstance.post(`/api/users/${status}`,acceptData)
+      return response.data
+    }catch(error){
+      throw this.handleError(error)
+    }
+  }
+  async rejectRequest(rejectedReq){
+    try{
+      const response = await this.axiosInstance.post(`/api/users/reject-join-request`,rejectedReq)
+      return response.data
+    } catch(error){
+      throw this.handleError(error)
+    }
+  }
   async markAttendance(attendanceData) {
     try {
       const response = await this.axiosInstance.post('/api/attendance', attendanceData);
@@ -401,7 +430,48 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-
+  // MAINTENANCE MODE
+  async sendLockCode() {
+    try {
+      const response = await this.axiosInstance.post('/api/emergency/send-lock-code');
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  async verifyLockCode(code) {
+    try {
+      const response = await this.axiosInstance.post('/api/emergency/verify-lock-code', { code });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  async getLockCode() {
+    try {
+      const response = await this.axiosInstance.get('/api/emergency/get-emergency-status');
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);  
+    }
+  }
+  
+  async sendUnlockCode() {
+    try {
+      const response = await this.axiosInstance.post('/api/emergency/send-unlock-code');
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  async verifyUlockCode(code) {
+    try {
+      const response = await this.axiosInstance.post('/api/emergency/verify-unlock-code', { code });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
   // Error Handler
   handleError(error) {
     if (error.response) {

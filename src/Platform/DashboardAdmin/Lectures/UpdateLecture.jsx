@@ -25,7 +25,7 @@ function UpdateLecture() {
   useEffect(() => {
     if (!getTokenAdmin && !getTokenInstructor) {
       toast.error("Unauthorized. Please log in.");
-      navigate("/login");
+      return;
     }
   }, [getTokenAdmin, getTokenInstructor, navigate]);
 
@@ -39,7 +39,6 @@ function UpdateLecture() {
         } else {
           const response = await instructorService.getLectureDetails(lectureId);
           setdataUpdate(response.lecture);
-   
         }
       } catch (error) {
         console.error("Error fetching lecture:", error);
@@ -60,11 +59,18 @@ function UpdateLecture() {
       return;
     }
 
+    const data = {
+      title: dataUpdate.title,
+      description: dataUpdate.description,
+      article: dataUpdate.article,
+      resources: dataUpdate.resources,
+      groupId: groupId,
+    }
     try {
       if (window.location.pathname.includes("/admin")) {
-        await adminService.updateLecture(lectureId, dataUpdate);
+        await adminService.updateLecture(lectureId, data);
       } else {
-        await instructorService.updateLecture(lectureId, dataUpdate);
+        await instructorService.updateLecture(lectureId, data);
       }
 
       const redirectPath = window.location.pathname.includes("/admin") 

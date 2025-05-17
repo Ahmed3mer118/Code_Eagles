@@ -59,7 +59,7 @@ function VerificationForm() {
   return (
     <div className="bg-form">
       <Toaster />
-      <form className="p-3 rounded" onSubmit={handleVerification}>
+      <form className="p-3 rounded register-form" onSubmit={handleVerification}>
         <h1 className="text-center text-light">Verification</h1>
         <input
           type="text"

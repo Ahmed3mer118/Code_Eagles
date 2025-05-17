@@ -131,7 +131,7 @@ const CreateQuiz = () => {
           if (window.location.pathname.includes("/admin")) {
             navigate(`/admin/${groupId}/lectures`);
           } else {
-            window.history.back();
+            navigate(`/instructor/${groupId}/lectures`);
           }
         }, 2000);
       } else {

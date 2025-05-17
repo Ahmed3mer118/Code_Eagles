@@ -17,6 +17,8 @@ function Courses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [attendanceStatus, setAttendanceStatus] = useState({});
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationText, setConfirmationText] = useState("");
 
 
   const fetchLectures = useCallback(async () => {
@@ -97,21 +99,13 @@ function Courses() {
         return;
       }
 
-    
-        try {
-          const solveQuiz = await userService.getScore(getQuiz._id);
-          const score = parseInt(solveQuiz?.quizScore?.score);
-          if (score >= 50) {
-            goToNextLecture();
-          } else {
-            toast.loading("You need to pass the quiz to continue", {
-              duration: 2000,
-            });
-            setTimeout(() => {
-              navigate(`/course/${groupId}/lecture/${currentLectureId}/quiz/${getQuiz._id}/questions`);
-            }, 2000);
-          }
-        } catch (err) {
+
+      try {
+        const solveQuiz = await userService.getScore(getQuiz._id);
+        const score = parseInt(solveQuiz?.quizScore?.score);
+        if (score >= 50) {
+          goToNextLecture();
+        } else {
           toast.loading("You need to pass the quiz to continue", {
             duration: 2000,
           });
@@ -119,7 +113,15 @@ function Courses() {
             navigate(`/course/${groupId}/lecture/${currentLectureId}/quiz/${getQuiz._id}/questions`);
           }, 2000);
         }
-    
+      } catch (err) {
+        toast.loading("You need to pass the quiz to continue", {
+          duration: 2000,
+        });
+        setTimeout(() => {
+          navigate(`/course/${groupId}/lecture/${currentLectureId}/quiz/${getQuiz._id}/questions`);
+        }, 2000);
+      }
+
     } catch (err) {
       if (err?.message === "Quiz for this lecture not found") {
         goToNextLecture();
@@ -140,11 +142,18 @@ function Courses() {
   }, [currentLectureIndex, lectures, groupId, navigate]);
   const handleLeaveGroup = (groupId) => {
     if (window.confirm("Are you sure you want to leave this group?")) {
-      userService.leaveGroup(groupId);
-      toast.success("You have left the group successfully.");
-      setTimeout(() => {
-        navigate("/my-courses");
-      }, 2000);
+      if (confirmationText.toLowerCase() === "leave group") {
+        userService.leaveGroup(groupId);
+        setShowConfirmation(false);
+        toast.success("You have left the group successfully.");
+        setTimeout(() => {
+          navigate("/my-courses");
+          window.location.reload();
+        }, 2000);
+      } else {
+        toast.error("You must type 'leave group' to confirm.");
+      }
+
     }
   };
 
@@ -252,9 +261,64 @@ function Courses() {
                 </div>
               </div>
             </div>
-          <button className="btn btn-danger mt-3 mb-3" onClick={() => handleLeaveGroup(groupId)}>
-            Leave Group
-          </button>
+            <button className="btn btn-danger mt-3 mb-3" onClick={() => setShowConfirmation(true)}>
+              Leave Group
+            </button>
+            {showConfirmation && (
+              <div
+                className="overlay"
+                style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100vw",
+                  height: "100vh",
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 9999,
+                }}
+              >
+                <div
+                  className="confirmation-box bg-white p-4 rounded"
+                  style={{
+                    width: "90%",
+                    maxWidth: "400px",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                  }}
+                >
+                  <p className="text-muted fw-semibold mb-2 text-center">
+                    This action will remove you from the group and you will no longer be able to access the group's content and all data related to it.
+                  </p>
+                  <p className="text-muted mb-2 text-center">
+                    Please type <strong>"leave group"</strong> to confirm:
+                  </p>
+                  <input
+                    type="text"
+                    className="form-control mb-3"
+                    value={confirmationText}
+                    onChange={(e) => setConfirmationText(e.target.value)}
+                    placeholder="Type here to confirm"
+                  />
+                  <div className="d-flex justify-content-between">
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleLeaveGroup(groupId)}
+                    >
+                      Confirm Leave
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setShowConfirmation(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>

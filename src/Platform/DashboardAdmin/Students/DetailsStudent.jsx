@@ -4,6 +4,7 @@ import { toast, Toaster } from "react-hot-toast";
 import { DataContext } from "../../Users/Context/Context";
 import AdminService from "../../classes/AdminService";
 import InstructorService from "../../classes/InstructorService";
+import { Helmet } from "react-helmet-async";
 
 
 function DetailStudent() {
@@ -27,7 +28,7 @@ function DetailStudent() {
   const navigate = useNavigate();
   const [lectures, setLectures] = useState([]);
   const [lecturesSpecial, setSelectedLectures] = useState([]);
-  
+  const [quizData, setQuizData] = useState([]);
   const location = useLocation();
 
 
@@ -57,7 +58,6 @@ function DetailStudent() {
         }
         else{
            studentData = await instructorService.getStudentDetails(studentId);
-           console.log(studentData)
         }
         setStudents(studentData);
 
@@ -80,7 +80,7 @@ function DetailStudent() {
           setCurrentStatus({});
         }
       } catch (error) {
-        console.error("Error fetching student data:", error);
+
         toast.error(error.message);
       } finally {
         setLoading(false);
@@ -99,6 +99,7 @@ function DetailStudent() {
             groupIdByStd.map(async (group) => {
               try {
                 const groupData = await adminService.getGroupDetails(group.groupId);
+
                 return groupData;
               } catch (error) {
                 console.error(`Error fetching group ${group.groupId}:`, error);
@@ -118,6 +119,7 @@ function DetailStudent() {
     }
   }, [groupIdByStd]);
 
+
   // Delete Student
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this student?")) {
@@ -132,7 +134,6 @@ function DetailStudent() {
         navigate("/admin/allStudent");
       }, 2000);
     } catch (error) {
-      console.error("Error deleting student:", error);
       toast.error(error.message);
     }
   };
@@ -158,10 +159,13 @@ function DetailStudent() {
     let newStatus = "";
     switch (currentGroupStatus) {
       case "pending":
-        newStatus = "approved";
+        newStatus = "user";
         break;
       case "approved":
         newStatus = "pending";
+        break;
+      case "special":
+        newStatus = "user";
         break;
       default:
         newStatus = "approved";
@@ -195,8 +199,8 @@ function DetailStudent() {
 
       toast.success(`User status updated to ${newStatus}`);
     } catch (error) {
-      console.error("Status update error:", error);
-      // toast.error(error.message);
+
+      toast.error(error?.message);
     }
   };
 
@@ -208,16 +212,18 @@ function DetailStudent() {
     try {
       if(window.location.pathname.includes("/admin")){
         const attendanceData = await adminService.getStudentAttendance( studentId, groupId);
-        console.log(attendanceData);
         setAttendanceData(attendanceData.groupLectures || []);
         setAttendance({
         present: attendanceData.attendedLecturesCount || 0,
         absent: attendanceData.notAttendedLecturesCount || 0,
       });
 
-      const tasksData = await adminService.getGroupTasks(studentId, groupId);
-      setTaskData(tasksData.tasks || []);
+      const taskData = await adminService.getStudentDetails(studentId);
+      const tasksData = taskData.groups.find(group => group.groupId === groupId).tasks;
+      setTaskData(tasksData || []);
 
+      const quizData = await adminService.showAllQuizzesScore(studentId,groupId);
+        setQuizData(quizData.quizScores || []);
       const lecturesData = await adminService.getStudentAttendance(studentId,groupId);
       setLectures(lecturesData.lectures || []);
 
@@ -231,21 +237,26 @@ function DetailStudent() {
     } 
     else{
       const attendanceData = await instructorService.getStudentAttendance( studentId, groupId);
-      console.log(attendanceData);
+    
       setAttendanceData(attendanceData.groupLectures || []);
       setAttendance({
         present: attendanceData.attendedLecturesCount || 0,
         absent: attendanceData.notAttendedLecturesCount || 0,
       });
 
-      const tasksData = await instructorService.getGroupTasks(studentId, groupId);
-      setTaskData(tasksData.tasks || []);
+      const taskData = await instructorService.getStudentDetails(studentId);
+      const tasksData = taskData.groups.find(group => group.groupId === groupId).tasks;
+
+      setTaskData(tasksData || []);
+
+      const quizData = await instructorService.showAllQuizzesScore(studentId,groupId);
+      setQuizData(quizData.quizScores || []);
       
     } 
   }
     catch (error) {
-      console.error("Error in showDetailsStd:", error);
-      // toast.error(error.message);
+
+      toast.error(error?.message);
     } finally {
       setLoading(false);
     }
@@ -326,13 +337,16 @@ function DetailStudent() {
       setStudents(updatedStudent);
       toast.success(`Student role updated to ${newRole}`);
     } catch (error) {
-      console.error("Error updating student role:", error);
+   
       toast.error(error.message);
     }
   };
 
   return (
     <>
+    <Helmet>
+      <title>Student Details: {students.name || "Loading..."}</title>
+    </Helmet>
     <Toaster />
       <div className="container-fluid py-4">
         <div className="row mb-4">
@@ -434,6 +448,22 @@ function DetailStudent() {
                     </div>
                   ))
                 )}
+              </div>
+            </div>
+            <div className="card shadow-sm mt-4">
+              <div className="card-body">
+                <h5 className="card-title mb-4">Quizzes</h5>
+                <div className="list-group">
+                  {Array.isArray(quizData) && quizData.length > 0 ? (
+                    quizData?.map((item, index) => (
+                      <div key={index} className="list-group-item">
+                        <strong>{item.lectureTitle || "No title"} : {item.score || 0}</strong>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="alert alert-info">No quizzes available</div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
