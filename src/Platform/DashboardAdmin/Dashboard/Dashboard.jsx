@@ -9,8 +9,8 @@ import { Helmet } from "react-helmet-async";
 import {toast ,Toaster } from "react-hot-toast";
 import AdminService from "../../classes/AdminService";
 function Dashboard() {
-  const { getTokenAdmin } = useContext(DataContext);
-  const [adminService] = useState(new AdminService(getTokenAdmin));
+  const {URLAPI, getTokenAdmin } = useContext(DataContext);
+  const [adminService] = useState(new AdminService(URLAPI, getTokenAdmin));
   const [groups, setGroups] = useState({ online: [], offline: [] });
   const [openSections, setOpenSections] = useState({
     online: true,

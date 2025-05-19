@@ -11,27 +11,40 @@ function EmailReq() {
   const [loading, setLoading] = useState(false);
   const [lectures, setLectures] = useState([]);
   const [lecturesSpecial, setSelectedLectures] = useState([]);
-  const [instructorService] = useState(new InstructorService(URLAPI, getTokenInstructor));
   const [adminService] = useState(new AdminService(URLAPI, getTokenAdmin));
+  const [instructorService] = useState(new InstructorService(URLAPI, getTokenInstructor));
 
   useEffect(() => {
-    setLoading(true);
     if (email) {
-      return;
+      return; 
     }
+  
     const fetchPendingUsers = async () => {
-      setLoading(false)
-      if (window.location.pathname.includes("/admin")) {
-        response = await adminService.getPendingUsers()
-        setEmail(response)
-      } else {
-        const response = await instructorService.getPendingUsers()
-        setEmail(response)
+    try{
+  setLoading(true)
+        let response;
+        if (window.location.pathname.includes("/admin")) {
+          response = await adminService.getPendingUsers()
+          setEmail(response)
+        } else {
+          response = await instructorService.getPendingUsers()
+          setEmail(response)
+        }
+      }
+      catch(error){
+        if (error.response && error.response.status === 404) {
+          console.warn(error)
+        }
+        toast.loading("No Request Emails Found",{duration:2000})
+      }
+      finally{
+        setLoading(false)
       }
     }
-    fetchPendingUsers()
-
-  }, [getTokenAdmin]);
+    fetchPendingUsers();
+  
+  }, [getTokenAdmin, getTokenInstructor, email]);
+  
 
   const handleAccept = async (id, requestId, requestStutas) => {
     let status =
@@ -59,7 +72,7 @@ function EmailReq() {
         setEmail(email.filter((item) => item.userId !== id));
       }
       toast.success("Request Accepted");
-  
+
     } catch (error) {
       toast.error(
         `Error accepting request: ${error.response.data.message || error.message
@@ -76,19 +89,19 @@ function EmailReq() {
 
     setLoading(true);
     try {
-      
+
       let response
-  if(window.location.pathname.includes("/admin")){  
-      response = await adminService.rejectRequest(rejectedReq)
-      }else{
+      if (window.location.pathname.includes("/admin")) {
+        response = await adminService.rejectRequest(rejectedReq)
+      } else {
         response = await instructorService.rejectRequest(rejectedReq)
       }
-      if(response){
+      if (response) {
         toast.success(response.message);
         setEmail(email.filter((item) => item.userId !== id));
       }
       setLoading(false);
-     
+
     } catch (error) {
       toast.error(
         `Error rejecting request: ${error.message
@@ -100,9 +113,9 @@ function EmailReq() {
   const fetchLectures = async (groupId) => {
     try {
       let token = getTokenAdmin
-      if(window.location.pathname.includes("/admin")){
+      if (window.location.pathname.includes("/admin")) {
         token = getTokenAdmin
-      }else{
+      } else {
         token = getTokenInstructor
       }
       const response = await axios.get(

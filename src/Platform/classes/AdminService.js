@@ -354,7 +354,8 @@ class AdminService {
   async getPendingUsers(){
     try{
       const response = await this.axiosInstance.get(`/api/users/pending-users`)
-      return response.data
+
+        return response.data
     }catch(error){
       throw this.handleError(error)
     }
@@ -484,7 +485,7 @@ class AdminService {
     return {
       status: 500,
       message: 'Network error or server is not responding',
-      error: error.message
+      error: error?.message
     };
   }
 }
