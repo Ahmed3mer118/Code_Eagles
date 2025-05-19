@@ -29,6 +29,14 @@ function NewGroup() {
   const [previewImage, setPreviewImage] = useState(null);
   const [instructors, setInstructors] = useState([]);
   // Handle Get All Instructor
+  useEffect(() => {
+    const savedGroup = sessionStorage.getItem("newGroupData");
+    if (savedGroup) {
+      const parsedGroup = JSON.parse(savedGroup);
+      setNewGroup(parsedGroup);
+      setOffline(parsedGroup.type_course === "offline");
+    }
+  }, []);
   useEffect(()=>{
     try {
          axios.get(`${URLAPI}/api/users/all-instructors`, {
@@ -42,6 +50,9 @@ function NewGroup() {
       toast.error("Failed to get instructors. Please try again.");
     }
   }, []);
+  const saveToSessionStorage = (data) => {
+    sessionStorage.setItem("newGroupData", JSON.stringify(data));
+  };
 
   // Handle Add New Group
   const handleNewGroup = async (e) => {
@@ -60,6 +71,7 @@ function NewGroup() {
       });
       toast.success("Group created successfully!");
       setTimeout(() => navigate("/admin/allGroups"), 3000);
+      sessionStorage.removeItem("newGroupData");
     } catch (error) {
       toast.error("Failed to create group. Please try again.");
       console.error("Error creating group:", error);
@@ -70,15 +82,18 @@ function NewGroup() {
     const selectedValue = e.target.value;
     setNewGroup({ ...newGroup, type_course: selectedValue });
     setOffline(selectedValue === "offline");
+    saveToSessionStorage({ ...newGroup, type_course: selectedValue });
   };
 
   // Handle Value in Input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewGroup({
+    const updatedGroup = {
       ...newGroup,
       [name]: name === "price" ? Number(value) : value,
-    });
+    };
+    setNewGroup(updatedGroup);
+    saveToSessionStorage({ ...newGroup, [name]: value });
   };
 
   // Handle Image Change
@@ -101,6 +116,7 @@ function NewGroup() {
         setNewGroup({ ...newGroup, imageCourse: imageUrl });
       }
       setPreviewImage(imageUrl);
+      saveToSessionStorage({ ...newGroup, [type]: imageUrl });
     }
   };
   // Handle Course Details Change
@@ -108,48 +124,47 @@ function NewGroup() {
     const updatedCourseDetails = [...newGroup.course_details];
     updatedCourseDetails[index][field] = value;
     setNewGroup({ ...newGroup, course_details: updatedCourseDetails });
+    saveToSessionStorage({ ...newGroup, course_details: updatedCourseDetails });
   };
-
   // Handle About Course Change
   const handleAboutCourseChange = (index, value) => {
     const updatedAboutCourse = [...newGroup.about_course];
     updatedAboutCourse[index] = value;
     setNewGroup({ ...newGroup, about_course: updatedAboutCourse });
+    saveToSessionStorage({ ...newGroup, about_course: updatedAboutCourse });
   };
 
   // Add New Course Detail
   const addCourseDetail = () => {
-    setNewGroup({
-      ...newGroup,
-      course_details: [
-        ...newGroup.course_details,
-        { title: "", short_description: "", description: "", image: "" },
-      ],
-    });
+    const updatedCourseDetails = [...newGroup.course_details];
+    updatedCourseDetails.push({ title: "", short_description: "", description: "", image: "" });
+    setNewGroup({ ...newGroup, course_details: updatedCourseDetails });
+    saveToSessionStorage({ ...newGroup, course_details: updatedCourseDetails });
   };
 
   // Add New About Course Point
   const addAboutCourse = () => {
-    setNewGroup({
-      ...newGroup,
-      about_course: [...newGroup.about_course, ""],
-    });
+    const updatedAboutCourse = [...newGroup.about_course];
+    updatedAboutCourse.push("");
+    setNewGroup({ ...newGroup, about_course: updatedAboutCourse });
+    saveToSessionStorage({ ...newGroup, about_course: updatedAboutCourse });
   };
 
   // Remove Course Detail
   const handleRemoveCourseDetail = (index) => {
-    setNewGroup({
-      ...newGroup,
-      course_details: newGroup.course_details.filter((_, i) => i !== index),
-    });
+    const updatedCourseDetails = [...newGroup.course_details];
+    updatedCourseDetails.splice(index, 1);
+    setNewGroup({ ...newGroup, course_details: updatedCourseDetails });
+    saveToSessionStorage({ ...newGroup, course_details: updatedCourseDetails });
   };
+
 
   // Remove About Course Point
   const handleRemoveAboutCourse = (index) => {
-    setNewGroup({
-      ...newGroup,
-      about_course: newGroup.about_course.filter((_, i) => i !== index),
-    });
+    const updatedAboutCourse = [...newGroup.about_course];
+    updatedAboutCourse.splice(index, 1);
+    setNewGroup({ ...newGroup, about_course: updatedAboutCourse });
+    saveToSessionStorage({ ...newGroup, about_course: updatedAboutCourse });
   };
 
   return (
