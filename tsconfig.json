@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+      "target": "ESNext",
+      "module": "es2020", 
+      "moduleResolution": "Node",
+      "lib": ["DOM", "ESNext"],
+      "esModuleInterop": true,
+      "strict": true,
+      "skipLibCheck": true
+    },
+    "include": ["src", "vite-env.d.ts", "tsconfig.json"]
+  }
+  

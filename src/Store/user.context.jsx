@@ -1,49 +1,45 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
-import { toast } from "react-hot-toast";  
+import { toast } from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
 
 export const DataContext = createContext();
-import UserService from "../../classes/UserService";
+import AuthServices from "../classes/Auth";
+import UserService from "../classes/UserService";
 function Context({ children }) {
-  const URLAPI = import.meta.env.VITE_API_URL;
-  let getTokenAdmin, getTokenUser, getTokenInstructor;
-  getTokenAdmin = JSON.parse(localStorage.getItem("token") );
-  getTokenUser = JSON.parse(localStorage.getItem("tokenUser") );
-  getTokenInstructor = JSON.parse(localStorage.getItem("tokenInstructor") );
-  const userService = new UserService(getTokenUser)
+  const userService = new UserService();
+  const authServices = new AuthServices();
+  const token = authServices.getToken();
+  const URLAPI = authServices.URLAPI;
 
   const [userGroups, setUserGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  
   // Fetch user's groups on component mount
 
   useEffect(() => {
     const fetchUserGroups = async () => {
       setLoading(true);
-      if (getTokenUser) {
+      if (token) {
         try {
-          const res = await axios.get(`${URLAPI}/api/users`, {
-            headers: { Authorization: ` ${getTokenUser}` },
-          });
-          setUserGroups(res.data.groups || []);
+          const res = await userService.getUserById();
+          setUserGroups(res.groups || []);
         } catch (err) {
           console.error("Error fetching user groups:", err?.message);
         } finally {
           setLoading(false);
         }
       } else {
-        setLoading(false); // If no getTokenUser, stop loading
+        setLoading(false);
       }
     };
 
     fetchUserGroups();
-  }, [URLAPI, getTokenUser]);
+  }, [URLAPI, token]);
 
   // Handle join group with groupId, requestType, and note
   const handleJoinGroup = async (groupId, requestType, note) => {
-    if (!getTokenUser) {
+    if (!token) {
       toast.error("Please login to join the group.");
       return;
     }
@@ -82,7 +78,6 @@ function Context({ children }) {
       );
       return;
     } catch (err) {
-    
       toast.error(err.message);
       return;
     } finally {
@@ -90,28 +85,23 @@ function Context({ children }) {
     }
   };
 
-  if(getTokenAdmin){
-    try{
-      const decoded = jwtDecode(getTokenAdmin)
-      console.log(decoded)
-    } 
-    catch(err){
-      console.error('Invalid token:', err);
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      console.log(decoded);
+    } catch (err) {
+      console.error("Invalid token:", err);
     }
   }
-
 
   return (
     <DataContext.Provider
       value={{
         URLAPI,
         handleJoinGroup,
-        getTokenAdmin,
-        getTokenUser,
-        getTokenInstructor,
+        token,
         loading,
         userGroups,
-
       }}
     >
       {children}

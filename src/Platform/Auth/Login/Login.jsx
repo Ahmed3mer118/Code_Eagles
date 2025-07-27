@@ -4,7 +4,7 @@ import { toast, Toaster } from "react-hot-toast";
 import axios from "axios";
 import { Helmet } from "react-helmet-async";
 import "../Register/register.css";
-import { DataContext } from "../Context/Context";
+import { DataContext } from "../../Users/Context/Context";
 // import CryptoJS from "crypto-js";
 import FingerprintJs from "@fingerprintjs/fingerprintjs";
 import Cookies from "js-cookie";

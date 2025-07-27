@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { DataContext } from "../Context/Context";
+import { DataContext } from "../Users/Context/Context";
 
 function PrivateUser({ element }) {
   const { getTokenUser } = useContext(DataContext);

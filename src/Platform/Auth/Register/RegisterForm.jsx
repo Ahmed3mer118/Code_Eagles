@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import { DataContext } from "../Context/Context";
+import { DataContext } from "../../Users/Context/Context";
 import FingerprintJs from "@fingerprintjs/fingerprintjs";
 
 function RegisterForm() {
@@ -112,7 +112,7 @@ function RegisterForm() {
       case "Tunisia":
         setCountryCode("+216");
         setPhoneLength(8);
-        break;    
+        break;
       case "Iraq":
         setCountryCode("+964");
         setPhoneLength(10);
@@ -190,27 +190,35 @@ function RegisterForm() {
     <>
       <form className="p-3 rounded register-form" onSubmit={handleRegister}>
         <h1 className="text-center text-light mb-4">Register</h1>
-        
+
         <div className="row mb-3">
           <div className="col-md-6 col-sm-">
-            <label htmlFor="name" className="form-label text-light">Name</label>
+            <label htmlFor="name" className="form-label text-light">
+              Name
+            </label>
             <input
               type="text"
               id="name"
               className="form-control"
               value={register.name}
-              onChange={(e) => setRegister({ ...register, name: e.target.value })}
+              onChange={(e) =>
+                setRegister({ ...register, name: e.target.value })
+              }
               placeholder="Enter your name"
             />
           </div>
           <div className="col-md-6">
-            <label htmlFor="email" className="form-label text-light">Email</label>
+            <label htmlFor="email" className="form-label text-light">
+              Email
+            </label>
             <input
               type="email"
               id="email"
               className="form-control"
               value={register.email}
-              onChange={(e) => setRegister({ ...register, email: e.target.value })}
+              onChange={(e) =>
+                setRegister({ ...register, email: e.target.value })
+              }
               placeholder="Enter your email"
             />
           </div>
@@ -218,19 +226,25 @@ function RegisterForm() {
 
         <div className="row mb-3">
           <div className="col-md-6">
-            <label htmlFor="password" className="form-label text-light">Password</label>
+            <label htmlFor="password" className="form-label text-light">
+              Password
+            </label>
             <input
               type="password"
               id="password"
               className="form-control"
               value={register.password}
-              onChange={(e) => setRegister({ ...register, password: e.target.value })}
+              onChange={(e) =>
+                setRegister({ ...register, password: e.target.value })
+              }
               placeholder="Enter password"
               minLength={10}
             />
           </div>
           <div className="col-md-6">
-            <label htmlFor="confirmPassword" className="form-label text-light">Confirm Password</label>
+            <label htmlFor="confirmPassword" className="form-label text-light">
+              Confirm Password
+            </label>
             <input
               type="password"
               id="confirmPassword"
@@ -244,8 +258,14 @@ function RegisterForm() {
         </div>
 
         <div className="mb-3">
-          <label htmlFor="country" className="form-label text-light">Country</label>
-          <select id="country" className="form-control" onChange={handleCountryChange}>
+          <label htmlFor="country" className="form-label text-light">
+            Country
+          </label>
+          <select
+            id="country"
+            className="form-control"
+            onChange={handleCountryChange}
+          >
             <option value="Egypt">Egypt</option>
             <option value="Saudi Arabia">Saudi Arabia</option>
             <option value="UAE">UAE</option>
@@ -267,7 +287,9 @@ function RegisterForm() {
         </div>
 
         <div className="mb-4">
-          <label htmlFor="phoneNumber" className="form-label text-light">Phone Number</label>
+          <label htmlFor="phoneNumber" className="form-label text-light">
+            Phone Number
+          </label>
           <div className="input-group">
             <span className="input-group-text">{countryCode}</span>
             <input
