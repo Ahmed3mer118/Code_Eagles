@@ -189,7 +189,7 @@ class UserService {
 
   async submitFeedback(feedbackData: any) {
     try {
-      const response = await this.axiosInstance.post(`/api/users/submit-feedback`, feedbackData);
+      const response = await this.axiosInstance.post(`/api/feedback`, feedbackData);
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;
@@ -198,7 +198,7 @@ class UserService {
 
   async getFeedback() {
     try {
-      const response = await this.axiosInstance.get(`/api/users/get-all-feedback`);
+      const response = await this.axiosInstance.get(`/api/feedback`);
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;

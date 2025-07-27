@@ -11,42 +11,71 @@ function AddFeedback() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    feedback: "",
+    userFeedback: "",
+    rating: 5, // Default to highest rating
+    groupSlug: "" // Will store selected group
   });
+  const [groups, setGroups] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    fetchAvailableGroups();
   }, []);
+
+  const fetchAvailableGroups = async () => {
+    if (!token) return;
+
+    setIsLoadingGroups(true);
+    try {
+      const response = await userService.getGroups(); // Assuming you have this method
+      setGroups(response || []);
+    } catch (error) {
+      toast.error("Failed to load available groups");
+      console.error("Error fetching groups:", error);
+    } finally {
+      setIsLoadingGroups(false);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (token) {
-      userService.submitFeedback(formData)
-        .then(() => {
-          toast.success("Feedback submitted successfully! Thank you.");
-          setTimeout(() => {
-            setFormData({
-              name: "",
-              email: "",
-              feedback: "",
-            });
-            navigate("/");
-          }, 2500);
-        })
-        .catch((err) => {
-          toast.error(err.message || "Failed to submit feedback");
-        })
-        .finally(() => {
-          setIsSubmitting(false);
-        });
-    } else {
+    if (!token) {
       toast.error("You must log in to submit feedback.");
       setIsSubmitting(false);
+      return;
     }
+
+    if (!formData.groupSlug) {
+      toast.error("Please select a group");
+      setIsSubmitting(false);
+      return;
+    }
+
+    userService.submitFeedback(formData)
+      .then(() => {
+        toast.success("Feedback submitted successfully! Thank you.");
+        setTimeout(() => {
+          setFormData({
+            name: "",
+            email: "",
+            userFeedback: "",
+            rating: 5,
+            groupSlug: ""
+          });
+          navigate("/");
+        }, 2500);
+      })
+      .catch((err) => {
+        toast.error(err.message || "Failed to submit feedback");
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
   };
 
   return (
@@ -103,16 +132,73 @@ function AddFeedback() {
                 </div>
 
                 <div>
-                  <label htmlFor="feedback" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="groupSlug" className="block text-sm font-medium text-gray-700">
+                    Select Course/Group
+                  </label>
+                  <div className="mt-1">
+                    <select
+                      id="groupSlug"
+                      name="groupSlug"
+                      value={formData.groupSlug}
+                      onChange={(e) => setFormData({ ...formData, groupSlug: e.target.value })}
+                      required
+                      disabled={isLoadingGroups || groups.length === 0}
+                      className="py-3 px-4 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select a course</option>
+                      {groups.map((group) => (
+                        <option key={group._id} value={group.slug}>
+                          {group.name || group.slug.replace(/-/g, ' ')}
+                        </option>
+                      ))}
+                    </select>
+                    {isLoadingGroups && (
+                      <p className="mt-2 text-sm text-gray-500">Loading available courses...</p>
+                    )}
+                    {!isLoadingGroups && groups.length === 0 && token && (
+                      <p className="mt-2 text-sm text-red-500">No available courses found</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="rating" className="block text-sm font-medium text-gray-700">
+                    Your Rating
+                  </label>
+                  <div className="mt-1 flex items-center space-x-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, rating: star })}
+                        className="focus:outline-none"
+                      >
+                        <svg
+                          className={`w-8 h-8 ${star <= formData.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </button>
+                    ))}
+                    <span className="text-sm text-gray-500 ml-2">
+                      {formData.rating} out of 5
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="userFeedback" className="block text-sm font-medium text-gray-700">
                     Your Feedback
                   </label>
                   <div className="mt-1">
                     <textarea
-                      id="feedback"
-                      name="feedback"
+                      id="userFeedback"
+                      name="userFeedback"
                       rows={5}
-                      value={formData.feedback}
-                      onChange={(e) => setFormData({ ...formData, feedback: e.target.value })}
+                      value={formData.userFeedback}
+                      onChange={(e) => setFormData({ ...formData, userFeedback: e.target.value })}
                       required
                       className="py-3 px-4 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Share your thoughts about your experience..."
@@ -123,13 +209,11 @@ function AddFeedback() {
                 <div>
                   <button
                     type="submit"
-                    disabled={!token || formData.feedback.trim() === "" || isSubmitting}
-                    className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                      !token || formData.feedback.trim() === "" || isSubmitting
+                    disabled={!token || !formData.userFeedback.trim() || !formData.groupSlug || isSubmitting}
+                    className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${!token || !formData.userFeedback.trim() || !formData.groupSlug || isSubmitting
                         ? "bg-gray-400 cursor-not-allowed"
                         : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    }`}
-                    aria-label="Submit feedback"
+                      }`}
                   >
                     {isSubmitting ? (
                       <>

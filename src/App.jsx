@@ -46,6 +46,8 @@ import PrivateAdmin from "./Grauds/PrivateAdmin.jsx";
 import PrivateInstructor from "./Grauds/PrivateInstructor.jsx";
 import DashboardInstructor from "./DashboardInstructor/DashboardInstructor.jsx";
 import ProfileInstructor from "./DashboardInstructor/ProfileInstructor.jsx";
+import GetAllFeedback from "./Dashboard/GetAllFeedback.jsx";
+import GetAllMessage from "./Dashboard/Messages/GetAllMessage.jsx";
 const helmetContext = {};
 function App() {
   const router = createBrowserRouter([
@@ -232,6 +234,14 @@ function App() {
         ,{
           path:"admin/email-request",
           element:<EmailReq />
+        }
+        ,{
+          path:"admin/get-all-feedback-by-admin",
+          element:<GetAllFeedback />
+        }
+        ,{
+          path:"admin/get-all-message-by-admin",
+          element:<GetAllMessage />
         }
         ,{
           path:"admin/profile-admin",

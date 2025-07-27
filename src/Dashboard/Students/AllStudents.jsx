@@ -154,7 +154,7 @@ function AllStudents() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold dark:bg-blue-900 dark:text-blue-200">
-                        {item.name.charAt(0).toUpperCase()}
+                        {item.name?.charAt(0).toUpperCase()}
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">{item.name}</div>

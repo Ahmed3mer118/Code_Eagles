@@ -56,10 +56,8 @@ function DashboardIndex() {
 
 
         try {
-          const feedbackRes = await axios.get(`${URLAPI}/api/users/get-all-feedback`, {
-            headers: { Authorization: `${token}` }
-          });
-          feedbackData = feedbackRes.data;
+          const feedbackRes = await adminServices.getFeedback()
+          feedbackData = feedbackRes
 
         } catch (error) {
           console.error("Error fetching feedback:", error);
@@ -78,7 +76,7 @@ function DashboardIndex() {
 
 
 
-        const feedbackCount = feedbackData.feedbacks ? feedbackData.feedbacks.length : 0;
+        const feedbackCount = feedbackData ? feedbackData.length : 0;
 
 
 
@@ -182,7 +180,7 @@ function DashboardIndex() {
         </div>
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
           <Link 
-            to="/dashboard/admin/get-all-feekback-by-admin" 
+            to="/dashboard/admin/get-all-feedback-by-admin" 
             className="inline-flex items-center px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
           >
             View All Feedback

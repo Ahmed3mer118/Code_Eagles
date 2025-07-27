@@ -1,9 +1,7 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
-import axios from "axios";
 import { IoClose, IoMenu } from "react-icons/io5";
-import Cookies from "js-cookie";
 import { Helmet } from "react-helmet-async";
 import { toast, Toaster } from "react-hot-toast";
 import AuthServices from "../../classes/Auth";
@@ -214,7 +212,7 @@ function Dashboard() {
 
             {/* Additional Links */}
             <Link
-              to="/dashboard/admin/emails"
+              to="/dashboard/admin/email-request"
               className={`flex items-center p-3 rounded-lg hover:bg-emerald-800 transition-colors ${
                 !toggleNav && "justify-center"
               }`}

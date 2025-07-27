@@ -137,7 +137,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  async getTask(slugLec: string, slugTask:string) {
+  async getTask(slugLec: string, slugTask: string) {
     try {
       const response = await this.axiosInstance.get(
         `/api/lectures/${slugLec}/tasks/${slugTask}`
@@ -147,7 +147,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  
+
 
   async createTask(lectureId: string, taskData: any) {
     try {
@@ -161,7 +161,7 @@ class AdminService {
     }
   }
 
-  async updateTask(slugLec:string ,slugTask:string, taskData:any) {
+  async updateTask(slugLec: string, slugTask: string, taskData: any) {
     try {
       const response = await this.axiosInstance.put(`/api/lectures/${slugLec}/edit-task/${slugTask}`, taskData);
       return response.data;
@@ -170,7 +170,7 @@ class AdminService {
     }
   }
 
-  async deleteTask(slugLec:string,taskSlug:string) {
+  async deleteTask(slugLec: string, taskSlug: string) {
     try {
       const response = await this.axiosInstance.delete(`/api/lectures/${slugLec}/tasks/${taskSlug}`);
       return response.data;
@@ -210,7 +210,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  
+
 
   async createQuiz(quizData: string) {
     try {
@@ -272,7 +272,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  async getStudentInGroup(groupSlug:string){
+  async getStudentInGroup(groupSlug: string) {
     try {
       const response = await this.axiosInstance.get(`/api/users/groups/${groupSlug}/users`);
       return response.data;
@@ -323,7 +323,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  
+
 
 
 
@@ -372,7 +372,7 @@ class AdminService {
     }
   }
 
-  async deleteStudent(email:string) {
+  async deleteStudent(email: string) {
     try {
       const response = await this.axiosInstance.delete(
         `/api/users/${email}`
@@ -392,7 +392,7 @@ class AdminService {
     }
   }
   // Attendance Methods by admin
-  async getAttendance(slugLec:string) {
+  async getAttendance(slugLec: string) {
     try {
       const response = await this.axiosInstance.get(
         `/api/lectures/${slugLec}/attendance`
@@ -402,7 +402,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  async getNonAttendance(slugLec:string) {
+  async getNonAttendance(slugLec: string) {
     try {
       const response = await this.axiosInstance.get(
         `/api/lectures/${slugLec}/non-attendees`
@@ -412,7 +412,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  async acceptRequest(status:string, acceptData:string) {
+  async acceptRequest(status: string, acceptData: string) {
     try {
       const response = await this.axiosInstance.post(
         `/api/users/${status}`,
@@ -423,7 +423,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  async rejectRequest(rejectedReq:string) {
+  async rejectRequest(rejectedReq: string) {
     try {
       const response = await this.axiosInstance.post(
         `/api/users/reject-join-request`,
@@ -434,7 +434,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  async markAttendance(attendanceData:string) {
+  async markAttendance(attendanceData: string) {
     try {
       const response = await this.axiosInstance.post(
         "/api/attendance",
@@ -447,7 +447,7 @@ class AdminService {
   }
 
   // Messages Methods
-  async getMessages(groupId:string) {
+  async getMessages(groupId: string) {
     try {
       const response = await this.axiosInstance.get(
         `/api/messages/group/${groupId}`
@@ -458,7 +458,7 @@ class AdminService {
     }
   }
 
-  async sendMessage(messageData:string) {
+  async sendMessage(messageData: string) {
     try {
       const response = await this.axiosInstance.post(
         "/api/messages",
@@ -470,7 +470,7 @@ class AdminService {
     }
   }
 
-  async deleteMessage(messageId:string) {
+  async deleteMessage(messageId: string) {
     try {
       const response = await this.axiosInstance.delete(
         `/api/messages/${messageId}`
@@ -482,9 +482,18 @@ class AdminService {
   }
 
   // Feedback Methods
+
   async getFeedback() {
     try {
       const response = await this.axiosInstance.get("/api/feedback");
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  async deleteFeedback(id: string) {
+    try {
+      const response = await this.axiosInstance.delete("/api/feedback/" + id);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -501,7 +510,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  async verifyLockCode(code:string) {
+  async verifyLockCode(code: string) {
     try {
       const response = await this.axiosInstance.post(
         "/api/emergency/verify-lock-code",
@@ -533,7 +542,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  async verifyUlockCode(code:string) {
+  async verifyUlockCode(code: string) {
     try {
       const response = await this.axiosInstance.post(
         "/api/emergency/verify-unlock-code",
@@ -555,6 +564,29 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  // contact
+  async getAllContact() {
+    try {
+      const response = await this.axiosInstance.get(
+        "/api/contact/contact-us/messages"
+      );
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  async sentMessageReply(message:any) {
+    try {
+      const response = await this.axiosInstance.post(
+        "/api/contact/contact-us/reply",message
+      );
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+
   // Error Handler
   handleError(error: any) {
     if (error.response) {
