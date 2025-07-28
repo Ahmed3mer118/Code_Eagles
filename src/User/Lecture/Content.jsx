@@ -93,7 +93,7 @@ function Content() {
               <img
                 src={course.image}
                 alt={course.title}
-                className="w-full h-40 object-cover rounded-lg mb-3"
+                className="w-full h-40 rounded-lg mb-3"
                 loading="lazy"
               />
               <h2 className="text-xl font-semibold text-gray-800 mb-1">

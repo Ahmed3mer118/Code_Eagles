@@ -48,6 +48,7 @@ import DashboardInstructor from "./DashboardInstructor/DashboardInstructor.jsx";
 import ProfileInstructor from "./DashboardInstructor/ProfileInstructor.jsx";
 import GetAllFeedback from "./Dashboard/GetAllFeedback.jsx";
 import GetAllMessage from "./Dashboard/Messages/GetAllMessage.jsx";
+import CourseDetail from "./User/Lecture/CourseDetails.jsx";
 const helmetContext = {};
 function App() {
   const router = createBrowserRouter([
@@ -89,6 +90,10 @@ function App() {
         {
           path: "content/:slug",
           element: <Content />,
+        },
+        {
+          path: "content/:slug/course/:contentId",
+          element: <CourseDetail />,
         },
         {
           path: "add-feedback",
