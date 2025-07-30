@@ -38,7 +38,6 @@ function DashboardInstructor() {
 
         const response = await instructorService.getAllGroups();
         setGroups(response);
-        console.log(response);
         
         // Calculate stats from groups data
         if (response && Array.isArray(response)) {
@@ -146,31 +145,31 @@ function DashboardInstructor() {
                       <div className="space-y-2">
                         <button 
                           className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-lg border border-blue-200 transition-colors flex items-center justify-center"
-                          onClick={() => navigate(`/instructor/${group._id}/students`)}
+                          onClick={() => navigate(`/instructor/group/${group.slug}/students`)}
                         >
                           <FaUsers className="mr-2" /> Students
                         </button>
                         <button 
                           className="w-full bg-green-50 hover:bg-green-100 text-green-700 font-medium py-2 px-4 rounded-lg border border-green-200 transition-colors flex items-center justify-center"
-                          onClick={() => navigate(`/instructor/${group._id}/lectures`)}
+                          onClick={() => navigate(`/instructor/group/${group.slug}/lectures`)}
                         >
                           <FaChalkboardTeacher className="mr-2" /> Lectures
                         </button>
                         <button 
                           className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium py-2 px-4 rounded-lg border border-indigo-200 transition-colors flex items-center justify-center"
-                          onClick={() => navigate(`/instructor/${group._id}/tasks`)}
+                          onClick={() => navigate(`/instructor/group/${group.slug}/tasks`)}
                         >
                           <FaTasks className="mr-2" /> Tasks 
                         </button>
                         <button 
                           className="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium py-2 px-4 rounded-lg border border-purple-200 transition-colors flex items-center justify-center"
-                          onClick={() => navigate(`/instructor/${group._id}/quizzes`)}
+                          onClick={() => navigate(`/instructor/group/${group.slug}/quizzes`)}
                         >
                           <FaGraduationCap className="mr-2" /> Quizzes
                         </button>
                         <button 
                           className="w-full bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-medium py-2 px-4 rounded-lg border border-yellow-200 transition-colors flex items-center justify-center"
-                          onClick={() => navigate(`/instructor/${group._id}/messages`)}
+                          onClick={() => navigate(`/instructor/group/${group.slug}/messages`)}
                         >
                           <FaEnvelope className="mr-2" /> Messages
                         </button>
@@ -227,13 +226,13 @@ function DashboardInstructor() {
               }`}
               onClick={() => setActiveTab('emailRequest')}
             >
-              <Link to="/instructor/emailRequest" className="flex items-center w-full">
+              <Link to="/instructor/email-request" className="flex items-center w-full">
                 <FaEnvelope className="mr-3" /> 
                 {isSidebarOpen && <span>Email Request</span>}
               </Link>
             </button>
 
-            <button 
+            {/* <button 
               className={`w-full text-left py-3 px-4 rounded-lg transition-colors flex items-center ${
                 activeTab === 'messages' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
               }`}
@@ -243,7 +242,7 @@ function DashboardInstructor() {
                 <FaEnvelope className="mr-3" /> 
                 {isSidebarOpen && <span>Messages</span>}
               </Link>
-            </button>
+            </button> */}
 
             <button 
               className={`w-full text-left py-3 px-4 rounded-lg transition-colors flex items-center ${

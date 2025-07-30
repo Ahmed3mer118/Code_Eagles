@@ -13,7 +13,7 @@ function AddTask() {
     submissionLink: "",
   });
   const [loading, setLoading] = useState(false);
-  const { slugLec, slugTask } = useParams();
+  const { slugLecture, slugTask } = useParams();
   const navigate = useNavigate();
 
   // send task by user
@@ -25,7 +25,7 @@ function AddTask() {
         return;
       }
       setLoading(true);
-      const response = await userService.submitTask(slugLec, slugTask, taskData);
+      const response = await userService.submitTask(slugLecture, slugTask, taskData);
       console.log(response)
       if (response) {
         toast.success("Task submitted successfully!");

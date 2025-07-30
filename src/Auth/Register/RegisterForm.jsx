@@ -18,8 +18,8 @@ function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [countryCode, setCountryCode] = useState("+20"); // Default to Egypt
-  const [phoneLength, setPhoneLength] = useState(11); // Default length for Egypt
+  const [countryCode, setCountryCode] = useState("+20"); 
+  const [phoneLength, setPhoneLength] = useState(11);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -46,14 +46,9 @@ function RegisterForm() {
 
     try {
       setLoading(true);
-      // const res = await axios.post(`${URLAPI}/api/users/register`, register, {
-      //   headers: { "Content-Type": "application/json" },
-      // });
       const res =  await authServices.register(register)
-
       if (res) {
         toast.success(`Hello ${register.name}, please check your email.`);
-
         setTimeout(() => {
           navigate("/auth/verif-email", { state: register.email });
         }, 2500);

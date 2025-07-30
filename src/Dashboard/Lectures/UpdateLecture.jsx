@@ -34,7 +34,6 @@ function UpdateLecture() {
       try {
         if (window.location.pathname.includes("/dashboard")) {
           const response = await adminServices.getLectureDetails(slugLecture);
-          console.log(response.lecture)
           setdataUpdate(response.lecture);
         } else {
           const response = await instructorService.getLectureDetails(

@@ -165,6 +165,7 @@ function Lectures() {
               ) : (
                 Array.isArray(lectures) &&
                 lectures.map((lecture, index) => (
+                
                   <div key={lecture._id} className="flex flex-col h-full">
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col h-full dark:bg-gray-800 dark:border-gray-700">
                       <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
@@ -172,7 +173,6 @@ function Lectures() {
                           Lecture #{index + 1}
                         </h5>
                       </div>
-
                       <div className="p-4 flex-grow">
                         <h6 className="text-lg font-semibold mb-2 text-gray-800 dark:text-white">
                           {lecture.title}

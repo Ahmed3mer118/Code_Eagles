@@ -64,15 +64,16 @@ function NewTask() {
 
   useEffect(() => {
     const fetchTask = async () => {
-      const locationAdmin = location.pathname.includes(
-        `/dashboard/admin/group/${slug}/lecture/${slugLecture}/tasks/updateTask/${slugTask}`
+      const locationNameUpdate = location.pathname.includes(
+        `updateTask`
       );
-      const locationInstructor = location.pathname.includes(
-        `/instructor/group/${slug}/lecture/$${slugLecture}/tasks/updateTask/${slugTask}`
+      const locationAdmin =location.pathname.includes(
+        `admin` || "dashboard"
       );
 
-      if (locationAdmin || locationInstructor) {
+      if (locationNameUpdate ) {
         setSwitchTask(true);
+        console.log("update")
         try {
           const res = locationAdmin
             ? await adminServices.getTask(slugLecture, slugTask)
@@ -260,7 +261,7 @@ function NewTask() {
                   type="text"
                   placeholder="Enter Task Title"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  value={updateTask.titleTask}
+                  value={newTask.titleTask ||slugTask}
                   onChange={(e) =>
                     setUpdateTask({ ...updateTask, titleTask: e.target.value })
                   }

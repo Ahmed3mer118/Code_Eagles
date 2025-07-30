@@ -17,7 +17,7 @@ function InstructorMessage() {
 
   // Initialize services
   const authService = new AuthServices();
-  const token = authService.getInstructorToken();
+  const token = authService.getToken();
   const instructorService = new InstructorService(token);
 
   useEffect(() => {

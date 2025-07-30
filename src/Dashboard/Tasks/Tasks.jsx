@@ -84,11 +84,11 @@ function Tasks() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+            <tbody key={Math.random()*2} className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
               {tasksState.length > 0 ? (
                 tasksState.map((task) => (
                   <tr
-                    key={task.slugTask}
+                    key={task._id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">

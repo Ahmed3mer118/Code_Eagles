@@ -11,7 +11,7 @@ function Courses() {
   const authServices = new AuthServices();
   const token = authServices.getToken();
   const userService = new UserService(token)
-  const { slug, slugLec } = useParams();
+  const { slug, slugLecture } = useParams();
   const navigate = useNavigate();
   const [lectures, setLectures] = useState([]);
   const [currentLectureIndex, setCurrentLectureIndex] = useState(0);
@@ -41,9 +41,9 @@ function Courses() {
 
       setAttendanceStatus(attended);
 
-      if (slugLec) {
+      if (slugLecture) {
         const currentIndex = lecturesData.findIndex(
-          (lec) => lec.slugLec === slugLec
+          (lec) => lec.slugLec === slugLecture
         );
         if (currentIndex !== -1) {
           setCurrentLectureIndex(currentIndex);
@@ -63,11 +63,11 @@ function Courses() {
     } finally {
       setLoading(false);
     }
-  }, [slug, slugLec]);
+  }, [slug, slugLecture]);
 
   useEffect(() => {
     fetchLectures();
-  }, [slugLec]);
+  }, [slugLecture]);
 
   const handleLectureClick = (slugLec, index) => {
     setCurrentLectureIndex(index);

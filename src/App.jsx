@@ -49,6 +49,7 @@ import ProfileInstructor from "./DashboardInstructor/ProfileInstructor.jsx";
 import GetAllFeedback from "./Dashboard/GetAllFeedback.jsx";
 import GetAllMessage from "./Dashboard/Messages/GetAllMessage.jsx";
 import CourseDetail from "./User/Lecture/CourseDetails.jsx";
+import InstructorMessage from "./DashboardInstructor/InstructorMessage.jsx"
 const helmetContext = {};
 function App() {
   const router = createBrowserRouter([
@@ -117,11 +118,11 @@ function App() {
           element: <PrivateUser element={<Courses />} />
         },
         {
-          path:'course/:slug/lecture/:slugLec',
+          path:'course/:slug/lecture/:slugLecture',
           element: <PrivateUser element={<Courses />} />,
         },
         {
-          path:'course/:slug/lecture/:slugLec/quiz/:slugQuiz',
+          path:'course/:slug/lecture/:slugLecture/quiz/:slugQuiz',
           element: <PrivateUser element={<Quiz />} />,
           children: [
             {
@@ -139,7 +140,7 @@ function App() {
           ]
         },
         {
-          path: "course/:slug/lecture/:slugLec/Add-Task/:slugTask",
+          path: "course/:slug/lecture/:slugLecture/Add-Task/:slugTask",
           element: <AddTask />,
         },
       ],
@@ -259,9 +260,62 @@ function App() {
     // instructor
     {
       path:"instructor",
-      // element:<PrivateInstructor element={<DashboardInstructor />} />,
-      element:<DashboardInstructor />,
+      element:<PrivateInstructor element={<DashboardInstructor />} />,
+      // element:<DashboardInstructor />,
       children:[
+        {
+          path:"group/:slug/students",
+          element:<Students/>
+        },
+        {
+          path:":slug/student/:studentSlug",
+          element:<DetailStudent/>
+        },
+        {
+          path:"group/:slug/lectures",
+          element:<Lectures/>
+        },
+        {
+          path:"group/:slug/lectures/:slugLecture/newTask",
+          element:<NewTask/>
+        },
+        {
+          path:"group/:slug/lectures/:slugLecture/newQuiz",
+          element:<CreateQuiz />
+        },
+        {
+          path:"group/:slug/lectures/update/:slugLecture",
+          element:<UpdateLecture />
+        },
+        
+        {
+          path:"group/:slug/tasks",
+          element:<Tasks/>
+        },
+        {
+          path:"group/:slug/lecture/:slugLecture/tasks/:slugTask/submissions",
+          element:<SubmissionsTask/>
+        },
+        {
+          path:"group/:slug/lecture/:slugLecture/tasks/updateTask/:slugTask",
+          element:<NewTask/>
+        },
+        {
+          path:"group/:slug/quizzes",
+          element:<AllQuiz/>
+        },
+        {
+          path:"group/:slug/lecture/:slugLecture/quiz/:updateQuiz/:slugQuiz",
+          element:<UpdateQuiz/>
+        },
+        {
+          path:"group/:slug/messages",
+          element:<InstructorMessage/>
+        },
+        {
+          path:'email-request',
+          element:<EmailReq />
+        },
         {
           path:'setting',
           element:<ProfileInstructor />

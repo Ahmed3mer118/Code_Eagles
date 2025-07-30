@@ -15,7 +15,7 @@ function VideoCourse({
   const authServices = new AuthServices();
   const token = authServices.getToken();
   const userService = new UserService(token);
-  const { slugLec, slug } = useParams();
+  const { slugLecture, slug } = useParams();
   const [lecture, setLecture] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,7 +33,7 @@ function VideoCourse({
       try {
         setLoading(true);
         setError(null);
-        if (!slugLec) {
+        if (!slugLecture) {
           toast.loading(
             "Please record your attendance first to open the video last time",
             { duration: 4000 }
@@ -41,10 +41,10 @@ function VideoCourse({
           return;
         }
 
-        if(slugLec){
-          const lectureRes = await userService.getLectureById(slugLec);
+        if(slugLecture){
+          const lectureRes = await userService.getLectureById(slugLecture);
           setLecture(lectureRes.lecture);
-          setDisabledInput(attendanceStatus[slugLec] || false);
+          setDisabledInput(attendanceStatus[slugLecture] || false);
   
           if (lectureRes.lecture.tasks?.length > 0) {
             const task = lectureRes.lecture.tasks[0];
@@ -80,7 +80,7 @@ function VideoCourse({
     };
 
     fetchLecture();
-  }, [slug, token, slugLec, attendanceStatus]);
+  }, [slug, token, slugLecture, attendanceStatus]);
 
   useEffect(() => {
     const fetchCourseInfo = async () => {
@@ -103,8 +103,8 @@ function VideoCourse({
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        if (slugLec) {
-          const getQuiz = await userService.getQuizzesByLectureId(slugLec);
+        if (slugLecture) {
+          const getQuiz = await userService.getQuizzesByLectureId(slugLecture);
           if (getQuiz) {
             setQuiz(getQuiz);
             const getScore = await userService.getScore(getQuiz.slugQuize);
@@ -119,7 +119,7 @@ function VideoCourse({
     };
     
     fetchQuiz();
-  }, [slug , slugLec]); 
+  }, [slug , slugLecture]); 
 
   const handleAttend = async (e) => {
     e.preventDefault();
@@ -128,7 +128,7 @@ function VideoCourse({
       return;
     }
     try {
-      await userService.attendLecture(slugLec, attendCode.code);
+      await userService.attendLecture(slugLecture, attendCode.code);
       toast.success("Attendance recorded successfully!");
       setDisabledInput(true);
     } catch (error) {
@@ -140,8 +140,8 @@ function VideoCourse({
     }
   };
 
-  const handleSendTask = (slug, slugLec, slugTask) => {
-    navigate(`/course/${slug}/lecture/${slugLec}/Add-Task/${slugTask}`);
+  const handleSendTask = (slug, slugLecture, slugTask) => {
+    navigate(`/course/${slug}/lecture/${slugLecture}/Add-Task/${slugTask}`);
   };
 
   const handleNext = () => {
@@ -161,7 +161,7 @@ function VideoCourse({
         {/* Lecture Header */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <h2 className="text-xl font-bold text-blue-600">
-            {slugLec
+            {slugLecture
               ? `Lecture: ${lecture?.title}`
               : `Course: ${courseInfo.title}`}
           </h2>
@@ -228,9 +228,9 @@ function VideoCourse({
           </button>
           <button
             onClick={handleNext}
-            disabled={!slugLec || loading}
+            disabled={!slugLecture || loading}
             className={`flex items-center px-4 py-2 rounded-lg ${
-              !slugLec || loading
+              !slugLecture || loading
                 ? "bg-blue-300 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
             } text-white`}
@@ -252,7 +252,7 @@ function VideoCourse({
           </button>
         </div>
 
-        {slugLec && (
+        {slugLecture && (
           <div className="space-y-6">
             {/* Attendance Code Section */}
             <div className="bg-white rounded-xl shadow-sm p-6">

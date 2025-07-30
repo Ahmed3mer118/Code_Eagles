@@ -9,6 +9,7 @@ import InstructorService from "../../classes/InstructorService";
 function DetailStudent() {
   const authServices = new AuthServices();
   const token = authServices.getToken();
+  const role = authServices.getRole()
   const URLAPI = authServices.URLAPI;
   const adminServices = new AdminService(token);
   const instructorService = new InstructorService(token);
@@ -50,9 +51,9 @@ function DetailStudent() {
         }
         let studentData;
         if (window.location.pathname.includes("/dashboard")) {
-          studentData = await adminServices.getStudentDetails(studentSlug);
+          studentData = await adminServices.getStudentDetails(studentSlug || email);
         } else {
-          studentData = await instructorService.getStudentDetails(studentSlug);
+          studentData = await instructorService.getStudentDetails(studentSlug || email);
         }
         setStudents(studentData);
 
@@ -423,7 +424,8 @@ function DetailStudent() {
                                 }
                               >
                                 <option value="user">Student</option>
-                                <option value="admin">Admin</option>
+                                {role === "admin" &&  <option value="admin">Admin</option>}
+                               
                                 <option value="instructor">Instructor</option>
                               </select>
                             </td>
