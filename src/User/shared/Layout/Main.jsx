@@ -10,44 +10,46 @@ import toast, { Toaster } from "react-hot-toast";
 function Main() {
   const authServices = new AuthServices();
   const token = authServices.getToken();
-  let currentTime = Date.now();
   const [showScoll, setShowScoll] = useState(false);
   useEffect(() => {
+    const currentTime = Date.now();
+
     const handleScroll = () => {
       const scrollSpan = 500;
-      window.scrollY > scrollSpan ? setShowScoll(true) : setShowScoll(false);
+      setShowScoll(window.scrollY > scrollSpan);
     };
-    window.addEventListener("scroll", handleScroll);
-    const fetchAccess = async () => {
-      let redirectLocation = sessionStorage.getItem("redirectLocation");
-      const res = await authServices.refreshToken();
-      if (res) {
-        let expirationTime = currentTime + 3 * 60 * 1000;
-        let role = authServices.getRole();
-        authServices.setToken(res);
-        localStorage.setItem("tokenExpiration", expirationTime);
-        let redirectPath = "/";
-        if (role == "admin") {
-            window.location.href = "/dashboard";
-        } else if (role == "instructor") {
-           window.location.href = "/instructor";
-        }else  if (role == "user" && redirectLocation) {
-          redirectPath = redirectLocation;
-          sessionStorage.removeItem("redirectLocation");
-          window.location.href = redirectPath;
-        } 
-   
-      }
-    };
+  const fetchAccess = async () => {
+    const redirectLocation = sessionStorage.getItem("redirectLocation");
+    const res = await authServices.refreshToken();
+  if (res) {
+    const expirationTime = currentTime + 3 * 60 * 1000;
+    const role = authServices.getRole();
 
-    fetchAccess();
-  }, []);
-  const scrollTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+    authServices.setToken(res);
+    localStorage.setItem("tokenExpiration", expirationTime);
+
+    if (role === "admin") {
+      window.location.href = "/dashboard";
+    } else if (role === "instructor") {
+      window.location.href = "/instructor";
+    } else if (role === "user" && redirectLocation) {
+      sessionStorage.removeItem("redirectLocation");
+      window.location.href = redirectLocation;
+    }
+  }
+};
+
+window.addEventListener("scroll", handleScroll);
+fetchAccess();
+
+return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+const scrollTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
 
   return (
     <>
