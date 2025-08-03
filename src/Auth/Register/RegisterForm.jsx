@@ -182,8 +182,10 @@ function RegisterForm() {
 
   return (
     <>
+    <div className="min-h-screen flex justify-center items-center">
+
       <form
-        className="max-w-2xl mx-auto mt-2 bg-white p-8 rounded-lg shadow-md"
+        className="max-w-2xl mx-auto mt-2 bg-white p-8 rounded-lg shadow-md "
         onSubmit={handleRegister}
       >
         <h1 className="text-2xl font-bold text-center text-blue-700 mb-6">
@@ -369,6 +371,7 @@ function RegisterForm() {
           </Link>
         </div>
       </form>
+    </div>
     </>
   );
 }

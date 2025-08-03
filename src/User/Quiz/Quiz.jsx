@@ -19,7 +19,7 @@ const Quiz = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quizStatus, setQuizStatus] = useState(null);
-  const { slug, slugQuiz, slugLec } = useParams();
+  const { slug, slugQuiz, slugLecture } = useParams();
   useEffect(() => {
     window.scrollTo(0,0)
 
@@ -27,6 +27,7 @@ const Quiz = () => {
       try {
         const quizStatus = await userService.getQuizById(slugQuiz);
         setQuiz(quizStatus)
+        // console.log(quizStatus)
         // setQuiz(data)
         setQuizStatus(quizStatus);
         setLoading(false);
@@ -38,12 +39,12 @@ const Quiz = () => {
     };
 
     fetchQuiz();
-  }, [slugLec]);
+  }, [slugLecture]);
 
   useEffect(() => {
     const checkPathValidity = () => {
       const currentPath = location.pathname;
-      const basePath = `/course/${slug}/lecture/${slugLec}/quiz/${slugQuiz}`;
+      const basePath = `/course/${slug}/lecture/${slugLecture}/quiz/${slugQuiz}`;
 
       if (currentPath === `${basePath}/questions`) {
         if (quizStatus?.status === 'completed') {
@@ -78,9 +79,9 @@ const Quiz = () => {
       console.log('Quiz Result:', result);
 
       if (result.score >= 50) {
-        navigate(`/course/${slug}/lecture/${slugLec}/quiz/${slugQuiz}/result`);
+        navigate(`/course/${slug}/lecture/${slugLecture}/quiz/${slugQuiz}/result`);
       } else {
-        navigate(`/course/${slug}/lecture/${slugLec}/quiz/${slugQuiz}/answers`);
+        navigate(`/course/${slug}/lecture/${slugLecture}/quiz/${slugQuiz}/answers`);
       }
     } catch (err) {
       console.error('Error submitting quiz:', err);
@@ -115,7 +116,7 @@ const Quiz = () => {
       </div>
     );
   }
-  const basePath = `/course/${slug}/lecture/${slugLec}/quiz/${slugQuiz}`;
+  const basePath = `/course/${slug}/lecture/${slugLecture}/quiz/${slugQuiz}`;
 
   return (
     <div className="container py-5 mx-auto">

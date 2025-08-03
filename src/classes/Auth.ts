@@ -139,11 +139,12 @@ class AuthServices {
           withCredentials: true,
         }
       );
-      if (response.data.accessToken) {
+      // if (response.data.accessToken) {
         const newAccessToken = response.data.accessToken;
+        this.setToken(newAccessToken)
         return newAccessToken;
-      }
-      return null;
+      // }
+      // return null;
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message;
 

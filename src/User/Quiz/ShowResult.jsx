@@ -6,7 +6,7 @@ import AuthServices from '../../classes/Auth';
 import Loading from '../shared/Loading';
 
 const ShowResult = () => {
-  const { slugQuiz, slugLec, slug } = useParams();
+  const { slugQuiz, slugLecture, slug } = useParams();
   const navigate = useNavigate();
   const authServices = new AuthServices();
   const token = authServices.getToken();
@@ -21,13 +21,13 @@ const ShowResult = () => {
     window.scrollTo(0,0)
     const fetchQuiz = async () => {
       const dataAllLectures = await userService.getLectures(slug);
-      const dataLecture = await userService.getQuizzesByLectureId(slugLec);
+      const dataLecture = await userService.getQuizzesByLectureId(slugLecture);
       const solveQuiz = await userService.getScore(slugQuiz);
       try {
         const currentLectureIndex = dataAllLectures.lectures.findIndex(
-          lecture => lecture.slugLec === slugLec
+          lecture => lecture.slugLec === slugLecture
         );
-        
+
         if (currentLectureIndex !== -1 && currentLectureIndex < dataAllLectures.lectures.length - 1) {
           setNextLectureId(dataAllLectures.lectures[currentLectureIndex + 1].slugLec);
         }
@@ -43,7 +43,7 @@ const ShowResult = () => {
     };
 
     fetchQuiz();
-  }, [slugLec]);
+  }, [slugLecture]);
 
   const handleNextLecture = () => {
     if (nextLectureId) {
@@ -54,7 +54,7 @@ const ShowResult = () => {
   };
 
   const handleRetake = () => {
-    navigate(`/course/${slug}/lecture/${slugLec}/quiz/${slugQuiz}/questions`);
+    navigate(`/course/${slug}/lecture/${slugLecture}/quiz/${slugQuiz}/questions`);
     localStorage.removeItem(`quiz_${slugQuiz}_answers`);
   };
 

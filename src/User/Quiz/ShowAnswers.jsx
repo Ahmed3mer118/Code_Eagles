@@ -7,7 +7,7 @@ import Loading from '../shared/Loading';
 
 const ShowAnswers = () => {
   const navigate = useNavigate();
-  const { slugQuiz, slugLec, slug } = useParams();
+  const { slugQuiz, slugLecture, slug } = useParams();
   const location = useLocation();
   const authServices = new AuthServices();
   const token = authServices.getToken();
@@ -36,18 +36,18 @@ const ShowAnswers = () => {
 
     fetchQuiz();
     
-  }, [slugLec, location.state]);
+  }, [slugLecture, location.state]);
   const handleFinishQuiz = async () => {
     try {
       const result = await userService.solveQuiz(slugQuiz, studentAnswers);
       if (parseInt(result.score) >= 50) {
         toast.success('Congratulations! You passed the quiz');
         handleRestart();
-        navigate(`/course/${slug}/lecture/${slugLec}/quiz/${slugQuiz}/result`);
+        navigate(`/course/${slug}/lecture/${slugLecture}/quiz/${slugQuiz}/result`);
       } else {
         handleRestart();
         setTimeout(() => {
-          navigate(`/course/${slug}/lecture/${slugLec}/quiz/${slugQuiz}/result`);
+          navigate(`/course/${slug}/lecture/${slugLecture}/quiz/${slugQuiz}/result`);
         }, 2000);
       }
     } catch (err) {
@@ -59,7 +59,7 @@ const ShowAnswers = () => {
   };
 
   const handleShowQuestions = () => {
-    navigate(`/course/${slug}/lecture/${slugLec}/quiz/${slugQuiz}/questions`);
+    navigate(`/course/${slug}/lecture/${slugLecture}/quiz/${slugQuiz}/questions`);
   };
 
   if (loading) {
@@ -74,7 +74,7 @@ const ShowAnswers = () => {
         <h4>Error</h4>
         <p>{error}</p>
           Back to questions
-        <button className="btn btn-primary mt-3" onClick={() => navigate(`/course/${slug}/lecture/${slugLec}/quiz/${slugQuiz}/questions`)}>
+        <button className="btn btn-primary mt-3" onClick={() => navigate(`/course/${slug}/lecture/${slugLecture}/quiz/${slugQuiz}/questions`)}>
         </button>
       </div>
     );

@@ -101,7 +101,7 @@ function Login() {
         toast.success("Password reset email sent. Please check your inbox.");
         localStorage.setItem(
           "forget-password-token",
-          JSON.stringify(res.token)
+          JSON.stringify(token)
         );
         setTimeout(() => {
           navigate("/auth/forget-password");

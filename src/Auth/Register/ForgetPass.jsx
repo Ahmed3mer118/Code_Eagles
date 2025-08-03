@@ -20,20 +20,27 @@ function ForgetPass() {
   const handleReset = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const code = forgetPass.resetCode.replace(/\s+/g, "");
-    const res = await authServices.resetPassword(
-      forgetPass.email,
-      forgetPass.newPassword,
-      code
-    );
-    if (res) {
+    try {
+      const code = forgetPass.resetCode.replace(/\s+/g, "");
+      const res = await authServices.resetPassword(
+        forgetPass.email,
+        forgetPass.newPassword,
+        code
+      );
+      if (res) {
+        setLoading(false);
+        toast.success("Reset Successful , Please Login");
+        localStorage.removeItem("forget-password-token")
+        setTimeout(() => navigate("/auth/login"), 2500);
+      } else {
+        setLoading(false);
+        toast.error("Error: Invalid Reset Code");
+    } 
+ 
+    }catch (error) {
       setLoading(false);
-      toast.success("Reset Successful , Please Login");
-      setTimeout(() => navigate("/auth/login"), 2500);
-    } else {
-      setLoading(false);
-      toast.error("Error: Invalid Reset Code");
-    }
+      toast.error(error?.message)
+  }
   };
 
   const handleChangeValue = (e) => {
@@ -41,6 +48,7 @@ function ForgetPass() {
     if (inputNumber.length <= 6) {
       const formattedInput = inputNumber.split("").join(" ");
       setForgetPass({ ...forgetPass, resetCode: formattedInput });
+
     } else {
       toast.error("Must be 6 digits");
     }

@@ -66,7 +66,7 @@ function AllGroup() {
                     <img
                       src={group.imageCourse}
                       alt={group.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full "
                       loading="lazy"
                     />
                     <div className="absolute top-3 right-3 bg-black/80 text-white text-sm px-3 py-1 rounded-full">

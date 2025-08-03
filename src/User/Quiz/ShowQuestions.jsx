@@ -9,7 +9,7 @@ const QUESTION_TIME = 60;
 
 const ShowQuestions = ({ quiz, onSubmit }) => {
  
-  const { slug, slugLec, slugQuiz } = useParams();
+  const { slug, slugLecture, slugQuiz } = useParams();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [showReview, setShowReview] = useState(false);
@@ -20,7 +20,6 @@ const ShowQuestions = ({ quiz, onSubmit }) => {
   const authServices = new AuthServices();
   const token = authServices.getToken();
   const userService = new UserService(token)
-
 
   useEffect(() => {
     const savedAnswers = localStorage.getItem(`quiz_${slugQuiz}_answers`);
@@ -93,27 +92,27 @@ const ShowQuestions = ({ quiz, onSubmit }) => {
     }
   };
 
-  const handleRestart = () => {
-      localStorage.removeItem(`quiz_${slugQuiz}_answers`);
-      setAnswers([]);
-      setCurrentQuestionIndex(0);
-      setQuestionTimes([]);
-      setShowReview(false);
-      setTimeLeft(QUESTION_TIME);
-      toast.success('Quiz Restarted Successfully');
+  // const handleRestart = () => {
+  //     localStorage.removeItem(`quiz_${slugQuiz}_answers`);
+  //     setAnswers([]);
+  //     setCurrentQuestionIndex(0);
+  //     setQuestionTimes([]);
+  //     setShowReview(false);
+  //     setTimeLeft(QUESTION_TIME);
+  //     toast.success('Quiz Restarted Successfully');
    
-  };
+  // };
 
   const handleReview = async () => {
     const totalTime = questionTimes.reduce((acc, t) => acc + (t || 0), 0);
     toast.success(`Total Time: ${totalTime} seconds`);
-    navigate(`/course/${slug}/lecture/${slugLec}/quiz/${slugQuiz}/answers`, { state: { answers, totalTime } });
+    navigate(`/course/${slug}/lecture/${slugLecture}/quiz/${slugQuiz}/answers`, { state: { answers, totalTime } });
   };
 
-  const handleQuestionClick = (index) => {
-    setCurrentQuestionIndex(index);
-    setShowReview(false);
-  };
+  // const handleQuestionClick = (index) => {
+  //   setCurrentQuestionIndex(index);
+  //   setShowReview(false);
+  // };
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
@@ -121,6 +120,7 @@ const ShowQuestions = ({ quiz, onSubmit }) => {
 
   return (
 <>
+<h1>Quiz show</h1>
   {!showReview ? (
     <div className="flex items-center justify-center min-h-[80vh]">
       <div className="w-full max-w-2xl mx-4 bg-white rounded-xl shadow-sm overflow-hidden border border-blue-100">

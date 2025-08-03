@@ -18,6 +18,7 @@ function AllCourse() {
 
   // Fetch all groups and filter approved ones
   useEffect(() => {
+    window.scrollTo(0,0)
     const fetchCourses = async () => {
       setLoading(true);
       try {
@@ -68,32 +69,6 @@ function AllCourse() {
 
   if (loading) {
     return (
-      // <div className="flex items-center justify-center h-[70vh]">
-      //   <div className="relative w-16 h-16">
-      //     <svg
-      //       className="animate-spin text-blue-600"
-      //       viewBox="0 0 64 64"
-      //       style={{
-      //         animation: "spin 1.5s linear infinite",
-      //         width: "100%",
-      //         height: "100%",
-      //       }}
-      //     >
-      //       <path
-      //         className="opacity-75"
-      //         fill="currentColor"
-      //         d="M32 64a32 32 0 1 1 32-32h-3a29 29 0 1 0-29 29z"
-      //       />
-      //       <path
-      //         fill="currentColor"
-      //         d="M32 0a32 32 0 0 1 32 32h-3a29 29 0 0 0-29-29z"
-      //       />
-      //     </svg>
-      //     <div className="absolute inset-0 flex items-center justify-center">
-      //       <div className="w-8 h-8 bg-blue-100 rounded-full"></div>
-      //     </div>
-      //   </div>
-      // </div>
       <Loading />
     );
   }
