@@ -99,14 +99,11 @@ function Lectures() {
     const confirmMessage = isActive
       ? "Are you sure you want to deactivate this lecture?"
       : "Are you sure you want to activate this lecture?";
-
-    console.log(slugLec);
     if (!window.confirm(confirmMessage)) return;
 
     try {
       if (window.location.pathname.includes("/dashboard")) {
         const response = await adminServices.toggleLectureStatus(slugLec);
-        console.log(response);
         setIsActive((prev) => !prev);
         toast.success(
           `Lecture ${response ? "activated" : "deactivated"} successfully!`

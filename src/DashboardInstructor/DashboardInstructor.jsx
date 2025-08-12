@@ -4,8 +4,7 @@ import { toast } from "react-toastify";
 import { Helmet } from "react-helmet-async";
 import { IoMdSettings } from "react-icons/io";
 import { FaUsers, FaChalkboardTeacher, FaTasks, FaEnvelope, FaChartLine, FaBook, FaGraduationCap, FaBars, FaHome } from "react-icons/fa";
-import InstructorService from '../classes/InstructorService';
-import AuthServices from '../classes/Auth';
+import serviceFactory from '../utils/serviceFactory';
 import Loading from "../User/shared/Loading";
 
 function DashboardInstructor() {
@@ -22,20 +21,19 @@ function DashboardInstructor() {
   });
   const [activeTab, setActiveTab] = useState('home');
 
-  // Initialize services
-  const authService = new AuthServices();
-  const token = authService.getToken();
-  const instructorService = new InstructorService(token);
-
   useEffect(() => {
     const fetchInstructorData = async () => {
       try {
+        // تحقق من وجود token قبل استخدام الخدمات
+        const token = serviceFactory.getToken();
         if (!token) {
-          toast.error("Please log in again");
+          console.log("⚠️ لا يوجد token، إعادة توجيه للدخول");
+          toast.error("يرجى تسجيل الدخول");
           navigate("/auth/login");
           return;
         }
 
+        const instructorService = serviceFactory.getInstructorService();
         const response = await instructorService.getAllGroups();
         setGroups(response);
         
@@ -55,7 +53,16 @@ function DashboardInstructor() {
         }
       } catch (err) {
         console.error("Error fetching data:", err);
-        toast.error("Failed to load data");
+        
+        // Check if it's an authentication error
+        if (err.status === 401) {
+          console.error("Authentication error - session expired");
+          toast.error("انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.");
+          navigate("/auth/login");
+          return;
+        }
+        
+        toast.error("فشل في تحميل البيانات");
       } finally {
         setLoading(false);
       }
@@ -195,68 +202,57 @@ function DashboardInstructor() {
       <div className="flex h-screen bg-gray-50">
         {/* Sidebar */}
         <div className={`bg-gray-900 text-white fixed h-full z-50 transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'w-72' : 'w-16'
+          isSidebarOpen ? 'w-72' : 'w-20'
         }`}>
           <div className="flex justify-between items-center p-4 border-b border-gray-700">
             {isSidebarOpen && <h5 className="text-lg font-semibold">Instructor Dashboard</h5>}
             <button 
-              className="text-white hover:text-gray-300 transition-colors"
+              className="text-white hover:text-gray-300 transition-colors p-2 rounded-md hover:bg-gray-800"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
               <FaBars className="text-xl" />
             </button>
           </div>
           
-          <nav className="mt-6 px-4 space-y-2">
-            <button 
-              className={`w-full text-left py-3 px-4 rounded-lg transition-colors flex items-center ${
-                activeTab === 'home' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
-              }`}
-              onClick={() => setActiveTab('home')}
+          <nav className="mt-6 px-2 space-y-1">
+            <Link 
+              to="/instructor"
+              className={`flex items-center p-3 rounded-lg transition-all duration-200 ${
+                activeTab === 'home' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'text-gray-300 hover:bg-gray-800'
+              } ${isSidebarOpen ? 'px-4' : 'justify-center'}`}
             >
-              <Link to="/instructor" className="flex items-center w-full">
-                <FaHome className="mr-3" /> 
-                {isSidebarOpen && <span>Home</span>}
-              </Link>
-            </button>
+              <FaHome className={`text-lg ${isSidebarOpen ? 'mr-3' : ''}`} />
+              {isSidebarOpen && <span className="text-sm">Home</span>}
+            </Link>
             
-            <button 
-              className={`w-full text-left py-3 px-4 rounded-lg transition-colors flex items-center ${
-                activeTab === 'emailRequest' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
-              }`}
-              onClick={() => setActiveTab('emailRequest')}
+            <Link 
+              to="/instructor/email-request"
+              className={`flex items-center p-3 rounded-lg transition-all duration-200 ${
+                activeTab === 'emailRequest' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'text-gray-300 hover:bg-gray-800'
+              } ${isSidebarOpen ? 'px-4' : 'justify-center'}`}
             >
-              <Link to="/instructor/email-request" className="flex items-center w-full">
-                <FaEnvelope className="mr-3" /> 
-                {isSidebarOpen && <span>Email Request</span>}
-              </Link>
-            </button>
+              <FaEnvelope className={`text-lg ${isSidebarOpen ? 'mr-3' : ''}`} />
+              {isSidebarOpen && <span className="text-sm">Email Request</span>}
+            </Link>
 
-            {/* <button 
-              className={`w-full text-left py-3 px-4 rounded-lg transition-colors flex items-center ${
-                activeTab === 'messages' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
-              }`}
-              onClick={() => setActiveTab('messages')}
+            <Link 
+              to="/instructor/setting"
+              className={`flex items-center p-3 rounded-lg transition-all duration-200 ${
+                activeTab === 'setting' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'text-gray-300 hover:bg-gray-800'
+              } ${isSidebarOpen ? 'px-4' : 'justify-center'}`}
             >
-              <Link to={`/instructor/${groupId}/messages`} className="flex items-center w-full">
-                <FaEnvelope className="mr-3" /> 
-                {isSidebarOpen && <span>Messages</span>}
-              </Link>
-            </button> */}
-
-            <button 
-              className={`w-full text-left py-3 px-4 rounded-lg transition-colors flex items-center ${
-                activeTab === 'setting' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
-              }`}
-              onClick={() => setActiveTab('setting')}
-            >
-              <Link to="/instructor/setting" className="flex items-center w-full">
-                <IoMdSettings className="mr-3" /> 
-                {isSidebarOpen && <span>Settings</span>}
-              </Link>
-            </button>
+              <IoMdSettings className={`text-lg ${isSidebarOpen ? 'mr-3' : ''}`} />
+              {isSidebarOpen && <span className="text-sm">Settings</span>}
+            </Link>
           </nav>
         </div>
+
 
         {/* Main Content */}
         <div className={`flex-1 transition-all duration-300 ease-in-out ${

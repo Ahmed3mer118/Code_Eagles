@@ -231,7 +231,7 @@ const AllQuiz = () => {
                                   </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {quizScore?.score ?? 'Not taken'}
+                                  {quizScore?.score || 'Not taken'}
                                 </td>
                               </tr>
                             );

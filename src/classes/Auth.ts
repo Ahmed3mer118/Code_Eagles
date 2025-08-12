@@ -1,28 +1,61 @@
 import axios, { AxiosInstance } from "axios";
 import { jwtDecode } from "jwt-decode";
-// import Cookies from "js-cookie";
 
 class AuthServices {
   private URLAPI: string;
   private token: string;
   private axiosInstance: AxiosInstance;
-  private role: any;
-  googleLoginUrl: string;
-  private readonly TOKEN_KEY = "token";
 
   constructor() {
     this.URLAPI = import.meta.env.VITE_API_URL;
-    this.token = this.getToken() || "";
-    this.googleLoginUrl = this.URLAPI + "/api/users/google";
-
+    this.token = localStorage.getItem("token") || "";
     this.axiosInstance = axios.create({
       baseURL: this.URLAPI,
       headers: {
         "Content-Type": "application/json",
-        Authorization: this.token,
       },
       withCredentials: true,
     });
+
+    if (this.token) {
+      this.axiosInstance.defaults.headers["Authorization"] = this.token;
+    }
+
+    this.setupInterceptors();
+  }
+
+  private setupInterceptors() {
+    this.axiosInstance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        // تحقق من وجود token قبل محاولة التجديد
+        if (error.response?.status === 401 && !originalRequest._retry && this.getToken()) {
+          originalRequest._retry = true;
+
+          try {
+            const newToken = await this.refreshToken();
+            if (newToken) {
+              // تحديث الـ token في الطلب الأصلي
+              originalRequest.headers["Authorization"] = newToken;
+              return this.axiosInstance(originalRequest);
+            } else {
+              // إذا فشل الـ refresh، أعد توجيه للدخول
+              console.log("❌ فشل في تجديد الـ token، إعادة توجيه للدخول");
+              this.handleLogout();
+              return Promise.reject(error);
+            }
+          } catch (refreshError) {
+            console.log("❌ خطأ في تجديد الـ token، إعادة توجيه للدخول");
+            this.handleLogout();
+            return Promise.reject(error);
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
   }
 
   async register(userData: string) {
@@ -48,17 +81,25 @@ class AuthServices {
       throw error?.response?.data || error;
     }
   }
+  
   async login(email: string, password: string) {
     try {
       const response = await this.axiosInstance.post(`/api/users/login`, {
         email,
         password,
       },{ withCredentials: true});
+      
+      // Store access token after successful login
+      if (response.data.accessToken) {
+        this.setToken(response.data.accessToken);
+      }
+      
       return response.data;
     } catch (error: any) {
       throw error?.response?.data || error;
     }
   }
+  
   async loginWithGoogle() {
     try {
       const response = await this.axiosInstance.get(`/api/users/google`);
@@ -67,6 +108,7 @@ class AuthServices {
       throw error?.response?.data || error;
     }
   }
+  
   async forgotPassword(email: string) {
     try {
       const response = await this.axiosInstance.post(
@@ -113,14 +155,19 @@ class AuthServices {
   
 
   setToken(token: string) {
-    localStorage.setItem(this.TOKEN_KEY, token);
+    this.token = token;
+    localStorage.setItem("token", token);
+    this.axiosInstance.defaults.headers["Authorization"] = token;
   }
-  getToken() {
-    return localStorage.getItem(this.TOKEN_KEY);
+
+  getToken(): string {
+    return this.token || localStorage.getItem("token") || "";
   }
+  
   decoded(token: string) {
     return jwtDecode(token);
   }
+  
   getRole(): string | null {
     const token = this.getToken();
     if (token) {
@@ -130,8 +177,29 @@ class AuthServices {
     return null;
   }
 
-  async refreshToken() {
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+    
     try {
+      const decodedToken: any = this.decoded(token);
+      const currentTime = Date.now() / 1000;
+      return decodedToken.exp < currentTime;
+    } catch (error) {
+      return true;
+    }
+  }
+
+  async refreshToken() {
+    // تحقق من وجود token قبل محاولة التجديد
+    if (!this.getToken()) {
+      console.log("⚠️ لا يوجد token للتجديد");
+      return null;
+    }
+
+    try {
+      console.log("🔄 محاولة تجديد الـ token...");
+      
       const response = await this.axiosInstance.post(
         "/api/users/refresh-token",
         {},
@@ -139,29 +207,32 @@ class AuthServices {
           withCredentials: true,
         }
       );
-      // if (response.data.accessToken) {
+      
+      if (response.data.accessToken) {
         const newAccessToken = response.data.accessToken;
-        this.setToken(newAccessToken)
+        this.setToken(newAccessToken);
+        console.log("✅ تم تجديد الـ token بنجاح");
         return newAccessToken;
-      // }
-      // return null;
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message;
-
-    if (errorMessage === "No refresh token provided" || errorMessage === "Invalid refresh token") {
-      console.warn("Refresh token not available, user may be logged out.");
+      }
       return null;
-    }
-
-    console.error(error?.response?.data || error.message || error);
-    return null;
+    } catch (error: any) {
+      console.error("❌ فشل في تجديد الـ token:", error?.response?.data?.message || error.message);
+      return null;
     }
   }
 
   handleLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("tokenExpiration");
+    this.token = "";
+    this.axiosInstance.defaults.headers["Authorization"] = "";
+    console.log("User logged out, tokens cleared");
   }
 
+  // Get axios instance with automatic token refresh
+  getAxiosInstance(): AxiosInstance {
+    return this.axiosInstance;
+  }
 }
+
 export default AuthServices;

@@ -1,20 +1,30 @@
 import axios, { AxiosInstance } from "axios";
+import AuthServices from "./Auth";
 
 class AdminService {
   private URLAPI: string;
   private token: string;
   private axiosInstance: AxiosInstance;
+  private authService: AuthServices;
+
   constructor(token: string) {
     this.URLAPI = import.meta.env.VITE_API_URL;
     this.token = token;
-    this.axiosInstance = axios.create({
-      baseURL: this.URLAPI,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: this.token,
-      },
-      withCredentials: true,
-    });
+    this.authService = new AuthServices();
+    
+    // Use the enhanced axios instance from AuthServices
+    this.axiosInstance = this.authService.getAxiosInstance();
+    
+    // Update the authorization header with the current token
+    if (token) {
+      this.axiosInstance.defaults.headers["Authorization"] = token;
+    }
+  }
+
+  // Update token method for when token changes
+  updateToken(newToken: string) {
+    this.token = newToken;
+    this.axiosInstance.defaults.headers["Authorization"] = newToken;
   }
 
   // Groups Methods
@@ -28,6 +38,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getGroupDetails(slug: string) {
     try {
       const response = await this.axiosInstance.get(`/api/groups/get-groupId-by-admin/${slug}`);
@@ -80,6 +91,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getLectureDetails(slugLec: string) {
     try {
       const response = await this.axiosInstance.get(
@@ -137,6 +149,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getTask(slugLec: string, slugTask: string) {
     try {
       const response = await this.axiosInstance.get(
@@ -147,7 +160,6 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-
 
   async createTask(lectureId: string, taskData: any) {
     try {
@@ -178,10 +190,22 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getSubmissionsTask(slugLec: string, slugTask: string) {
     try {
       const response = await this.axiosInstance.get(
         `/api/lectures/${slugLec}/tasks/${slugTask}/submissions`
+      );
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  
+  async addScoreForStd(slugLec: string, slugTask: string, email: string, evaluationData:any) {
+    try {
+      const response = await this.axiosInstance.put(
+        `/api/lectures/${slugLec}/tasks/${slugTask}/submissions/${email}/evaluate`,evaluationData
       );
       return response.data;
     } catch (error) {
@@ -200,6 +224,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getQuiz(slugQuiz: string) {
     try {
       const response = await this.axiosInstance.get(
@@ -210,7 +235,6 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-
 
   async createQuiz(quizData: string) {
     try {
@@ -243,6 +267,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getAllScoreByGroupSlug(groupSlug: string) {
     try {
       const response = await this.axiosInstance.get(
@@ -253,6 +278,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async showAllQuizzesScore(userId: string, groupId: string) {
     try {
       const response = await this.axiosInstance.get(
@@ -263,6 +289,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   // Students Methods
   async getStudents() {
     try {
@@ -272,6 +299,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getStudentInGroup(groupSlug: string) {
     try {
       const response = await this.axiosInstance.get(`/api/users/groups/${groupSlug}/users`);
@@ -280,6 +308,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getStudentDetails(studentSlug: string) {
     try {
       const response = await this.axiosInstance.get(`/api/users/${studentSlug}`);
@@ -288,6 +317,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async updateStudentRole(studentSlug: string, role: string) {
     try {
       const response = await this.axiosInstance.put(`/api/users/${studentSlug}`, {
@@ -298,11 +328,11 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   // update Student Status
   async updateStudentStatus(studentSlug: string, status: string, groupSlug: string) {
     try {
       const response = await this.axiosInstance.put(
-
         `/api/users/set-role-user/${studentSlug}/${groupSlug}`,
         { status }
       );
@@ -324,9 +354,6 @@ class AdminService {
     }
   }
 
-
-
-
   async getStudentAttendance(userId: string, groupId: string) {
     try {
       const response = await this.axiosInstance.get(
@@ -337,6 +364,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getGroupTasks(userId: string, groupId: string) {
     try {
       const response = await this.axiosInstance.get(
@@ -382,15 +410,16 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getPendingUsers() {
     try {
       const response = await this.axiosInstance.get(`/api/users/pending-users`);
-
       return response.data;
     } catch (error) {
       throw this.handleError(error);
     }
   }
+  
   // Attendance Methods by admin
   async getAttendance(slugLec: string) {
     try {
@@ -402,6 +431,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getNonAttendance(slugLec: string) {
     try {
       const response = await this.axiosInstance.get(
@@ -412,6 +442,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async acceptRequest(status: string, acceptData: string) {
     try {
       const response = await this.axiosInstance.post(
@@ -423,6 +454,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async rejectRequest(rejectedReq: string) {
     try {
       const response = await this.axiosInstance.post(
@@ -434,6 +466,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async markAttendance(attendanceData: string) {
     try {
       const response = await this.axiosInstance.post(
@@ -482,7 +515,6 @@ class AdminService {
   }
 
   // Feedback Methods
-
   async getFeedback() {
     try {
       const response = await this.axiosInstance.get("/api/feedback");
@@ -491,14 +523,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  async deleteFeedback(id: string) {
-    try {
-      const response = await this.axiosInstance.delete("/api/feedback/" + id);
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
+  
   // MAINTENANCE MODE
   async sendLockCode() {
     try {
@@ -510,6 +535,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async verifyLockCode(code: string) {
     try {
       const response = await this.axiosInstance.post(
@@ -521,6 +547,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async getLockCode() {
     try {
       const response = await this.axiosInstance.get(
@@ -542,6 +569,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
+  
   async verifyUlockCode(code: string) {
     try {
       const response = await this.axiosInstance.post(
@@ -564,29 +592,7 @@ class AdminService {
       throw this.handleError(error);
     }
   }
-  // contact
-  async getAllContact() {
-    try {
-      const response = await this.axiosInstance.get(
-        "/api/contact/contact-us/messages"
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-  async sentMessageReply(message:any) {
-    try {
-      const response = await this.axiosInstance.post(
-        "/api/contact/contact-us/reply",message
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-
+  
   // Error Handler
   handleError(error: any) {
     if (error.response) {

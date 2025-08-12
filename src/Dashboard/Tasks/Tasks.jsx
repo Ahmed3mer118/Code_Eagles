@@ -5,6 +5,7 @@ import { Helmet } from "react-helmet-async";
 import AuthServices from "../../classes/Auth";
 import AdminService from "../../classes/AdminService";
 import InstructorService from "../../classes/InstructorService";
+import Loading from "../../User/shared/Loading";
 
 function Tasks() {
   const { slug, slugLecture } = useParams();
@@ -59,9 +60,7 @@ function Tasks() {
       <Toaster position="top-center" />
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
+        <Loading/>
       ) : (
         <div className="overflow-x-auto rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

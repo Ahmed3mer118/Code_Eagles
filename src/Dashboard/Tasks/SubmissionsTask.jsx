@@ -11,13 +11,14 @@ function SubmissionsTask() {
   const token = authServices.getToken();
   const adminServices = new AdminService(token);
   const instructorService = new InstructorService(token);
-  const { lectureId, taskId } = useParams();
+  const { slugLecture, slugTask } = useParams();
+  console.log(slugLecture)
   
   const [submittedUsers, setSubmittedUsers] = useState([]);
   const [notSubmittedUsers, setNotSubmittedUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [evaluationData, setEvaluationData] = useState({
-    userId: "",
+    email: "",
     feedback: "",
     score: 0
   });
@@ -30,7 +31,7 @@ function SubmissionsTask() {
         ? instructorService 
         : adminServices;
       
-      const res = await service.getSubmissionsTask(lectureId, taskId);
+      const res = await service.getSubmissionsTask(slugLecture, slugTask);
       setSubmittedUsers(res.submittedUsers || []);
       setNotSubmittedUsers(res.notSubmittedUsers || []);
     } catch (error) {
@@ -41,7 +42,7 @@ function SubmissionsTask() {
     }
   };
 
-  const evaluateSubmission = async (userId) => {
+  const evaluateSubmission = async (email) => {
     if (!evaluationData.feedback || !evaluationData.score) {
       toast.error("Please provide both feedback and score");
       return;
@@ -52,16 +53,16 @@ function SubmissionsTask() {
         ? instructorService 
         : adminServices;
       
-      await service.evaluateSubmission(
-        lectureId, 
-        taskId, 
-        userId, 
+      await service.addScoreForStd(
+        slugLecture, 
+        slugTask, 
+        email, 
         evaluationData
       );
 
       toast.success("Evaluation submitted successfully");
-      fetchSubmissions(); // Refresh data
-      setEvaluationData({ userId: "", feedback: "", score: 0 }); // Reset form
+      fetchSubmissions(); 
+      setEvaluationData({  feedback: "", score: 0 }); 
     } catch (error) {
       console.error("Evaluation failed:", error);
       toast.error("Failed to submit evaluation");
@@ -69,10 +70,10 @@ function SubmissionsTask() {
   };
 
   useEffect(() => {
-    if (lectureId && taskId) {
+    if (slugLecture && slugTask) {
       fetchSubmissions();
     }
-  }, [lectureId, taskId]);
+  }, [slugLecture, slugTask]);
 
   if (loading) {
     return (
@@ -145,7 +146,7 @@ const SubmissionTable = ({ users, evaluationData, setEvaluationData, onEvaluate 
                   score={item.submission.score} 
                   evaluationData={evaluationData}
                   setEvaluationData={setEvaluationData}
-                  userId={item.userId}
+                  email={item.email}
                 />
               </TableCell>
               <TableCell>
@@ -153,13 +154,13 @@ const SubmissionTable = ({ users, evaluationData, setEvaluationData, onEvaluate 
                   feedback={item.submission.feedback} 
                   evaluationData={evaluationData}
                   setEvaluationData={setEvaluationData}
-                  userId={item.userId}
+                  email={item.email}
                 />
               </TableCell>
               <TableCell>
                 <EvaluationStatus 
                   isEvaluated={item.submission.score !== null} 
-                  onEvaluate={() => onEvaluate(item.userId)}
+                  onEvaluate={() => onEvaluate(item.email)}
                 />
               </TableCell>
             </tr>
@@ -244,7 +245,7 @@ const SubmissionLink = ({ link }) => (
   </Link>
 );
 
-const ScoreDisplay = ({ score, evaluationData, setEvaluationData, userId }) => {
+const ScoreDisplay = ({ score, evaluationData, setEvaluationData, email }) => {
   if (score !== null) {
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -262,19 +263,19 @@ const ScoreDisplay = ({ score, evaluationData, setEvaluationData, userId }) => {
       type="number"
       onChange={(e) => setEvaluationData({
         ...evaluationData,
-        userId,
+        email,
         score: parseInt(e.target.value) || 0
       })}
       className="w-20 px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
       placeholder="Score"
       min="0"
       max="100"
-      value={evaluationData.userId === userId ? evaluationData.score : ""}
+      value={evaluationData.email === email ? evaluationData.score : ""}
     />
   );
 };
 
-const FeedbackDisplay = ({ feedback, evaluationData, setEvaluationData, userId }) => {
+const FeedbackDisplay = ({ feedback, evaluationData, setEvaluationData, email }) => {
   if (feedback !== null) {
     return <span className="text-gray-800 dark:text-gray-300">{feedback}</span>;
   }
@@ -284,12 +285,12 @@ const FeedbackDisplay = ({ feedback, evaluationData, setEvaluationData, userId }
       type="text"
       onChange={(e) => setEvaluationData({
         ...evaluationData,
-        userId,
+        email,
         feedback: e.target.value
       })}
       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
       placeholder="Feedback"
-      value={evaluationData.userId === userId ? evaluationData.feedback : ""}
+      value={evaluationData.email === email ? evaluationData.feedback : ""}
     />
   );
 };

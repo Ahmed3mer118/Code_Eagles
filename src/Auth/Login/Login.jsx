@@ -228,7 +228,7 @@ function Login() {
               </Link>
             </div>
           </form>
-          <div className="w-full flex justify-center">
+          {/* <div className="w-full flex justify-center">
             <button
               onClick={handleLoginWithGoogle}
               className="cursor-pointer text-black flex gap-2 items-center bg-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-zinc-300 transition-all ease-in duration-200"
@@ -257,7 +257,7 @@ function Login() {
               </svg>
               Continue with Google
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </>
