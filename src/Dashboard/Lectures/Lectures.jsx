@@ -231,7 +231,7 @@ function Lectures() {
                       <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
                         <div className="flex justify-between items-center gap-2 flex-wrap">
                           <Link
-                            to={`/${
+                            to={`${
                               window.location.pathname.includes("/dashboard")
                                 ? "/dashboard/admin"
                                 : "/instructor"
@@ -243,7 +243,7 @@ function Lectures() {
                             Task
                           </Link>
                           <Link
-                            to={`/${
+                            to={`${
                               window.location.pathname.includes("/dashboard")
                                 ? "/dashboard/admin"
                                 : "/instructor"
@@ -253,7 +253,7 @@ function Lectures() {
                             Quiz
                           </Link>
                           <Link
-                            to={`/${
+                            to={`${
                               window.location.pathname.includes("/dashboard")
                                 ? "/dashboard/admin"
                                 : "/instructor"
