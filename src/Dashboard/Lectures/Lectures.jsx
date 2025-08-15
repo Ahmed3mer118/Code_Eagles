@@ -245,8 +245,8 @@ function Lectures() {
                           <Link
                             to={`/${
                               window.location.pathname.includes("/dashboard")
-                                ? "dashboard/admin"
-                                : "instructor"
+                                ? "/dashboard/admin"
+                                : "/instructor"
                             }/group/${slug}/lectures/${lecture.slugLec}/newQuiz`}
                             className="px-3 py-1 bg-emerald-600 text-white rounded-md text-sm hover:bg-emerald-700 transition-colors"
                           >
