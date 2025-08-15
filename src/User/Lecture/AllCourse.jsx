@@ -14,7 +14,6 @@ function AllCourse() {
   const token = authServices.getToken();
   const [userService] = useState(new UserService(token));
   const navigate = useNavigate();
-  
 
   // Fetch all groups and filter approved ones
   useEffect(() => {
@@ -26,7 +25,7 @@ function AllCourse() {
           toast.error("Please login to join the group.");
           setTimeout(() => {
             if (window.confirm("If you want to go to login page, click ok.")) {
-              sessionStorage.setItem("redirectLocation", window.location.href);
+              sessionStorage.setItem("redirectLocation", window.location.pathname);
               navigate("/auth/login");
             }
           }, 2500);

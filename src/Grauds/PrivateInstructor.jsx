@@ -18,6 +18,7 @@ function PrivateInstructor({ element }) {
   );
 
   if (!isLoggedIn) {
+    sessionStorage.setItem("redirectLocation", window.location.pathname);
     return <Navigate to="/auth/login" state={{ from: location }} />;
   }
 

@@ -67,7 +67,7 @@ function Content() {
 
   if (loading) {
     return (
-        <Loading />
+      <Loading />
     );
   }
 
@@ -84,11 +84,10 @@ function Content() {
             <div
               key={index}
               ref={(el) => (courseRefs.current[index] = el)}
-              className={`bg-white rounded-xl shadow-md w-64 p-4 transform transition duration-700 ease-out ${
-                visibleCourses[index]
+              className={`bg-white rounded-xl shadow-md w-64 p-4 transform transition duration-700 ease-out ${visibleCourses[index]
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-5"
-              }`}
+                }`}
             >
               <img
                 src={course.image}

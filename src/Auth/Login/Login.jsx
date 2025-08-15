@@ -32,14 +32,24 @@ function Login() {
           localStorage.setItem("tokenExpiration", expirationTime);
           let redirectPath = "/";
 
-          if (role == "admin") window.location.href = "/dashboard";
-          else if (role == "instructor") window.location.href = "/instructor";
-          else if (role == "user" && redirectLocation) {
-            window.location.href = redirectLocation;
+          // if (role == "admin") window.location.href = "/dashboard";
+          // else if (role == "instructor") window.location.href = "/instructor";
+          // else if (role == "user" && redirectLocation) {
+          //   window.location.href = redirectLocation;
+          //   sessionStorage.removeItem("redirectLocation");
+          //   return;
+          // }
+          if (role === "admin") navigate("/dashboard", { replace: true });
+          else if (role === "instructor") navigate("/instructor", { replace: true });
+          else if (role === "user" && redirectLocation) {
+            navigate(redirectLocation, { replace: true });
             sessionStorage.removeItem("redirectLocation");
             return;
+          } else {
+            navigate("/", { replace: true });
           }
-    
+
+
           window.location.href = redirectPath;
         }
       }

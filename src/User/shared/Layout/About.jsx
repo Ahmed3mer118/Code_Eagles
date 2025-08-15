@@ -22,7 +22,7 @@ function About({ about }) {
       toast.error("Please login to join the group.");
       setTimeout(() => {
         if (window.confirm("If you want to go to login page, click ok.")) {
-          sessionStorage.setItem("redirectLocation", window.location.href);
+          sessionStorage.setItem("redirectLocation", window.location.pathname);
           navigate("/auth/login");
         }
       }, 2500);

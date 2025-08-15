@@ -18,7 +18,8 @@ function PrivateAdmin({ element }) {
   );
 
   if (!isLoggedIn) {
-    return <Navigate to="/auth/login" state={{ from: location }} />;
+  sessionStorage.setItem("redirectLocation", window.location.pathname);
+      return <Navigate to="/auth/login" state={{ from: location }} />;
   }
 
   if (!isAllowed) {

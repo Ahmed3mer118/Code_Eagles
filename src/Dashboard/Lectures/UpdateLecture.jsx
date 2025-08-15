@@ -71,7 +71,7 @@ function UpdateLecture() {
 
       const redirectPath = window.location.pathname.includes("/dashboard")
         ? `/dashboard/admin/group/${slug}/lectures`
-        : `/instructor/${slug}/lectures`;
+        : `/instructor/group/${slug}/lectures`;
 
       navigate(redirectPath);
     } catch (error) {
