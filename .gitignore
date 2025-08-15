@@ -12,6 +12,9 @@ dist-ssr
 dist
 .env
 *.local
+COOKIE_TROUBLESHOOTING.md
+TROUBLESHOOTING_REFRESH_TOKEN.md
+
 
 # Editor directories and files
 .vscode/*

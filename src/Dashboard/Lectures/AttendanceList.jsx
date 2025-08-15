@@ -22,10 +22,17 @@ function AttendanceList() {
     const fetchAttendance = async ()=>{
 
       if (slugLecture ) {
+        let resAttend;
+        let resNonAttend;
         try{
           setLoading(false)
-          const resAttend = await adminServices.getAttendance(slugLecture);
-          const resNonAttend = await adminServices.getNonAttendance(slugLecture);
+          if (window.location.pathname.includes("/dashboard")) {
+            resAttend = await adminServices.getAttendance(slugLecture);
+            resNonAttend = await adminServices.getNonAttendance(slugLecture);
+          }else{
+            resAttend = await instructorService.getAttendance(slugLecture);
+            resNonAttend = await instructorService.getNonAttendance(slugLecture);
+          }
           setAttendedUsers(resAttend.attendance || []);
           setNotAttendedUsers(resNonAttend.usersNotAttended || []);
           setLectureTitle(resAttend.lectureTitle || "Unknown Lecture");
@@ -69,7 +76,7 @@ function AttendanceList() {
           </h5>
         </div>
         <div className="p-4">
-          {attendedUsers.length > 0 ? (
+          {attendedUsers.length > 0? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-700">
@@ -81,7 +88,7 @@ function AttendanceList() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                  {attendedUsers.map((student, index) => (
+                  { attendedUsers.map((student, index) => (
                     <tr key={student.userId._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">{index + 1}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white">

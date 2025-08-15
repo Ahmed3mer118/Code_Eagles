@@ -29,19 +29,19 @@ function Courses() {
       const lecturesRes = await userService.getLectures(slug);
       const lecturesData = lecturesRes.lectures;
       setLectures(lecturesData);
-      const savedData = await userService.getUserAttendanceStatusInGroup(
+      const savedData = await userService.getAttendance(
         slug
       );
       const attended = {};
       savedData.lectures.forEach((lecture) => {
         if (lecture.status === "present") {
-          attended[lecture.lectureId] = true;
+          attended[lecture.lectureSlug] = true;
         }
       });
 
       setAttendanceStatus(attended);
-
       if (slugLecture) {
+
         const currentIndex = lecturesData.findIndex(
           (lec) => lec.slugLec === slugLecture
         );
@@ -255,9 +255,12 @@ function Courses() {
                   </h3>
                   <div className="space-y-3">
                     {lectures.filter((lecture) => !lecture.isDeleted).map((lecture, index) => {
-                      const isAttended = attendanceStatus[lecture._id];
+                      // console.log(lecture)
+                      const isAttended = attendanceStatus[lecture.slugLec];
+                      console.log(isAttended)
                       const isCurrent = index === currentLectureIndex;
                       const isUnlocked = isAttended || isCurrent;
+                      // console.log(isUnlocked)
                       const isLocked = !isUnlocked;
 
                       return (

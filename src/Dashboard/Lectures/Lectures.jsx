@@ -73,7 +73,7 @@ function Lectures() {
       if (window.location.pathname.includes("/dashboard")) {
         response = await adminServices.createLecture(formData);
       } else {
-        response = await instructorService.addLecture(formData);
+        response = await instructorService.createLecture(formData);
       }
       if (response) {
         toast.success("Lecture created successfully!");
@@ -216,7 +216,10 @@ function Lectures() {
                             Attendance:
                           </span>{" "}
                           <Link
-                            to={`/dashboard/admin/group/${slug}/lectures/${lecture.slugLec}/attendance`}
+                            to={`${
+                              window.location.pathname.includes("/dashboard")
+                                ? "/dashboard/admin"
+                                : "/instructor"}/group/${slug}/lectures/${lecture.slugLec}/attendance`}
                             className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400"
                           >
                             {lecture.attendanceCount || 0}
@@ -230,8 +233,8 @@ function Lectures() {
                           <Link
                             to={`/${
                               window.location.pathname.includes("/dashboard")
-                                ? "dashboard/admin"
-                                : "instructor"
+                                ? "/dashboard/admin"
+                                : "/instructor"
                             }/group/${slug}/lectures/${
                               lecture.slugLec
                             }/newTask`}
@@ -252,8 +255,8 @@ function Lectures() {
                           <Link
                             to={`/${
                               window.location.pathname.includes("/dashboard")
-                                ? "dashboard/admin"
-                                : "instructor"
+                                ? "/dashboard/admin"
+                                : "/instructor"
                             }/group/${slug}/lectures/update/${lecture.slugLec}`}
                             className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors"
                           >

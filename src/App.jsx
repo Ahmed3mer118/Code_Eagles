@@ -284,6 +284,10 @@ function App() {
           element:<CreateQuiz />
         },
         {
+          path:"group/:slug/lectures/:slugLecture/attendance",
+          element:<AttendanceList />
+        },
+        {
           path:"group/:slug/lectures/update/:slugLecture",
           element:<UpdateLecture />
         },

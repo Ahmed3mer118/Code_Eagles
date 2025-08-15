@@ -80,7 +80,7 @@ function VideoCourse({
     };
 
     fetchLecture();
-  }, [slug, token, slugLecture, attendanceStatus]);
+  }, [slug, token, slugLecture]);
 
   useEffect(() => {
     const fetchCourseInfo = async () => {
@@ -132,9 +132,10 @@ function VideoCourse({
       toast.success("Attendance recorded successfully!");
       setDisabledInput(true);
     } catch (error) {
-      if (error.response?.status === 400) {
+      if (error.response) {
         toast.error("You already attended this lecture.");
-      } else {
+      } 
+      else {
         toast.error("Failed to record attendance. Please try again.");
       }
     }
@@ -353,7 +354,7 @@ function VideoCourse({
             )}
 
             {/* Quizzes Section */}
-            {quiz?.length > 0 && (
+            {quiz && (
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-800 mb-4">
                   Quizzes

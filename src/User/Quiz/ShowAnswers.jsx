@@ -40,6 +40,7 @@ const ShowAnswers = () => {
   const handleFinishQuiz = async () => {
     try {
       const result = await userService.solveQuiz(slugQuiz, studentAnswers);
+      console.log(result)
       if (parseInt(result.score) >= 50) {
         toast.success('Congratulations! You passed the quiz');
         handleRestart();

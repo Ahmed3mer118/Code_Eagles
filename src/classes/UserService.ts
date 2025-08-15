@@ -152,6 +152,15 @@ class UserService {
       throw error.response?.data || error;
     }
   }
+  
+  async getQuizzesByLectureId(slugLec: string) {
+    try {
+      const response = await this.axiosInstance.get(`/api/quizzes/lecture/${slugLec}`);
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || error;
+    }
+  }
 
   async getQuizById(quizId: string) {
     try {
@@ -179,6 +188,23 @@ class UserService {
       throw error.response?.data || error;
     }
   }
+  async getScore(slug: string) {
+    try {
+      const response = await this.axiosInstance.get(`/api/quizzes/score/${slug}`);
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || error;
+    }
+  }
+  async solveQuiz(slugQuiz: string, answers: any) {
+    try {
+      const response = await this.axiosInstance.post(`/api/quizzes/solve`, { slugQuize:slugQuiz, answers });
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || error;
+    }
+  }
+
 
   async getMessages(groupId: string) {
     try {
@@ -227,7 +253,15 @@ class UserService {
 
   async getAttendance(lectureId: string) {
     try {
-      const response = await this.axiosInstance.get(`/api/lectures/${lectureId}/attendance`);
+      const response = await this.axiosInstance.get(`/api/lectures/${lectureId}/get-user-attendance-status-in-group`);
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || error;
+    }
+  }
+  async attendLecture(slugLec: string, code: string) {
+    try {
+      const response = await this.axiosInstance.post(`/api/lectures/attend`, { slugLec, code });
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;
