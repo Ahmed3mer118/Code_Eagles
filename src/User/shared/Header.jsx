@@ -36,7 +36,7 @@ function Header() {
           <div className="flex-shrink-0">
             <img
               src="/images/LOGO.png"
-              alt="logo"
+              alt="Code Eagles"
               loading="lazy"
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
             />

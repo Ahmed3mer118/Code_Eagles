@@ -109,10 +109,7 @@ function Login() {
       const res = await authServices.forgotPassword(login.email);
       if (res) {
         toast.success("Password reset email sent. Please check your inbox.");
-        localStorage.setItem(
-          "forget-password-token",
-          JSON.stringify(token)
-        );
+
         setTimeout(() => {
           navigate("/auth/forget-password");
         }, 2500);

@@ -85,7 +85,7 @@ function CourseDetail() {
               src={course.image}
               alt={course.title}
               className="w-full h-64 sm:h-80 md:h-96 "
-             
+              loading="lazy"
             />
           </div>
         </div>

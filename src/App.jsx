@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, {  Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./Auth/Login/Login.jsx";
 import Register from "./Auth/Register/Register.jsx";
@@ -7,49 +7,60 @@ import VerificationForm from "./Auth/Register/VerificationForm.jsx";
 import Layout from "./User/shared/Layout/Layout.jsx";
 import Main from "./User/shared/Layout/Main.jsx";
 import { HelmetProvider } from "react-helmet-async";
-import AddFeedback from "./User/FeedBack/AddFeedback.jsx";
 
-import Content from "./User/Lecture/Content.jsx";
-import Contact from "./User/Contact/Contact.jsx";
-import Profile from "./User/Profile/Profile.jsx";
-import AllGroup from "./User/Group/AllGroup.jsx";
-import AllCourse from "./User/Lecture/AllCourse.jsx";
-import AddTask from "./User/Lecture/AddTask.jsx";
-import Courses from "./User/Lecture/Courses.jsx";
-import Error from "./Dashboard/Error.jsx";
-import DashboardIndex from "./Dashboard/Dashboard/DashboardIndex.jsx";
-import Dashboard from "./Dashboard/Dashboard/Dashboard.jsx";
-import NewGroup from "./Dashboard/Gruops/NewGroup.jsx";
-import AllGroups from "./Dashboard/Gruops/AllGroups.jsx";
-import DetailsGroup from "./Dashboard/Gruops/DetailsGroup.jsx";
-import Students from "./Dashboard/Students/Students.jsx";
-import Lectures from "./Dashboard/Lectures/Lectures.jsx";
-import AllStudents from "./Dashboard/Students/AllStudents.jsx";
-import DetailStudent from "./Dashboard/Students/DetailsStudent.jsx";
-import UpdateGroup from "./Dashboard/Gruops/UpdateGroup.jsx";
-import UpdateLecture from "./Dashboard/Lectures/UpdateLecture.jsx";
-import AttendanceList from "./Dashboard/Lectures/AttendanceList.jsx";
-import Tasks from "./Dashboard/Tasks/Tasks.jsx";
-import NewTask from "./Dashboard/Tasks/NewTask.jsx";
-import SubmissionsTask from "./Dashboard/Tasks/SubmissionsTask.jsx";
-import ProfileAdmin from "./Dashboard/ProfileAdmin/Profile.jsx";
-import EmailReq from "./Dashboard/Emails/EmailReq.jsx";
-import AllQuiz from "./Dashboard/QuizByAdmin/AllQuiz.jsx";
-import CreateQuiz from "./Dashboard/QuizByAdmin/CreateQuiz.jsx";
-import UpdateQuiz from "./Dashboard/QuizByAdmin/UpdateQuiz.jsx";
-import Quiz from "./User/Quiz/Quiz.jsx";
-import ShowQuestions from "./User/Quiz/ShowQuestions.jsx";
-import ShowAnswers from "./User/Quiz/ShowAnswers.jsx";
-import ShowResult from "./User/Quiz/ShowResult.jsx";
-import PrivateUser from "./Grauds/PrivateUser.jsx";
-import PrivateAdmin from "./Grauds/PrivateAdmin.jsx";
-import PrivateInstructor from "./Grauds/PrivateInstructor.jsx";
-import DashboardInstructor from "./DashboardInstructor/DashboardInstructor.jsx";
-import ProfileInstructor from "./DashboardInstructor/ProfileInstructor.jsx";
-import GetAllFeedback from "./Dashboard/GetAllFeedback.jsx";
-import GetAllMessage from "./Dashboard/Messages/GetAllMessage.jsx";
-import CourseDetail from "./User/Lecture/CourseDetails.jsx";
-import InstructorMessage from "./DashboardInstructor/InstructorMessage.jsx"
+// User Components
+const AddFeedback = React.lazy(() => import("./User/FeedBack/AddFeedback.jsx"));
+const Content = React.lazy(() => import("./User/Lecture/Content.jsx"));
+const Contact = React.lazy(() => import("./User/Contact/Contact.jsx"));
+const Profile = React.lazy(() => import("./User/Profile/Profile.jsx"));
+const AllGroup = React.lazy(() => import("./User/Group/AllGroup.jsx"));
+const AllCourse = React.lazy(() => import("./User/Lecture/AllCourse.jsx"));
+const AddTask = React.lazy(() => import("./User/Lecture/AddTask.jsx"));
+const Courses = React.lazy(() => import("./User/Lecture/Courses.jsx"));
+const Quiz = React.lazy(() => import("./User/Quiz/Quiz.jsx"));
+const ShowQuestions = React.lazy(() => import("./User/Quiz/ShowQuestions.jsx"));
+const ShowAnswers = React.lazy(() => import("./User/Quiz/ShowAnswers.jsx"));
+const ShowResult = React.lazy(() => import("./User/Quiz/ShowResult.jsx"));
+const CourseDetail = React.lazy(() => import("./User/Lecture/CourseDetails.jsx"));
+
+// Dashboard Components
+const Error = React.lazy(() => import("./Dashboard/Error.jsx"));
+const DashboardIndex = React.lazy(() => import("./Dashboard/Dashboard/DashboardIndex.jsx"));
+const Dashboard = React.lazy(() => import("./Dashboard/Dashboard/Dashboard.jsx"));
+const NewGroup = React.lazy(() => import("./Dashboard/Gruops/NewGroup.jsx"));
+const AllGroups = React.lazy(() => import("./Dashboard/Gruops/AllGroups.jsx"));
+const DetailsGroup = React.lazy(() => import("./Dashboard/Gruops/DetailsGroup.jsx"));
+const UpdateGroup = React.lazy(() => import("./Dashboard/Gruops/UpdateGroup.jsx"));
+const Students = React.lazy(() => import("./Dashboard/Students/Students.jsx"));
+const AllStudents = React.lazy(() => import("./Dashboard/Students/AllStudents.jsx"));
+const DetailStudent = React.lazy(() => import("./Dashboard/Students/DetailsStudent.jsx"));
+const Lectures = React.lazy(() => import("./Dashboard/Lectures/Lectures.jsx"));
+const UpdateLecture = React.lazy(() => import("./Dashboard/Lectures/UpdateLecture.jsx"));
+const AttendanceList = React.lazy(() => import("./Dashboard/Lectures/AttendanceList.jsx"));
+const Tasks = React.lazy(() => import("./Dashboard/Tasks/Tasks.jsx"));
+const NewTask = React.lazy(() => import("./Dashboard/Tasks/NewTask.jsx"));
+const SubmissionsTask = React.lazy(() => import("./Dashboard/Tasks/SubmissionsTask.jsx"));
+const ProfileAdmin = React.lazy(() => import("./Dashboard/ProfileAdmin/Profile.jsx"));
+const EmailReq = React.lazy(() => import("./Dashboard/Emails/EmailReq.jsx"));
+const AllQuiz = React.lazy(() => import("./Dashboard/QuizByAdmin/AllQuiz.jsx"));
+const CreateQuiz = React.lazy(() => import("./Dashboard/QuizByAdmin/CreateQuiz.jsx"));
+const UpdateQuiz = React.lazy(() => import("./Dashboard/QuizByAdmin/UpdateQuiz.jsx"));
+const GetAllFeedback = React.lazy(() => import("./Dashboard/GetAllFeedback.jsx"));
+const GetAllMessage = React.lazy(() => import("./Dashboard/Messages/GetAllMessage.jsx"));
+
+// Dashboard Instructor Components
+const DashboardInstructor = React.lazy(() => import("./DashboardInstructor/DashboardInstructor.jsx"));
+const ProfileInstructor = React.lazy(() => import("./DashboardInstructor/ProfileInstructor.jsx"));
+const InstructorMessage = React.lazy(() => import("./DashboardInstructor/InstructorMessage.jsx"));
+
+// Guards
+const PrivateUser = React.lazy(() => import("./Grauds/PrivateUser.jsx"));
+const PrivateAdmin = React.lazy(() => import("./Grauds/PrivateAdmin.jsx"));
+const PrivateInstructor = React.lazy(() => import("./Grauds/PrivateInstructor.jsx"));
+
+// Shared
+const Loading = React.lazy(() => import("./User/shared/Loading.jsx"));
+
 const helmetContext = {};
 function App() {
   const router = createBrowserRouter([
@@ -326,7 +337,7 @@ function App() {
         }
       ]
     },
- 
+
     {
       path: "*",
       element: <Error />,
@@ -335,7 +346,9 @@ function App() {
 
   return (
     <HelmetProvider context={helmetContext}>
+       <Suspense fallback={<Loading />}>
       <RouterProvider router={router} />
+       </Suspense>
     </HelmetProvider>
   );
 }
