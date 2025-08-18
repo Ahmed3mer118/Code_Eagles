@@ -257,7 +257,6 @@ function Courses() {
                     {lectures.filter((lecture) => !lecture.isDeleted).map((lecture, index) => {
                       // console.log(lecture)
                       const isAttended = attendanceStatus[lecture.slugLec];
-                      console.log(isAttended)
                       const isCurrent = index === currentLectureIndex;
                       const isUnlocked = isAttended || isCurrent;
                       // console.log(isUnlocked)

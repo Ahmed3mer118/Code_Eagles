@@ -1,12 +1,13 @@
 import React, {  Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async"
 import Login from "./Auth/Login/Login.jsx";
 import Register from "./Auth/Register/Register.jsx";
 import ForgetPass from "./Auth/Register/ForgetPass.jsx";
 import VerificationForm from "./Auth/Register/VerificationForm.jsx";
-import Layout from "./User/shared/Layout/Layout.jsx";
-import Main from "./User/shared/Layout/Main.jsx";
-import { HelmetProvider } from "react-helmet-async";
+
+import Layout from "./User/shared/Layout/Layout.jsx"
+import Main from "./User/shared/Layout/Main.jsx"
 
 // User Components
 const AddFeedback = React.lazy(() => import("./User/FeedBack/AddFeedback.jsx"));
@@ -48,6 +49,7 @@ const UpdateQuiz = React.lazy(() => import("./Dashboard/QuizByAdmin/UpdateQuiz.j
 const GetAllFeedback = React.lazy(() => import("./Dashboard/GetAllFeedback.jsx"));
 const GetAllMessage = React.lazy(() => import("./Dashboard/Messages/GetAllMessage.jsx"));
 
+
 // Dashboard Instructor Components
 const DashboardInstructor = React.lazy(() => import("./DashboardInstructor/DashboardInstructor.jsx"));
 const ProfileInstructor = React.lazy(() => import("./DashboardInstructor/ProfileInstructor.jsx"));
@@ -60,7 +62,6 @@ const PrivateInstructor = React.lazy(() => import("./Grauds/PrivateInstructor.js
 
 // Shared
 const Loading = React.lazy(() => import("./User/shared/Loading.jsx"));
-
 const helmetContext = {};
 function App() {
   const router = createBrowserRouter([
@@ -74,7 +75,7 @@ function App() {
         },
         {
           path: "register",
-          element: <Register />,
+          element: <Register/>,
         },
         {
           path: "forget-password",
