@@ -9,6 +9,7 @@ import AuthServices from "../../classes/Auth";
 function RegisterForm() {
   const authServices = new AuthServices();
   const URLAPI = authServices.URLAPI;
+  const [countryCode, setCountryCode] = useState("+20"); 
   const [register, setRegister] = useState({
     name: "",
     email: "",
@@ -18,7 +19,6 @@ function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [countryCode, setCountryCode] = useState("+20"); 
   const [phoneLength, setPhoneLength] = useState(11);
 
   const handleRegister = async (e) => {
@@ -134,14 +134,6 @@ function RegisterForm() {
       case "Yemen":
         setCountryCode("+967");
         setPhoneLength(9);
-        break;
-      case "Kuwait":
-        setCountryCode("+965");
-        setPhoneLength(8);
-        break;
-      case "Oman":
-        setCountryCode("+968");
-        setPhoneLength(8);
         break;
       case "United States":
         setCountryCode("+1");
@@ -317,7 +309,7 @@ function RegisterForm() {
               type="text"
               id="phoneNumber"
               className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={register.phone_number.replace(countryCode, "")}
+              value={register.phone_number.replace(countryCode,"")}
               onChange={handlePhoneNumberChange}
               placeholder="Enter phone number"
             />
