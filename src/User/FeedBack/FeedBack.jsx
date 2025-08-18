@@ -129,9 +129,9 @@ function FeedBack() {
                       </div>
 
                       {/* Timestamp */}
-                      <div className="mt-3 text-xs text-gray-400">
+                      {/* <div className="mt-3 text-xs text-gray-400">
                         Posted: {new Date(feedback.createdAt).toLocaleDateString()}
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 ))}
