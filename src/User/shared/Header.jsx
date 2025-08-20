@@ -34,69 +34,69 @@ function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex-shrink-0">
-            <img
-              src="/images/LOGO.png"
-              alt="Code Eagles"
-              loading="lazy"
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
-            />
+            <a href="/" aria-label="Go to homepage">
+              <img
+                src="/images/LOGO.png"
+                alt="Code Eagles Logo"
+                width="64"
+                height="64"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
+              />
+            </a>
           </div>
 
+
           {!isLoggedIn ? (
-             <nav className="hidden md:flex space-x-8">
-             <NavLink
-               to="/"
-               className={({ isActive }) =>
-                 `px-3 py-2 rounded-md text-sm font-medium ${
-                   isActive
-                     ? "text-blue-600 bg-blue-50"
-                     : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
-                 } transition-colors duration-200`
-               }
-             >
-               Home
-             </NavLink>
-             <NavLink
-               to="/courses"
-               className={({ isActive }) =>
-                 `px-3 py-2 rounded-md text-sm font-medium ${
-                   isActive
-                     ? "text-blue-600 bg-blue-50"
-                     : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
-                 } transition-colors duration-200`
-               }
-             >
-               Courses
-             </NavLink>
-             <NavLink
-               to="/contact"
-               className={({ isActive }) =>
-                 `px-3 py-2 rounded-md text-sm font-medium ${
-                   isActive
-                     ? "text-blue-600 bg-blue-50"
-                     : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
-                 } transition-colors duration-200`
-               }
-             >
-               Contact us
-             </NavLink>
-             <NavLink
-               to="/auth/login"
-               className={({ isActive }) =>
-                 `px-3 py-2 rounded-md text-sm font-medium ${
-                   isActive
-                     ? "text-blue-600 bg-blue-50"
-                     : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
-                 } transition-colors duration-200`
-               }
-             >
-               Log In
-             </NavLink>
-           </nav>
+            <nav className="hidden md:flex space-x-8">
+              <NavLink
+                to="/"
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-md text-sm font-medium ${isActive
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                  } transition-colors duration-200`
+                }
+              >
+                Home
+              </NavLink>
+              <NavLink
+                to="/courses"
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-md text-sm font-medium ${isActive
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                  } transition-colors duration-200`
+                }
+              >
+                Courses
+              </NavLink>
+              <NavLink
+                to="/contact"
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-md text-sm font-medium ${isActive
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                  } transition-colors duration-200`
+                }
+              >
+                Contact us
+              </NavLink>
+              <NavLink
+                to="/auth/login"
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-md text-sm font-medium ${isActive
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                  } transition-colors duration-200`
+                }
+              >
+                Log In
+              </NavLink>
+            </nav>
           ) : (
             // <h1>Test </h1>
             <NavStudent menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-          
+
           )}
 
           {/* Mobile menu button */}
@@ -119,10 +119,9 @@ function Header() {
                 to="/"
                 onClick={closeNavbar}
                 className={({ isActive }) =>
-                  `block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                  `block px-3 py-2 rounded-md text-base font-medium ${isActive
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                   } transition-colors duration-200`
                 }
               >
@@ -132,10 +131,9 @@ function Header() {
                 to="/courses"
                 onClick={closeNavbar}
                 className={({ isActive }) =>
-                  `block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                  `block px-3 py-2 rounded-md text-base font-medium ${isActive
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                   } transition-colors duration-200`
                 }
               >
@@ -145,10 +143,9 @@ function Header() {
                 to="/contact"
                 onClick={closeNavbar}
                 className={({ isActive }) =>
-                  `block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                  `block px-3 py-2 rounded-md text-base font-medium ${isActive
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                   } transition-colors duration-200`
                 }
               >
@@ -158,10 +155,9 @@ function Header() {
                 to="/auth/login"
                 onClick={closeNavbar}
                 className={({ isActive }) =>
-                  `block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                  `block px-3 py-2 rounded-md text-base font-medium ${isActive
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                   } transition-colors duration-200`
                 }
               >

@@ -1,4 +1,4 @@
-import React, {  Suspense } from "react";
+import React, { Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async"
 import Login from "./Auth/Login/Login.jsx";
@@ -59,6 +59,7 @@ const InstructorMessage = React.lazy(() => import("./DashboardInstructor/Instruc
 const PrivateUser = React.lazy(() => import("./Grauds/PrivateUser.jsx"));
 const PrivateAdmin = React.lazy(() => import("./Grauds/PrivateAdmin.jsx"));
 const PrivateInstructor = React.lazy(() => import("./Grauds/PrivateInstructor.jsx"));
+import { ErrorBoundary } from "./Dashboard/ErrorBoundary.jsx";
 
 // Shared
 const Loading = React.lazy(() => import("./User/shared/Loading.jsx"));
@@ -75,7 +76,7 @@ function App() {
         },
         {
           path: "register",
-          element: <Register/>,
+          element: <Register />,
         },
         {
           path: "forget-password",
@@ -87,7 +88,7 @@ function App() {
         },
       ],
     },
-// user
+    // user
     {
       path: "/",
       element: <Layout />,
@@ -118,7 +119,7 @@ function App() {
         },
         {
           path: "profile",
-          element:  <PrivateUser element={<Profile />} />,
+          element: <PrivateUser element={<Profile />} />,
         },
         {
           path: "my-courses",
@@ -126,15 +127,15 @@ function App() {
         }
         ,
         {
-          path:'course/:slug',
+          path: 'course/:slug',
           element: <PrivateUser element={<Courses />} />
         },
         {
-          path:'course/:slug/lecture/:slugLecture',
+          path: 'course/:slug/lecture/:slugLecture',
           element: <PrivateUser element={<Courses />} />,
         },
         {
-          path:'course/:slug/lecture/:slugLecture/quiz/:slugQuiz',
+          path: 'course/:slug/lecture/:slugLecture/quiz/:slugQuiz',
           element: <PrivateUser element={<Quiz />} />,
           children: [
             {
@@ -160,181 +161,181 @@ function App() {
     // dashboard
     {
       path: "dashboard",
-      element: <PrivateAdmin element={ <Dashboard /> } />,
-      children:[
+      element: <PrivateAdmin element={<Dashboard />} />,
+      children: [
         {
-          path:'',
+          path: '',
           element: <DashboardIndex />,
         },
-        
+
         {
-          path:'admin/newGroup',
+          path: 'admin/newGroup',
           element: <NewGroup />,
         },
         {
-          path:'admin/allGroups',
+          path: 'admin/allGroups',
           element: <AllGroups />,
         },
         {
-          path:'admin/allStudent',
+          path: 'admin/allStudent',
           element: <AllStudents />,
-          
+
         },
-        
+
         {
-          path:'admin/allStudent/student/:studentSlug',
+          path: 'admin/allStudent/student/:studentSlug',
           element: <DetailStudent />,
         },
         {
-          path:'admin/group/:slug',
+          path: 'admin/group/:slug',
           element: <DetailsGroup />,
-          children:[
+          children: [
             {
-              path:'students',
-              element:<Students />
+              path: 'students',
+              element: <Students />
             },
             {
-              path:'lectures',
-              element:<Lectures />
+              path: 'lectures',
+              element: <Lectures />
             },
             {
-              path:'lectures/update/:slugLecture',
-              element:<UpdateLecture />
+              path: 'lectures/update/:slugLecture',
+              element: <UpdateLecture />
             },
             {
-              path:'lectures/:slugLecture/attendance',
-              element:<AttendanceList />
+              path: 'lectures/:slugLecture/attendance',
+              element: <AttendanceList />
             },
-           
+
             {
-              path:'tasks',
-              element:<Tasks />
+              path: 'tasks',
+              element: <Tasks />
             },
             {
-              path:'lecture/:slugLecture/tasks/updateTask/:slugTask',
-              element:<NewTask />
+              path: 'lecture/:slugLecture/tasks/updateTask/:slugTask',
+              element: <NewTask />
             },
-             {
-              path:'lecture/:slugLecture/tasks/:slugTask/submissions',
-              element:<SubmissionsTask />
+            {
+              path: 'lecture/:slugLecture/tasks/:slugTask/submissions',
+              element: <SubmissionsTask />
             }
             ,
             ,
             {
-              path:'lectures/:slugLecture/newTask',
-              element:<NewTask />
+              path: 'lectures/:slugLecture/newTask',
+              element: <NewTask />
             }
             ,
-            
+
             {
-              path:'quiz',
-              element:<AllQuiz />
+              path: 'quiz',
+              element: <AllQuiz />
             }
             ,
-            
+
             {
-              path:'lectures/:slugLecture/newQuiz',
-              element:<CreateQuiz />
+              path: 'lectures/:slugLecture/newQuiz',
+              element: <CreateQuiz />
             }
             ,
-            
+
             {
-              path:'lecture/:slugLecture/quiz/updateQuiz/:slugQuiz',
-              element:<UpdateQuiz />
+              path: 'lecture/:slugLecture/quiz/updateQuiz/:slugQuiz',
+              element: <UpdateQuiz />
             }
             ,
             {
-              path:'update',
-              element:<UpdateGroup />
+              path: 'update',
+              element: <UpdateGroup />
             }
           ]
         },
-        ,{
-          path:"admin/email-request",
-          element:<EmailReq />
+        , {
+          path: "admin/email-request",
+          element: <EmailReq />
         }
-        ,{
-          path:"admin/get-all-feedback-by-admin",
-          element:<GetAllFeedback />
+        , {
+          path: "admin/get-all-feedback-by-admin",
+          element: <GetAllFeedback />
         }
-        ,{
-          path:"admin/get-all-message-by-admin",
-          element:<GetAllMessage />
+        , {
+          path: "admin/get-all-message-by-admin",
+          element: <GetAllMessage />
         }
-        ,{
-          path:"admin/profile-admin",
-          element:<ProfileAdmin />
+        , {
+          path: "admin/profile-admin",
+          element: <ProfileAdmin />
         }
-        
-       
+
+
       ]
     },
     // instructor
     {
-      path:"instructor",
-      element:<PrivateInstructor element={<DashboardInstructor />} />,
+      path: "instructor",
+      element: <PrivateInstructor element={<DashboardInstructor />} />,
       // element:<DashboardInstructor />,
-      children:[
+      children: [
         {
-          path:"group/:slug/students",
-          element:<Students/>
+          path: "group/:slug/students",
+          element: <Students />
         },
         {
-          path:":slug/student/:studentSlug",
-          element:<DetailStudent/>
+          path: ":slug/student/:studentSlug",
+          element: <DetailStudent />
         },
         {
-          path:"group/:slug/lectures",
-          element:<Lectures/>
+          path: "group/:slug/lectures",
+          element: <Lectures />
         },
         {
-          path:"group/:slug/lectures/:slugLecture/newTask",
-          element:<NewTask/>
+          path: "group/:slug/lectures/:slugLecture/newTask",
+          element: <NewTask />
         },
         {
-          path:"group/:slug/lectures/:slugLecture/newQuiz",
-          element:<CreateQuiz />
+          path: "group/:slug/lectures/:slugLecture/newQuiz",
+          element: <CreateQuiz />
         },
         {
-          path:"group/:slug/lectures/:slugLecture/attendance",
-          element:<AttendanceList />
+          path: "group/:slug/lectures/:slugLecture/attendance",
+          element: <AttendanceList />
         },
         {
-          path:"group/:slug/lectures/update/:slugLecture",
-          element:<UpdateLecture />
+          path: "group/:slug/lectures/update/:slugLecture",
+          element: <UpdateLecture />
         },
-        
+
         {
-          path:"group/:slug/tasks",
-          element:<Tasks/>
-        },
-        {
-          path:"group/:slug/lecture/:slugLecture/tasks/:slugTask/submissions",
-          element:<SubmissionsTask/>
+          path: "group/:slug/tasks",
+          element: <Tasks />
         },
         {
-          path:"group/:slug/lecture/:slugLecture/tasks/updateTask/:slugTask",
-          element:<NewTask/>
+          path: "group/:slug/lecture/:slugLecture/tasks/:slugTask/submissions",
+          element: <SubmissionsTask />
         },
         {
-          path:"group/:slug/quizzes",
-          element:<AllQuiz/>
+          path: "group/:slug/lecture/:slugLecture/tasks/updateTask/:slugTask",
+          element: <NewTask />
         },
         {
-          path:"group/:slug/lecture/:slugLecture/quiz/:updateQuiz/:slugQuiz",
-          element:<UpdateQuiz/>
+          path: "group/:slug/quizzes",
+          element: <AllQuiz />
         },
         {
-          path:"group/:slug/messages",
-          element:<InstructorMessage/>
+          path: "group/:slug/lecture/:slugLecture/quiz/:updateQuiz/:slugQuiz",
+          element: <UpdateQuiz />
         },
         {
-          path:'email-request',
-          element:<EmailReq />
+          path: "group/:slug/messages",
+          element: <InstructorMessage />
         },
         {
-          path:'setting',
-          element:<ProfileInstructor />
+          path: 'email-request',
+          element: <EmailReq />
+        },
+        {
+          path: 'setting',
+          element: <ProfileInstructor />
         }
       ]
     },
@@ -345,12 +346,31 @@ function App() {
     }
   ]);
 
+  // class ErrorBoundary extends React.Component {
+  //   constructor(props) {
+  //     super(props);
+  //     this.state = { hasError: false };
+  //   }
+
+  //   static getDerivedStateFromError(error) {
+  //     return { hasError: true };
+  //   }
+
+  //   render() {
+  //     if (this.state.hasError) {
+  //       return <h2>Something went wrong. Please try again.</h2>;
+  //     }
+  //     return this.props.children;
+  //   }
+  // }
   return (
     <HelmetProvider context={helmetContext}>
-       <Suspense fallback={<Loading />}>
-      <RouterProvider router={router} />
-       </Suspense>
-    </HelmetProvider>
+    <ErrorBoundary>
+      <Suspense fallback={<Loading />}>
+        <RouterProvider router={router} />
+      </Suspense>
+    </ErrorBoundary>
+  </HelmetProvider>
   );
 }
 
