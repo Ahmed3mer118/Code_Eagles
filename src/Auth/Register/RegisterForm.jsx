@@ -103,10 +103,7 @@ function RegisterForm() {
         setCountryCode("+212");
         setPhoneLength(9);
         break;
-      case "Tunisia":
-        setCountryCode("+216");
-        setPhoneLength(8);
-        break;
+
       case "Iraq":
         setCountryCode("+964");
         setPhoneLength(10);

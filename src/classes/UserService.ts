@@ -137,7 +137,7 @@ class UserService {
 
   async submitTask(lectureId: string, taskId: string, taskData: any) {
     try {
-      const response = await this.axiosInstance.post(`/api/lectures/${lectureId}/tasks/${taskId}/submit`, taskData);
+      const response = await this.axiosInstance.post(`/api/lectures/${lectureId}/submit-task/${taskId}`, taskData);
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;

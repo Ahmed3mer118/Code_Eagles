@@ -457,21 +457,21 @@ class InstructorService {
   }
 
   // Messages Methods
-  async getMessages(groupId: string) {
-    try {
-      const response = await this.axiosInstance.get(
-        `/api/messages/group/${groupId}`
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
+  // async getMessages(slugGroup: string) {
+  //   try {
+  //     const response = await this.axiosInstance.get(
+  //       `/api/messages/group/${slugGroup}`
+  //     );
+  //     return response.data;
+  //   } catch (error) {
+  //     throw this.handleError(error);
+  //   }
+  // }
 
-  async sendMessage(messageData: string) {
+  async sendMessage(messageData: string, slugGroup: string) {
     try {
       const response = await this.axiosInstance.post(
-        "/api/messages",
+        `/api/users/send-message-to-group/${slugGroup}`,
         messageData
       );
       return response.data;

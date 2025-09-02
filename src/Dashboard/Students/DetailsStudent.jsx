@@ -27,7 +27,7 @@ function DetailStudent() {
   const [attendance, setAttendance] = useState({ present: 0, absent: 0 });
   const [taskData, setTaskData] = useState([]);
   const [groupDetails, setGroupDetails] = useState([]);
-  const { studentSlug ,email } = useParams();
+  const { studentSlug ,email ,slug} = useParams();
   const navigate = useNavigate();
   const [lectures, setLectures] = useState([]);
   const [lecturesSpecial, setSelectedLectures] = useState([]);
@@ -219,8 +219,9 @@ function DetailStudent() {
         });
 
         const taskData = await adminServices.getStudentDetails(email);
+        console.log(taskData)
         const tasksData = taskData.groups.find(
-          (group) => group.groupId === groupId
+          (group) => group.groupInfo.slug === slug
         ).tasks;
         setTaskData(tasksData || []);
 
@@ -258,9 +259,8 @@ function DetailStudent() {
 
         const taskData = await instructorService.getStudentDetails(email);
         const tasksData = taskData.groups.find(
-          (group) => group.groupId === groupId
+          (group) => group.groupInfo.slug === slug
         ).tasks;
-
         setTaskData(tasksData || []);
 
         const quizData = await instructorService.showAllQuizzesScore(
@@ -387,7 +387,7 @@ function DetailStudent() {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
                           Number
                         </th>
-                        {token && (
+                        {role === "admin" && (
                           <>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
                               Role
@@ -410,7 +410,7 @@ function DetailStudent() {
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
                           {students.phone_number || "Not available"}
                         </td>
-                        {token && (
+                        {role === "admin" && (
                           <>
                             <td className="px-4 py-4 whitespace-nowrap">
                               <select

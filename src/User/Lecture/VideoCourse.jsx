@@ -28,6 +28,7 @@ function VideoCourse({
   const [courseInfo, setCourseInfo] = useState({ title: "", description: "" });
   const [quiz, setQuiz] = useState(null);
   const [score, setScore] = useState(null);
+  const [scoreTask, setScoreTask] = useState([]);
   useEffect(() => {
     const fetchLecture = async () => {
       try {
@@ -41,11 +42,11 @@ function VideoCourse({
           return;
         }
 
-        if(slugLecture){
+        if (slugLecture) {
           const lectureRes = await userService.getLectureById(slugLecture);
           setLecture(lectureRes.lecture);
           setDisabledInput(attendanceStatus[slugLecture] || false);
-  
+
           if (lectureRes.lecture.tasks?.length > 0) {
             const task = lectureRes.lecture.tasks[0];
             const backendDeadline = new Date(task.end_date);
@@ -54,12 +55,11 @@ function VideoCourse({
             const daysRemaining = Math.ceil(
               timeDifference / (1000 * 60 * 60 * 24)
             );
-  
+
             if (daysRemaining < 0) {
               setIsSubmissionAllowed(false);
               setDeadline(
-                `The deadline for this task has passed ${
-                  daysRemaining * -1
+                `The deadline for this task has passed ${daysRemaining * -1
                 } days ago.`
               );
             } else {
@@ -80,6 +80,7 @@ function VideoCourse({
     };
 
     fetchLecture();
+    getScoreTask()
   }, [slug, token, slugLecture]);
 
   useEffect(() => {
@@ -98,6 +99,7 @@ function VideoCourse({
     };
 
     fetchCourseInfo();
+    
   }, [slug, token]);
 
   useEffect(() => {
@@ -109,7 +111,7 @@ function VideoCourse({
             setQuiz(getQuiz);
             const getScore = await userService.getScore(getQuiz.slugQuize);
             setScore(getScore);
-            
+
           }
         }
       } catch (error) {
@@ -117,9 +119,11 @@ function VideoCourse({
         // toast.error(error.message)
       }
     };
-    
-    fetchQuiz();
-  }, [slug , slugLecture]); 
+
+    fetchQuiz();  
+ 
+
+  }, [slug, slugLecture]);
 
   const handleAttend = async (e) => {
     e.preventDefault();
@@ -134,7 +138,7 @@ function VideoCourse({
     } catch (error) {
       if (error.response) {
         toast.error("You already attended this lecture.");
-      } 
+      }
       else {
         toast.error("Failed to record attendance. Please try again.");
       }
@@ -145,8 +149,13 @@ function VideoCourse({
     navigate(`/course/${slug}/lecture/${slugLecture}/Add-Task/${slugTask}`);
   };
 
+  const getScoreTask = async () => {
+    const res = await userService.getTasks(slug);
+    setScoreTask(res.tasks)
+  };
+
   const handleNext = () => {
-    onNextLecture(); 
+    onNextLecture();
   };
 
   if (loading) {
@@ -206,11 +215,10 @@ function VideoCourse({
           <button
             onClick={onPrevLecture}
             disabled={currentLectureIndex === 0 || loading}
-            className={`flex items-center px-4 py-2 rounded-lg border ${
-              currentLectureIndex === 0 || loading
+            className={`flex items-center px-4 py-2 rounded-lg border ${currentLectureIndex === 0 || loading
                 ? "border-gray-300 text-gray-400 cursor-not-allowed"
                 : "border-blue-500 text-blue-600 hover:bg-blue-50"
-            }`}
+              }`}
           >
             <svg
               className="w-5 h-5 mr-2"
@@ -230,11 +238,10 @@ function VideoCourse({
           <button
             onClick={handleNext}
             disabled={!slugLecture || loading}
-            className={`flex items-center px-4 py-2 rounded-lg ${
-              !slugLecture || loading
+            className={`flex items-center px-4 py-2 rounded-lg ${!slugLecture || loading
                 ? "bg-blue-300 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
-            } text-white`}
+              } text-white`}
           >
             Next Lecture
             <svg
@@ -277,11 +284,10 @@ function VideoCourse({
                 <button
                   onClick={handleAttend}
                   disabled={disabledInput}
-                  className={`px-6 py-2 rounded-lg ${
-                    disabledInput
+                  className={`px-6 py-2 rounded-lg ${disabledInput
                       ? "bg-gray-300 cursor-not-allowed"
                       : "bg-blue-600 hover:bg-blue-700"
-                  } text-white`}
+                    } text-white`}
                 >
                   Attend
                 </button>
@@ -303,6 +309,8 @@ function VideoCourse({
                       (endDate - currentDate) / (1000 * 60 * 60 * 24)
                     );
 
+                    const hasSubmission = scoreTask.find(task => task.slugTask === item.slugTask);
+
                     return (
                       <div key={index} className="p-6">
                         <h3 className="text-lg font-medium text-gray-800 mb-2">
@@ -311,7 +319,20 @@ function VideoCourse({
                         <p className="text-sm text-gray-600 mb-3">
                           Due: {item.end_date?.slice(0, 10)}
                         </p>
-                        {isDeadlinePassed ? (
+
+                        {hasSubmission && hasSubmission.feedback !== null ? (
+                          <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r mb-3">
+                            <p className="text-sm text-green-700 font-semibold">
+                              Feedback: {hasSubmission.feedback || "No feedback yet"}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              Score: {hasSubmission.score || "No score yet"}
+                            </p>
+                            <Link target="_blank" to={hasSubmission.submission?.submissionLink} className="text-sm text-gray-700">
+                              Task: <span className="text-blue-600 hover:text-blue-800 underline"> { hasSubmission.submission?.submissionLink ?  "Submission Link" : "No submissionLink yet"}</span>
+                            </Link>
+                          </div>
+                        ) : isDeadlinePassed ? (
                           <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r">
                             <div className="flex">
                               <div className="flex-shrink-0">
@@ -330,8 +351,7 @@ function VideoCourse({
                               </div>
                               <div className="ml-3">
                                 <p className="text-sm text-red-700">
-                                  Deadline expired {daysRemaining * -1} days
-                                  ago. Submissions are closed.
+                                  Deadline expired {daysRemaining * -1} days ago. Submissions are closed.
                                 </p>
                               </div>
                             </div>
@@ -352,6 +372,7 @@ function VideoCourse({
                 </div>
               </div>
             )}
+
 
             {/* Quizzes Section */}
             {quiz && (

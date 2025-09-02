@@ -6,7 +6,7 @@ import InstructorService from '../classes/InstructorService';
 import AuthServices from '../classes/Auth';
 
 function InstructorMessage() {
-  const { groupId } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -20,27 +20,27 @@ function InstructorMessage() {
   const token = authService.getToken();
   const instructorService = new InstructorService(token);
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        if (!token) {
-          toast.error("Please log in again");
-          navigate("/auth/login");
-          return;
-        }
+  // useEffect(() => {
+  //   const fetchMessages = async () => {
+  //     try {
+  //       if (!token) {
+  //         toast.error("Please log in again");
+  //         navigate("/auth/login");
+  //         return;
+  //       }
 
-        const res = await instructorService.getMessages(groupId);
-        setMessages(res.messages || []);
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-        setMessages([]);
-      }
-    };
+  //       const res = await instructorService.getMessages(slug);
+  //       setMessages(res.messages || []);
+  //     } catch (error) {
+  //       console.error("Error fetching messages:", error);
+  //       setMessages([]);
+  //     }
+  //   };
     
-    if (groupId) {
-      fetchMessages();
-    }
-  }, [groupId, navigate, token]);
+  //   if (slug) {
+  //     fetchMessages();
+  //   }
+  // }, [slug, navigate, token]);
 
   const handleChangeMessage = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -57,13 +57,13 @@ function InstructorMessage() {
         return;
       }
 
-      const res = await instructorService.sendMessage(JSON.stringify(formData));
+      const res = await instructorService.sendMessage(JSON.stringify(formData), slug);
       if (res) {
         toast.success("Message sent successfully");
         setFormData({ message: "", sendTo: "" });
         
         // Refresh messages list
-        const updatedMessages = await instructorService.getMessages(groupId);
+        const updatedMessages = await instructorService.getMessages(slug);
         setMessages(updatedMessages.messages || []);
       }
     } catch (error) {
@@ -143,7 +143,7 @@ function InstructorMessage() {
       </div>
 
       {/* Previous Messages Section */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200">
+      {/* <div className="bg-white rounded-lg shadow-md border border-gray-200">
         <div className="p-6">
           <h5 className="text-lg font-semibold text-gray-900 mb-4">Previous Messages</h5>
           
@@ -182,7 +182,7 @@ function InstructorMessage() {
             </div>
           )}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
