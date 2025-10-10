@@ -35,24 +35,16 @@ function Footer() {
             >
               <FaWhatsapp size={24} />
             </a>
-            {/* <a
-              href="https://www.linkedin.com/in/ahmed-amer-884242289?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
+            <a
+              href="https://www.linkedin.com/company/code-eagles-software"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-300 hover:text-blue-400 transition-colors duration-200"
               aria-label="LinkedIn"
             >
               <FaLinkedin size={24} />
-            </a> */}
-            {/* <a
-              href="https://github.com/yourusername"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-300 hover:text-gray-100 transition-colors duration-200"
-              aria-label="GitHub"
-            >
-              <FaGithub size={24} />
-            </a> */}
+            </a>
+           
           </div>
 
           {/* Contact Info */}
@@ -60,7 +52,7 @@ function Footer() {
             <div className="flex items-center justify-center md:justify-end space-x-2">
               <AiOutlineMail className="text-blue-400" size={20} />
               <a
-                href="mailto:contact@codeeagles653.com"
+                href="mailto:codeeagles653.com"
                 className="text-gray-300 hover:text-white transition-colors duration-200"
               >
                 contact@codeeagles653.com

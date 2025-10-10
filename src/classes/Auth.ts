@@ -190,24 +190,26 @@ class AuthServices {
     }
   }
 
+  private isRefreshing = false;
+
   async refreshToken() {
-    // تحقق من وجود token قبل محاولة التجديد
     if (!this.getToken()) {
       console.log("⚠️ لا يوجد token للتجديد");
       return null;
     }
-
+  
+    // لو في عملية تجديد شغالة بالفعل، ماتنفذش تاني
+    if (this.isRefreshing) {
+      console.log("⏳ عملية تجديد أخرى جارية، في انتظارها...");
+      return null;
+    }
+  
+    this.isRefreshing = true;
+  
     try {
       console.log("🔄 محاولة تجديد الـ token...");
-      
-      const response = await this.axiosInstance.post(
-        "/api/users/refresh-token",
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-      
+      const response = await this.axiosInstance.post("/api/users/refresh-token", {}, { withCredentials: true });
+  
       if (response.data.accessToken) {
         const newAccessToken = response.data.accessToken;
         this.setToken(newAccessToken);
@@ -216,10 +218,13 @@ class AuthServices {
       }
       return null;
     } catch (error: any) {
-      console.error("❌ فشل في تجديد الـ token:", error?.response?.data?.message || error.message);
+      console.error("❌ فشل في تجديد الـ token:", error?.response?.data?.message || error?.message);
       return null;
+    } finally {
+      this.isRefreshing = false;
     }
   }
+  
 
   handleLogout() {
     localStorage.removeItem("token");
