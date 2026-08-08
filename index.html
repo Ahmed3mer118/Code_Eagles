@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 
 <head>
   <meta charset="UTF-8" />
@@ -7,12 +7,12 @@
   <title>Code Eagles</title>
   <meta name="title" content="Code Eagles" />
   <meta name="description"
-  content="Code Eagles is a comprehensive educational platform for learning all programming tracks, including web development, mobile app development, artificial intelligence, data science, game development, databases, and algorithms. Start from scratch and build your tech career step by step with practical and structured learning." />
+  content="Code Eagles — منصة تعليمية SaaS متعددة المستأجرين للمدرسين والطلاب وأولياء الأمور. ثانوية، برمجة، وجامعة." />
   <meta name="keywords"
-  content="codeeagles, تعلم البرمجة, منصة تعليمية, كورسات برمجة, تطوير الويب, تطوير الموبايل, تعلم Python, تعلم C++, تعلم JavaScript, برمجة الألعاب, الذكاء الاصطناعي, علم البيانات, Data Science, خوارزميات, بايثون, جافا, سي بلس بلس, React, Node.js, Flutter, Android, iOS, تعليم برمجة من الصفر, تراك برمجة" />
+  content="codeeagles, منصة تعليمية, أكاديمية, ثانوية عامة, كورسات برمجة, SaaS, multi-tenant, LMS" />
   <meta property="og:title" content="Code Eagles" />
   <meta property="og:description"
-  content="Learn programming from scratch: web, mobile, AI, data science, game development, and more with Code Eagles." />
+  content="Multi-tenant SaaS educational platform for academies, teachers, students, and parents." />
   <meta name="google-site-verification" content="YY_-vbdLfpTD-owIUnOW2dnaSd6kFLxem1bUkURTxmY" />
   <link rel="icon" type="image/png" href="/images/LOGO.png" />
   <link rel="preload" as="image" href="/images/bg.webp" type="image/webp" />
@@ -21,24 +21,37 @@
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-
     gtag('config', 'G-J31FHSLN6G');
   </script>
-    <script  src="https://cdn.tailwindcss.com"></script>
-    <script defer type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "Code Eagles",
-        "url": "https://www.code-eagles.com",
-        "logo": "https://www.code-eagles.com/images/LOGO.png",
-        "sameAs": [
-          "https://www.linkedin.com/company/code-eagles-software",
-        ],
-        "description": "Code Eagles is a platform to learn programming from scratch with structured learning in web, mobile, AI, data science, and more."
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ce: {
+              primary: '#0B1F33',
+              accent: '#E8A317',
+            }
+          },
+          fontFamily: {
+            sans: ['Manrope', 'Cairo', 'system-ui', 'sans-serif'],
+          }
+        }
       }
-      </script>
-      
+    }
+  </script>
+  <script defer type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Code Eagles",
+      "url": "https://www.code-eagles.com",
+      "logo": "https://www.code-eagles.com/images/LOGO.png",
+      "sameAs": ["https://www.linkedin.com/company/code-eagles-software"],
+      "description": "Multi-tenant SaaS educational platform for academies, teachers, students, and parents."
+    }
+  </script>
 </head>
 
 <body>

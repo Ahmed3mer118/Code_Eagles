@@ -1,0 +1,37 @@
+import { useTranslation } from 'react-i18next';
+
+export default function LanguageSwitcher({ className = '' }) {
+  const { i18n, t } = useTranslation();
+  const current = i18n.language?.startsWith('ar') ? 'ar' : 'en';
+
+  const setLang = (lng) => {
+    i18n.changeLanguage(lng);
+  };
+
+  return (
+    <div
+      className={`inline-flex items-center rounded-full border border-slate-200 bg-white/80 p-1 text-sm ${className}`}
+      role="group"
+      aria-label={t('nav.language')}
+    >
+      <button
+        type="button"
+        onClick={() => setLang('ar')}
+        className={`rounded-full px-3 py-1 font-semibold transition ${
+          current === 'ar' ? 'bg-[var(--ce-primary)] text-white' : 'text-slate-600'
+        }`}
+      >
+        ع
+      </button>
+      <button
+        type="button"
+        onClick={() => setLang('en')}
+        className={`rounded-full px-3 py-1 font-semibold transition ${
+          current === 'en' ? 'bg-[var(--ce-primary)] text-white' : 'text-slate-600'
+        }`}
+      >
+        EN
+      </button>
+    </div>
+  );
+}

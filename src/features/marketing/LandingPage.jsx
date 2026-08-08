@@ -1,0 +1,417 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
+import {
+  Award,
+  BarChart3,
+  BookOpen,
+  Brain,
+  Code2,
+  GraduationCap,
+  Layers,
+  LineChart,
+  MonitorSmartphone,
+  Shield,
+  Sparkles,
+  Users,
+  Video,
+} from 'lucide-react';
+import { statsApi, tenantApi } from '../../shared/api/platformApi';
+import SectionHeader from './components/SectionHeader';
+import HeroSearchBar from './components/HeroSearchBar';
+import AcademyCard from './components/AcademyCard';
+import CourseCard from './components/CourseCard';
+import CategoryCard from './components/CategoryCard';
+import TestimonialCarousel from './components/TestimonialCarousel';
+import AnimatedCounter from './components/AnimatedCounter';
+import FaqAccordion from './components/FaqAccordion';
+
+const CATEGORY_DEFS = [
+  { key: 'programming', icon: Code2, desc: 'Full-stack and software engineering paths' },
+  { key: 'frontend', icon: MonitorSmartphone, desc: 'Modern UI, React, and responsive design' },
+  { key: 'backend', icon: Layers, desc: 'APIs, databases, and scalable systems' },
+  { key: 'ai', icon: Brain, desc: 'Machine learning and intelligent tools' },
+  { key: 'dataScience', icon: LineChart, desc: 'Analytics, Python, and data pipelines' },
+  { key: 'cyberSecurity', icon: Shield, desc: 'Security fundamentals and ethical hacking' },
+  { key: 'firstSecondary', icon: BookOpen, desc: 'First secondary school curriculum' },
+  { key: 'secondSecondary', icon: GraduationCap, desc: 'Second secondary exam preparation' },
+  { key: 'thirdSecondary', icon: Award, desc: 'Third secondary and university admission' },
+];
+
+const WHY_FEATURES = [
+  { key: 'expertTeachers', icon: Users },
+  { key: 'liveClasses', icon: Video },
+  { key: 'recordedLectures', icon: BookOpen },
+  { key: 'quizzes', icon: BarChart3 },
+  { key: 'certificates', icon: Award },
+  { key: 'parentDashboard', icon: Users },
+  { key: 'mobileFriendly', icon: MonitorSmartphone },
+  { key: 'aiTools', icon: Sparkles },
+];
+
+function HeroIllustration() {
+  return (
+    <div className="relative mx-auto w-full max-w-lg">
+      <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[var(--ce-accent)]/20 to-[var(--ce-primary)]/10 blur-2xl" />
+      <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-primary-soft)] p-6 shadow-2xl">
+        <div className="grid grid-cols-2 gap-3">
+          {['HTML', 'CSS', 'JS', 'React'].map((label) => (
+            <div key={label} className="rounded-2xl bg-white/10 p-4 backdrop-blur">
+              <Code2 className="h-6 w-6 text-[var(--ce-accent-soft)]" />
+              <p className="mt-3 text-sm font-bold text-white">{label}</p>
+              <div className="mt-2 h-2 rounded-full bg-white/20">
+                <div className="h-2 w-3/4 rounded-full bg-[var(--ce-accent)]" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 rounded-2xl bg-white/10 p-4 backdrop-blur">
+          <div className="flex items-center justify-between text-white">
+            <span className="text-sm font-semibold">Learning progress</span>
+            <span className="text-sm font-extrabold text-[var(--ce-accent-soft)]">87%</span>
+          </div>
+          <div className="mt-3 h-3 rounded-full bg-white/15">
+            <div className="h-3 w-[87%] rounded-full bg-gradient-to-r from-[var(--ce-accent)] to-[var(--ce-accent-soft)]" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function LandingPage() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState('programming');
+  const [academies, setAcademies] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [academyRes, courseRes, statsRes] = await Promise.all([
+          tenantApi.listPublic({ limit: 8 }),
+          tenantApi.listFeaturedCourses({ limit: 6 }),
+          statsApi.public(),
+        ]);
+        if (!cancelled) {
+          setAcademies(academyRes.academies || []);
+          setCourses(courseRes.courses || []);
+          setStats(statsRes.stats || null);
+        }
+      } catch {
+        if (!cancelled) {
+          setAcademies([]);
+          setCourses([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const heroMetrics = useMemo(
+    () => [
+      { value: stats?.students || 0, suffix: '+', label: t('landing.metrics.students') },
+      { value: stats?.courses || 0, suffix: '+', label: t('landing.metrics.courses') },
+      { value: stats?.teachers || 0, suffix: '+', label: t('landing.metrics.teachers') },
+    ],
+    [stats, t]
+  );
+
+  const testimonials = useMemo(
+    () => [1, 2, 3].map((i) => ({
+      name: t(`landing.testimonials.${i}.name`),
+      academy: t(`landing.testimonials.${i}.academy`),
+      review: t(`landing.testimonials.${i}.review`),
+      rating: Number(t(`landing.testimonials.${i}.rating`)),
+      outcome: t(`landing.testimonials.${i}.outcome`),
+    })),
+    [t]
+  );
+
+  const faqItems = useMemo(
+    () => [1, 2, 3, 4, 5].map((i) => ({
+      question: t(`landing.faq.${i}.q`),
+      answer: t(`landing.faq.${i}.a`),
+    })),
+    [t]
+  );
+
+  const filteredAcademies = useMemo(() => {
+    if (!search.trim()) return academies;
+    const q = search.toLowerCase();
+    return academies.filter(
+      (a) =>
+        a.name?.toLowerCase().includes(q) ||
+        a.ownerName?.toLowerCase().includes(q) ||
+        a.slug?.toLowerCase().includes(q)
+    );
+  }, [academies, search]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    document.getElementById('academies')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return (
+    <>
+      <Helmet>
+        <title>{t('brand.name')} — {t('brand.tagline')}</title>
+        <meta name="description" content={t('landing.subheadline')} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'EducationalOrganization',
+            name: t('brand.name'),
+            description: t('landing.subheadline'),
+          })}
+        </script>
+      </Helmet>
+
+      <section className="relative overflow-hidden pb-10 pt-8 sm:pt-12">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--ce-primary)] via-[var(--ce-primary-soft)] to-[#0a1628]" />
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute start-0 top-0 h-72 w-72 rounded-full bg-[var(--ce-accent)] blur-[120px]" />
+          <div className="absolute bottom-0 end-0 h-72 w-72 rounded-full bg-blue-500 blur-[120px]" />
+        </div>
+
+        <div className="ce-container relative z-10 py-8 text-white">
+          <div className="ce-hero-grid">
+            <div>
+              <span className="ce-eyebrow ce-fade-up !bg-white/10 !text-[var(--ce-accent-soft)]">
+                {t('brand.name')}
+              </span>
+              <h1 className="ce-fade-up mt-4 max-w-3xl text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+                {t('landing.headline')}
+              </h1>
+              <p className="ce-fade-up-delay mt-5 max-w-2xl text-lg text-white/85 sm:text-xl">
+                {t('landing.subheadline')}
+              </p>
+
+              <div className="ce-fade-up-delay mt-8 flex flex-wrap gap-3">
+                <Link to="/auth/register?role=student" className="ce-btn ce-btn-accent">
+                  {t('landing.ctaStartLearning')}
+                </Link>
+                <a href="#academies" className="ce-btn border border-white/30 bg-white/10 text-white backdrop-blur">
+                  {t('landing.ctaExploreAcademies')}
+                </a>
+              </div>
+
+              <div className="ce-fade-up-delay mt-8">
+                <HeroSearchBar value={search} onChange={setSearch} onSubmit={handleSearch} />
+              </div>
+
+              <div className="mt-8 grid grid-cols-3 gap-3">
+                {heroMetrics.map((metric) => (
+                  <div key={metric.label} className="rounded-2xl bg-white/10 p-3 backdrop-blur">
+                    <p className="text-xl font-extrabold sm:text-2xl">
+                      {metric.value.toLocaleString()}{metric.suffix}
+                    </p>
+                    <p className="text-xs text-white/75">{metric.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="ce-fade-up-delay hidden lg:block">
+              <HeroIllustration />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="ce-section ce-section-alt">
+        <div className="ce-container">
+          <SectionHeader
+            eyebrow={t('landing.trustedEyebrow')}
+            title={t('landing.trustedTitle')}
+            subtitle={t('landing.trustedSubtitle')}
+          />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { label: t('landing.trustedStats.academies'), value: stats?.academies || 0 },
+              { label: t('landing.trustedStats.students'), value: stats?.students || 0 },
+              { label: t('landing.trustedStats.courses'), value: stats?.courses || 0 },
+              { label: t('landing.trustedStats.exams'), value: stats?.examsCompleted || 0 },
+            ].map((item) => (
+              <div key={item.label} className="ce-stat-card text-center">
+                <p className="text-2xl font-extrabold text-[var(--ce-primary)]">
+                  {item.value.toLocaleString()}+
+                </p>
+                <p className="mt-1 text-sm font-semibold text-[var(--ce-muted)]">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="academies" className="ce-section">
+        <div className="ce-container">
+          <SectionHeader
+            eyebrow={t('landing.academiesEyebrow')}
+            title={t('landing.academiesTitle')}
+            subtitle={t('landing.academiesSubtitle')}
+          />
+          {loading ? (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="ce-card ce-skeleton h-80" />
+              ))}
+            </div>
+          ) : filteredAcademies.length ? (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {filteredAcademies.map((academy) => (
+                <AcademyCard key={academy._id} academy={academy} />
+              ))}
+            </div>
+          ) : (
+            <div className="ce-card p-8 text-center">
+              <p className="font-bold text-[var(--ce-primary)]">{t('landing.noAcademies')}</p>
+              <Link to="/auth/register?role=teacher" className="ce-btn ce-btn-accent mt-4">
+                {t('landing.ctaTeacher')}
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section id="categories" className="ce-section ce-section-alt">
+        <div className="ce-container">
+          <SectionHeader
+            eyebrow={t('landing.categoriesEyebrow')}
+            title={t('landing.categoriesTitle')}
+            subtitle={t('landing.categoriesSubtitle')}
+          />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {CATEGORY_DEFS.map((category) => (
+              <CategoryCard
+                key={category.key}
+                category={category}
+                icon={category.icon}
+                active={activeCategory === category.key}
+                onClick={() => {
+                  setActiveCategory(category.key);
+                  navigate(`/#academies`);
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="ce-section">
+        <div className="ce-container">
+          <SectionHeader
+            eyebrow={t('landing.coursesEyebrow')}
+            title={t('landing.coursesTitle')}
+            subtitle={t('landing.coursesSubtitle')}
+          />
+          {courses.length ? (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {courses.map((course) => (
+                <CourseCard key={course._id} course={course} />
+              ))}
+            </div>
+          ) : (
+            <div className="ce-card p-8 text-center text-[var(--ce-muted)]">
+              {t('landing.noCourses')}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section id="features" className="ce-section ce-section-alt">
+        <div className="ce-container">
+          <SectionHeader
+            eyebrow={t('landing.featuresTitle')}
+            title={t('landing.whyTitle')}
+            subtitle={t('landing.whySubtitle')}
+          />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {WHY_FEATURES.map(({ key, icon: Icon }) => (
+              <article key={key} className="ce-card ce-card-hover p-5">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--ce-accent)]/15 text-[var(--ce-accent)]">
+                  <Icon className="h-6 w-6" />
+                </span>
+                <h3 className="mt-4 font-extrabold text-[var(--ce-primary)]">
+                  {t(`landing.why.${key}.title`)}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--ce-muted)]">
+                  {t(`landing.why.${key}.desc`)}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="ce-section">
+        <div className="ce-container">
+          <SectionHeader
+            eyebrow={t('landing.testimonialsEyebrow')}
+            title={t('landing.testimonialsTitle')}
+            subtitle={t('landing.testimonialsSubtitle')}
+          />
+          <TestimonialCarousel items={testimonials} />
+        </div>
+      </section>
+
+      <section className="ce-section ce-section-alt">
+        <div className="ce-container">
+          <SectionHeader title={t('landing.statsTitle')} subtitle={t('landing.statsSubtitle')} />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <AnimatedCounter end={stats?.students || 0} suffix="+" label={t('landing.metrics.students')} />
+            <AnimatedCounter end={stats?.academies || 0} suffix="+" label={t('landing.metrics.academies')} />
+            <AnimatedCounter end={stats?.teachers || 0} suffix="+" label={t('landing.metrics.teachers')} />
+            <AnimatedCounter end={stats?.hoursWatched || 0} suffix="+" label={t('landing.metrics.hoursWatched')} />
+            <AnimatedCounter end={stats?.examsCompleted || 0} suffix="+" label={t('landing.metrics.examsCompleted')} />
+          </div>
+        </div>
+      </section>
+
+      <section id="teacher-cta" className="ce-section">
+        <div className="ce-container">
+          <div className="ce-gradient-border overflow-hidden rounded-[2rem] bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-primary-soft)] p-8 text-white sm:p-12">
+            <div className="max-w-2xl">
+              <span className="ce-eyebrow  !text-[var(--ce-accent-soft)]">
+                {t('landing.teacherEyebrow')}
+              </span>
+              <h2 className="mt-4 text-yellow-500 text-3xl font-extrabold sm:text-4xl">
+                {t('landing.teacherHeadline')}
+              </h2>
+              <p className="mt-4 text-black/80">{t('landing.teacherDesc')}</p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link to="/auth/register?role=teacher" className="ce-btn ce-btn-accent">
+                  {t('landing.createAcademy')}
+                </Link>
+                {/* <Link to="/auth/register?role=teacher" className="ce-btn border border-black/30 bg-black/10 text-black">
+                  {t('landing.becomeTeacher')}
+                </Link> */}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="ce-section ce-section-alt">
+        <div className="ce-container">
+          <SectionHeader title={t('landing.faqTitle')} subtitle={t('landing.faqSubtitle')} />
+          <FaqAccordion items={faqItems} />
+        </div>
+      </section>
+
+      <div className="ce-sticky-cta lg:hidden">
+        <Link to="/auth/register?role=student" className="ce-btn ce-btn-accent w-full shadow-xl">
+          {t('landing.ctaStartLearning')}
+        </Link>
+      </div>
+    </>
+  );
+}

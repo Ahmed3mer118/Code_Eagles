@@ -1,376 +1,171 @@
-import React, { Suspense } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { HelmetProvider } from "react-helmet-async"
-import Login from "./Auth/Login/Login.jsx";
-import Register from "./Auth/Register/Register.jsx";
-import ForgetPass from "./Auth/Register/ForgetPass.jsx";
-import VerificationForm from "./Auth/Register/VerificationForm.jsx";
+import React, { Suspense } from 'react';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Toaster } from 'react-hot-toast';
+import { ErrorBoundary } from './shared/components/ErrorBoundary.jsx';
+import LoadingScreen from './shared/ui/LoadingScreen.jsx';
+import RoleGuard from './shared/guards/RoleGuard.jsx';
+import MarketingLayout from './shared/layouts/MarketingLayout.jsx';
 
-import Layout from "./User/shared/Layout/Layout.jsx"
-import Main from "./User/shared/Layout/Main.jsx"
+const LandingPage = React.lazy(() => import('./features/marketing/LandingPage.jsx'));
+const ContactPage = React.lazy(() => import('./features/contact/ContactPage.jsx'));
+const LoginPage = React.lazy(() => import('./features/auth/LoginPage.jsx'));
+const RegisterPage = React.lazy(() => import('./features/auth/RegisterPage.jsx'));
+const VerifyEmailPage = React.lazy(() => import('./features/auth/VerifyEmailPage.jsx'));
+const ForgotPasswordPage = React.lazy(() => import('./features/auth/ForgotPasswordPage.jsx'));
+const NotFoundPage = React.lazy(() => import('./shared/pages/NotFoundPage.jsx'));
 
-// User Components
-const AddFeedback = React.lazy(() => import("./User/FeedBack/AddFeedback.jsx"));
-const Content = React.lazy(() => import("./User/Lecture/Content.jsx"));
-const Contact = React.lazy(() => import("./User/Contact/Contact.jsx"));
-const Profile = React.lazy(() => import("./User/Profile/Profile.jsx"));
-const AllGroup = React.lazy(() => import("./User/Group/AllGroup.jsx"));
-const AllCourse = React.lazy(() => import("./User/Lecture/AllCourse.jsx"));
-const AddTask = React.lazy(() => import("./User/Lecture/AddTask.jsx"));
-const Courses = React.lazy(() => import("./User/Lecture/Courses.jsx"));
-const Quiz = React.lazy(() => import("./User/Quiz/Quiz.jsx"));
-const ShowQuestions = React.lazy(() => import("./User/Quiz/ShowQuestions.jsx"));
-const ShowAnswers = React.lazy(() => import("./User/Quiz/ShowAnswers.jsx"));
-const ShowResult = React.lazy(() => import("./User/Quiz/ShowResult.jsx"));
-const CourseDetail = React.lazy(() => import("./User/Lecture/CourseDetails.jsx"));
+const SuperAdminDashboard = React.lazy(() => import('./features/dashboards/superAdmin/SuperAdminDashboard.jsx'));
+const TeacherDashboard = React.lazy(() => import('./features/dashboards/teacher/TeacherDashboard.jsx'));
+const AssistantDashboard = React.lazy(() => import('./features/dashboards/assistant/AssistantDashboard.jsx'));
+const ParentDashboard = React.lazy(() => import('./features/dashboards/parent/ParentDashboard.jsx'));
+const StudentDashboard = React.lazy(() => import('./features/dashboards/student/StudentDashboard.jsx'));
 
-// Dashboard Components
-const Error = React.lazy(() => import("./Dashboard/Error.jsx"));
-const DashboardIndex = React.lazy(() => import("./Dashboard/Dashboard/DashboardIndex.jsx"));
-const Dashboard = React.lazy(() => import("./Dashboard/Dashboard/Dashboard.jsx"));
-const NewGroup = React.lazy(() => import("./Dashboard/Gruops/NewGroup.jsx"));
-const AllGroups = React.lazy(() => import("./Dashboard/Gruops/AllGroups.jsx"));
-const DetailsGroup = React.lazy(() => import("./Dashboard/Gruops/DetailsGroup.jsx"));
-const UpdateGroup = React.lazy(() => import("./Dashboard/Gruops/UpdateGroup.jsx"));
-const Students = React.lazy(() => import("./Dashboard/Students/Students.jsx"));
-const AllStudents = React.lazy(() => import("./Dashboard/Students/AllStudents.jsx"));
-const DetailStudent = React.lazy(() => import("./Dashboard/Students/DetailsStudent.jsx"));
-const Lectures = React.lazy(() => import("./Dashboard/Lectures/Lectures.jsx"));
-const UpdateLecture = React.lazy(() => import("./Dashboard/Lectures/UpdateLecture.jsx"));
-const AttendanceList = React.lazy(() => import("./Dashboard/Lectures/AttendanceList.jsx"));
-const Tasks = React.lazy(() => import("./Dashboard/Tasks/Tasks.jsx"));
-const NewTask = React.lazy(() => import("./Dashboard/Tasks/NewTask.jsx"));
-const SubmissionsTask = React.lazy(() => import("./Dashboard/Tasks/SubmissionsTask.jsx"));
-const ProfileAdmin = React.lazy(() => import("./Dashboard/ProfileAdmin/Profile.jsx"));
-const EmailReq = React.lazy(() => import("./Dashboard/Emails/EmailReq.jsx"));
-const AllQuiz = React.lazy(() => import("./Dashboard/QuizByAdmin/AllQuiz.jsx"));
-const CreateQuiz = React.lazy(() => import("./Dashboard/QuizByAdmin/CreateQuiz.jsx"));
-const UpdateQuiz = React.lazy(() => import("./Dashboard/QuizByAdmin/UpdateQuiz.jsx"));
-const GetAllFeedback = React.lazy(() => import("./Dashboard/GetAllFeedback.jsx"));
-const GetAllMessage = React.lazy(() => import("./Dashboard/Messages/GetAllMessage.jsx"));
+const SuperAdminOverview = React.lazy(() => import('./features/dashboards/superAdmin/SuperAdminOverview.jsx'));
+const TenantsPage = React.lazy(() => import('./features/dashboards/superAdmin/TenantsPage.jsx'));
+const SubscriptionsPage = React.lazy(() => import('./features/dashboards/superAdmin/SubscriptionsPage.jsx'));
+const TeacherOverview = React.lazy(() => import('./features/dashboards/teacher/TeacherOverview.jsx'));
+const SubjectsPage = React.lazy(() => import('./features/content/ContentHubPage.jsx'));
+const GroupsPage = React.lazy(() => import('./features/groups/GroupsPage.jsx'));
+const AssistantsPage = React.lazy(() => import('./features/assistants/AssistantsPage.jsx'));
+const TeacherQuizzesPage = React.lazy(() => import('./features/quizzes/TeacherQuizzesPage.jsx'));
+const PaymentReviewPage = React.lazy(() => import('./features/payments/PaymentReviewPage.jsx'));
+const PaymentPlansPage = React.lazy(() => import('./features/payments/PaymentPlansPage.jsx'));
+const PaymentHistoryPage = React.lazy(() => import('./features/payments/PaymentHistoryPage.jsx'));
+const PaymentSubmitPage = React.lazy(() => import('./features/payments/PaymentSubmitPage.jsx'));
+const StudentCoursesPage = React.lazy(() => import('./features/student/StudentCoursesPage.jsx'));
+const StudentJoinPage = React.lazy(() => import('./features/student/StudentJoinPage.jsx'));
+const StudentQuizzesPage = React.lazy(() => import('./features/student/StudentQuizzesPage.jsx'));
+const ExamPreFlightPage = React.lazy(() => import('./features/exams/pages/ExamPreFlightPage.jsx'));
+const ExamTakingPage = React.lazy(() => import('./features/exams/pages/ExamTakingPage.jsx'));
+const ExamResultsPage = React.lazy(() => import('./features/exams/pages/ExamResultsPage.jsx'));
+const ExamHistoryPage = React.lazy(() => import('./features/exams/pages/ExamHistoryPage.jsx'));
+const AttemptReviewPage = React.lazy(() => import('./features/exams/pages/AttemptReviewPage.jsx'));
+const PendingJoinRequestsPage = React.lazy(() => import('./features/teacher/PendingJoinRequestsPage.jsx'));
+const TeacherResultsPage = React.lazy(() => import('./features/teacher/TeacherResultsPage.jsx'));
+const StudentLeaderboardPage = React.lazy(() => import('./features/student/StudentLeaderboardPage.jsx'));
+const SettingsPage = React.lazy(() => import('./features/settings/SettingsPage.jsx'));
+const TeacherAssignmentsPage = React.lazy(() => import('./features/assignments/TeacherAssignmentsPage.jsx'));
+const AssignmentReviewPage = React.lazy(() => import('./features/assignments/AssignmentReviewPage.jsx'));
+const StudentAssignmentsPage = React.lazy(() => import('./features/assignments/StudentAssignmentsPage.jsx'));
+const StudentOverviewPage = React.lazy(() => import('./features/student/StudentOverviewPage.jsx'));
+const AcademyPublicPage = React.lazy(() => import('./features/academy/AcademyPublicPage.jsx'));
 
+const withRole = (roles, element) => <RoleGuard roles={roles}>{element}</RoleGuard>;
 
-// Dashboard Instructor Components
-const DashboardInstructor = React.lazy(() => import("./DashboardInstructor/DashboardInstructor.jsx"));
-const ProfileInstructor = React.lazy(() => import("./DashboardInstructor/ProfileInstructor.jsx"));
-const InstructorMessage = React.lazy(() => import("./DashboardInstructor/InstructorMessage.jsx"));
-
-// Guards
-const PrivateUser = React.lazy(() => import("./Grauds/PrivateUser.jsx"));
-const PrivateAdmin = React.lazy(() => import("./Grauds/PrivateAdmin.jsx"));
-const PrivateInstructor = React.lazy(() => import("./Grauds/PrivateInstructor.jsx"));
-import { ErrorBoundary } from "./Dashboard/ErrorBoundary.jsx";
-
-// Shared
-const Loading = React.lazy(() => import("./User/shared/Loading.jsx"));
-const helmetContext = {};
 function App() {
   const router = createBrowserRouter([
-    // auth
     {
-      path: "/auth",
+      path: '/',
+      element: <MarketingLayout />,
       children: [
-        {
-          path: "login",
-          element: <Login />,
-        },
-        {
-          path: "register",
-          element: <Register />,
-        },
-        {
-          path: "forget-password",
-          element: <ForgetPass />,
-        },
-        {
-          path: "verif-email",
-          element: <VerificationForm />,
-        },
+        { index: true, element: <LandingPage /> },
+        { path: 'contact', element: <ContactPage /> },
       ],
     },
-    // user
     {
-      path: "/",
-      element: <Layout />,
+      path: '/auth',
       children: [
-        {
-          path: "",
-          element: <Main />,
-        },
-        {
-          path: "courses",
-          element: <AllGroup />,
-        },
-        {
-          path: "content/:slug",
-          element: <Content />,
-        },
-        {
-          path: "content/:slug/course/:contentId",
-          element: <CourseDetail />,
-        },
-        {
-          path: "add-feedback",
-          element: <AddFeedback />,
-        },
-        {
-          path: "contact",
-          element: <Contact />,
-        },
-        {
-          path: "profile",
-          element: <PrivateUser element={<Profile />} />,
-        },
-        {
-          path: "my-courses",
-          element: <PrivateUser element={<AllCourse />} />,
-        }
-        ,
-        {
-          path: 'course/:slug',
-          element: <PrivateUser element={<Courses />} />
-        },
-        {
-          path: 'course/:slug/lecture/:slugLecture',
-          element: <PrivateUser element={<Courses />} />,
-        },
-        {
-          path: 'course/:slug/lecture/:slugLecture/quiz/:slugQuiz',
-          element: <PrivateUser element={<Quiz />} />,
-          children: [
-            {
-              path: "questions",
-              element: <ShowQuestions />,
-            },
-            {
-              path: "answers",
-              element: <ShowAnswers />,
-            },
-            {
-              path: "result",
-              element: <ShowResult />,
-            },
-          ]
-        },
-        {
-          path: "course/:slug/lecture/:slugLecture/Add-Task/:slugTask",
-          element: <AddTask />,
-        },
+        { path: 'login', element: <LoginPage /> },
+        { path: 'register', element: <RegisterPage /> },
+        { path: 'verif-email', element: <VerifyEmailPage /> },
+        { path: 'forget-password', element: <ForgotPasswordPage /> },
       ],
     },
-    // dashboard
     {
-      path: "dashboard",
-      element: <PrivateAdmin element={<Dashboard />} />,
+      path: '/dashboard/super-admin',
+      element: withRole(['super_admin'], <SuperAdminDashboard />),
       children: [
-        {
-          path: '',
-          element: <DashboardIndex />,
-        },
-
-        {
-          path: 'admin/newGroup',
-          element: <NewGroup />,
-        },
-        {
-          path: 'admin/allGroups',
-          element: <AllGroups />,
-        },
-        {
-          path: 'admin/allStudent',
-          element: <AllStudents />,
-
-        },
-
-        {
-          path: 'admin/allStudent/student/:studentSlug',
-          element: <DetailStudent />,
-        },
-        {
-          path: 'admin/group/:slug',
-          element: <DetailsGroup />,
-          children: [
-            {
-              path: 'students',
-              element: <Students />
-            },
-            {
-              path: 'lectures',
-              element: <Lectures />
-            },
-            {
-              path: 'lectures/update/:slugLecture',
-              element: <UpdateLecture />
-            },
-            {
-              path: 'lectures/:slugLecture/attendance',
-              element: <AttendanceList />
-            },
-
-            {
-              path: 'tasks',
-              element: <Tasks />
-            },
-            {
-              path: 'lecture/:slugLecture/tasks/updateTask/:slugTask',
-              element: <NewTask />
-            },
-            {
-              path: 'lecture/:slugLecture/tasks/:slugTask/submissions',
-              element: <SubmissionsTask />
-            }
-            ,
-            ,
-            {
-              path: 'lectures/:slugLecture/newTask',
-              element: <NewTask />
-            }
-            ,
-
-            {
-              path: 'quiz',
-              element: <AllQuiz />
-            }
-            ,
-
-            {
-              path: 'lectures/:slugLecture/newQuiz',
-              element: <CreateQuiz />
-            }
-            ,
-
-            {
-              path: 'lecture/:slugLecture/quiz/updateQuiz/:slugQuiz',
-              element: <UpdateQuiz />
-            }
-            ,
-            {
-              path: 'update',
-              element: <UpdateGroup />
-            }
-          ]
-        },
-        , {
-          path: "admin/email-request",
-          element: <EmailReq />
-        }
-        , {
-          path: "admin/get-all-feedback-by-admin",
-          element: <GetAllFeedback />
-        }
-        , {
-          path: "admin/get-all-message-by-admin",
-          element: <GetAllMessage />
-        }
-        , {
-          path: "admin/profile-admin",
-          element: <ProfileAdmin />
-        }
-
-
-      ]
+        { index: true, element: <SuperAdminOverview /> },
+        { path: 'tenants', element: <TenantsPage /> },
+        { path: 'subscriptions', element: <SubscriptionsPage /> },
+        { path: 'settings', element: <SettingsPage /> },
+      ],
     },
-    // instructor
     {
-      path: "instructor",
-      element: <PrivateInstructor element={<DashboardInstructor />} />,
-      // element:<DashboardInstructor />,
+      path: '/dashboard/teacher',
+      element: withRole(['teacher'], <TeacherDashboard />),
       children: [
-        {
-          path: "group/:slug/students",
-          element: <Students />
-        },
-        {
-          path: ":slug/student/:studentSlug",
-          element: <DetailStudent />
-        },
-        {
-          path: "group/:slug/lectures",
-          element: <Lectures />
-        },
-        {
-          path: "group/:slug/lectures/:slugLecture/newTask",
-          element: <NewTask />
-        },
-        {
-          path: "group/:slug/lectures/:slugLecture/newQuiz",
-          element: <CreateQuiz />
-        },
-        {
-          path: "group/:slug/lectures/:slugLecture/attendance",
-          element: <AttendanceList />
-        },
-        {
-          path: "group/:slug/lectures/update/:slugLecture",
-          element: <UpdateLecture />
-        },
-
-        {
-          path: "group/:slug/tasks",
-          element: <Tasks />
-        },
-        {
-          path: "group/:slug/lecture/:slugLecture/tasks/:slugTask/submissions",
-          element: <SubmissionsTask />
-        },
-        {
-          path: "group/:slug/lecture/:slugLecture/tasks/updateTask/:slugTask",
-          element: <NewTask />
-        },
-        {
-          path: "group/:slug/quizzes",
-          element: <AllQuiz />
-        },
-        {
-          path: "group/:slug/lecture/:slugLecture/quiz/:updateQuiz/:slugQuiz",
-          element: <UpdateQuiz />
-        },
-        {
-          path: "group/:slug/messages",
-          element: <InstructorMessage />
-        },
-        {
-          path: 'email-request',
-          element: <EmailReq />
-        },
-        {
-          path: 'setting',
-          element: <ProfileInstructor />
-        }
-      ]
+        { index: true, element: <TeacherOverview /> },
+        { path: 'subjects', element: <SubjectsPage /> },
+        { path: 'groups', element: <GroupsPage /> },
+        { path: 'requests', element: <PendingJoinRequestsPage /> },
+        { path: 'quizzes', element: <TeacherQuizzesPage /> },
+        { path: 'quizzes/:quizId/review/:attemptId', element: <AttemptReviewPage /> },
+        { path: 'results', element: <TeacherResultsPage /> },
+        { path: 'payments', element: <PaymentReviewPage /> },
+        { path: 'payment-plans', element: <PaymentPlansPage /> },
+        { path: 'payment-history', element: <PaymentHistoryPage /> },
+        { path: 'assignments', element: <TeacherAssignmentsPage /> },
+        { path: 'assignments/:id', element: <AssignmentReviewPage /> },
+        { path: 'assistants', element: <AssistantsPage /> },
+        { path: 'settings', element: <SettingsPage /> },
+      ],
     },
-
     {
-      path: "*",
-      element: <Error />,
-    }
+      path: '/dashboard/assistant',
+      element: withRole(['assistant'], <AssistantDashboard />),
+      children: [
+        { index: true, element: <Navigate to="groups" replace /> },
+        { path: 'groups', element: <GroupsPage /> },
+        { path: 'requests', element: <PendingJoinRequestsPage /> },
+        { path: 'payments', element: <PaymentReviewPage /> },
+        { path: 'content', element: <SubjectsPage /> },
+        { path: 'quizzes', element: <TeacherQuizzesPage /> },
+        { path: 'quizzes/:quizId/review/:attemptId', element: <AttemptReviewPage /> },
+        { path: 'results', element: <TeacherResultsPage /> },
+        { path: 'payments', element: <PaymentReviewPage /> },
+        { path: 'assignments', element: <TeacherAssignmentsPage /> },
+        { path: 'assignments/:id', element: <AssignmentReviewPage /> },
+        { path: 'settings', element: <SettingsPage /> },
+      ],
+    },
+    {
+      path: '/dashboard/parent',
+      element: withRole(['parent'], <ParentDashboard />),
+      children: [
+        { index: true, element: <Navigate to="payments" replace /> },
+        { path: 'payments', element: <PaymentSubmitPage /> },
+        { path: 'settings', element: <SettingsPage /> },
+      ],
+    },
+    {
+      path: '/dashboard/student',
+      element: withRole(['student'], <StudentDashboard />),
+      children: [
+        { index: true, element: <StudentOverviewPage /> },
+        { path: 'join', element: <StudentJoinPage /> },
+        { path: 'courses', element: <StudentCoursesPage /> },
+        { path: 'assignments', element: <StudentAssignmentsPage /> },
+        { path: 'payments', element: <PaymentSubmitPage /> },
+        { path: 'quizzes', element: <StudentQuizzesPage /> },
+        { path: 'quizzes/history', element: <ExamHistoryPage /> },
+        { path: 'quizzes/:quizId', element: <ExamPreFlightPage /> },
+        { path: 'quizzes/:quizId/attempt/:attemptId', element: <ExamTakingPage /> },
+        { path: 'quizzes/:quizId/results/:attemptId', element: <ExamResultsPage /> },
+        { path: 'leaderboard', element: <StudentLeaderboardPage /> },
+        { path: 'settings', element: <SettingsPage /> },
+      ],
+    },
+    {
+      path: '/academy/:slug',
+      element: <AcademyPublicPage />,
+    },
+    { path: '/dashboard', element: <Navigate to="/dashboard/super-admin" replace /> },
+    { path: '/instructor', element: <Navigate to="/dashboard/teacher" replace /> },
+    { path: '/my-courses', element: <Navigate to="/dashboard/student/courses" replace /> },
+    { path: '*', element: <NotFoundPage /> },
   ]);
 
-  // class ErrorBoundary extends React.Component {
-  //   constructor(props) {
-  //     super(props);
-  //     this.state = { hasError: false };
-  //   }
-
-  //   static getDerivedStateFromError(error) {
-  //     return { hasError: true };
-  //   }
-
-  //   render() {
-  //     if (this.state.hasError) {
-  //       return <h2>Something went wrong. Please try again.</h2>;
-  //     }
-  //     return this.props.children;
-  //   }
-  // }
   return (
-    <HelmetProvider context={helmetContext}>
-    <ErrorBoundary>
-      <Suspense fallback={<Loading />}>
-        <RouterProvider router={router} />
-      </Suspense>
-    </ErrorBoundary>
-  </HelmetProvider>
+    <HelmetProvider>
+      <ErrorBoundary>
+        <Toaster position="top-center" />
+        <Suspense fallback={<LoadingScreen />}>
+          <RouterProvider router={router} />
+        </Suspense>
+      </ErrorBoundary>
+    </HelmetProvider>
   );
 }
 
