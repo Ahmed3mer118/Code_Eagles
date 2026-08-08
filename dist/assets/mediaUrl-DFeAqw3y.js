@@ -1,0 +1,1 @@
+function i(e){if(!e||typeof e!="string")return"";const t=e.trim();if(!t)return"";if(/^https?:\/\//i.test(t))return t;const r="http://localhost:8000".replace(/\/$/,"");return t.startsWith("/")?r?`${r}${t}`:t:t.startsWith("uploads/")?r?`${r}/${t}`:`/${t}`:t}export{i as r};

@@ -17,7 +17,8 @@ import {
   Users,
   Video,
 } from 'lucide-react';
-import { statsApi, tenantApi } from '../../shared/api/platformApi';
+import { statsApi, tenantApi, platformSiteApi } from '../../shared/api/platformApi';
+import { loadPlatformSite, isSectionVisible, sectionText } from '../../shared/utils/platformSiteCache';
 import SectionHeader from './components/SectionHeader';
 import HeroSearchBar from './components/HeroSearchBar';
 import AcademyCard from './components/AcademyCard';
@@ -81,28 +82,37 @@ function HeroIllustration() {
 }
 
 export default function LandingPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language?.startsWith('en') ? 'en' : 'ar';
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('programming');
   const [academies, setAcademies] = useState([]);
   const [courses, setCourses] = useState([]);
   const [stats, setStats] = useState(null);
+  const [platformSite, setPlatformSite] = useState(null);
+  const [platformContent, setPlatformContent] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const sections = platformSite?.sections || [];
+  const show = (key) => isSectionVisible(sections, key);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [academyRes, courseRes, statsRes] = await Promise.all([
-          tenantApi.listPublic({ limit: 8 }),
-          tenantApi.listFeaturedCourses({ limit: 6 }),
-          statsApi.public(),
+        const [academyRes, courseRes, statsRes, siteRes] = await Promise.all([
+          tenantApi.listPublic({ limit: 8 }).catch(() => ({ academies: [] })),
+          tenantApi.listFeaturedCourses({ limit: 6 }).catch(() => ({ courses: [] })),
+          statsApi.public().catch(() => ({ stats: null })),
+          loadPlatformSite(() => platformSiteApi.getPublic()),
         ]);
         if (!cancelled) {
           setAcademies(academyRes.academies || []);
           setCourses(courseRes.courses || []);
           setStats(statsRes.stats || null);
+          setPlatformSite(siteRes?.site || null);
+          setPlatformContent(siteRes || null);
         }
       } catch {
         if (!cancelled) {
@@ -125,24 +135,37 @@ export default function LandingPage() {
     [stats, t]
   );
 
-  const testimonials = useMemo(
-    () => [1, 2, 3].map((i) => ({
+  const testimonials = useMemo(() => {
+    if (platformContent?.testimonials?.length) {
+      return platformContent.testimonials.map((item) => ({
+        name: item.authorName,
+        academy: item.academyName,
+        review: item.review?.en || item.review?.ar || '',
+        rating: item.rating || 5,
+        outcome: '',
+      }));
+    }
+    return [1, 2, 3].map((i) => ({
       name: t(`landing.testimonials.${i}.name`),
       academy: t(`landing.testimonials.${i}.academy`),
       review: t(`landing.testimonials.${i}.review`),
       rating: Number(t(`landing.testimonials.${i}.rating`)),
       outcome: t(`landing.testimonials.${i}.outcome`),
-    })),
-    [t]
-  );
+    }));
+  }, [platformContent, t]);
 
-  const faqItems = useMemo(
-    () => [1, 2, 3, 4, 5].map((i) => ({
+  const faqItems = useMemo(() => {
+    if (platformContent?.faq?.length) {
+      return platformContent.faq.map((item) => ({
+        question: item.question?.en || item.question?.ar || '',
+        answer: item.answer?.en || item.answer?.ar || '',
+      }));
+    }
+    return [1, 2, 3, 4, 5].map((i) => ({
       question: t(`landing.faq.${i}.q`),
       answer: t(`landing.faq.${i}.a`),
-    })),
-    [t]
-  );
+    }));
+  }, [platformContent, t]);
 
   const filteredAcademies = useMemo(() => {
     if (!search.trim()) return academies;
@@ -175,6 +198,7 @@ export default function LandingPage() {
         </script>
       </Helmet>
 
+      {show('hero') && (
       <section className="relative overflow-hidden pb-10 pt-8 sm:pt-12">
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--ce-primary)] via-[var(--ce-primary-soft)] to-[#0a1628]" />
         <div className="absolute inset-0 opacity-30">
@@ -189,10 +213,10 @@ export default function LandingPage() {
                 {t('brand.name')}
               </span>
               <h1 className="ce-fade-up mt-4 max-w-3xl text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
-                {t('landing.headline')}
+                {sectionText(sections, 'hero', 'title', lang, t('landing.headline'))}
               </h1>
               <p className="ce-fade-up-delay mt-5 max-w-2xl text-lg text-white/85 sm:text-xl">
-                {t('landing.subheadline')}
+                {sectionText(sections, 'hero', 'subtitle', lang, t('landing.subheadline'))}
               </p>
 
               <div className="ce-fade-up-delay mt-8 flex flex-wrap gap-3">
@@ -226,7 +250,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      )}
 
+      {show('statistics') && (
       <section className="ce-section ce-section-alt">
         <div className="ce-container">
           <SectionHeader
@@ -251,6 +277,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      )}
 
       <section id="academies" className="ce-section">
         <div className="ce-container">
@@ -306,6 +333,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {show('featured') && (
       <section className="ce-section">
         <div className="ce-container">
           <SectionHeader
@@ -326,7 +354,9 @@ export default function LandingPage() {
           )}
         </div>
       </section>
+      )}
 
+      {show('features') && (
       <section id="features" className="ce-section ce-section-alt">
         <div className="ce-container">
           <SectionHeader
@@ -351,7 +381,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      )}
 
+      {show('testimonials') && (
       <section className="ce-section">
         <div className="ce-container">
           <SectionHeader
@@ -362,7 +394,9 @@ export default function LandingPage() {
           <TestimonialCarousel items={testimonials} />
         </div>
       </section>
+      )}
 
+      {show('statistics') && (
       <section className="ce-section ce-section-alt">
         <div className="ce-container">
           <SectionHeader title={t('landing.statsTitle')} subtitle={t('landing.statsSubtitle')} />
@@ -375,7 +409,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      )}
 
+      {show('cta') && (
       <section id="teacher-cta" className="ce-section">
         <div className="ce-container">
           <div className="ce-gradient-border overflow-hidden rounded-[2rem] bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-primary-soft)] p-8 text-white sm:p-12">
@@ -399,13 +435,16 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      )}
 
+      {show('faq') && (
       <section className="ce-section ce-section-alt">
         <div className="ce-container">
           <SectionHeader title={t('landing.faqTitle')} subtitle={t('landing.faqSubtitle')} />
           <FaqAccordion items={faqItems} />
         </div>
       </section>
+      )}
 
       <div className="ce-sticky-cta lg:hidden">
         <Link to="/auth/register?role=student" className="ce-btn ce-btn-accent w-full shadow-xl">

@@ -13,6 +13,7 @@ export default function StudentCoursesPage() {
   const [data, setData] = useState(null);
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState(null);
+  const [subjectTab, setSubjectTab] = useState('lectures');
 
   const load = async () => {
     try {
@@ -91,36 +92,80 @@ export default function StudentCoursesPage() {
 
             {expanded === subject._id && (
               <div className="border-t border-[var(--ce-border)] px-6 py-4 space-y-4">
-                {(subject.courses || []).map((course) => (
-                  <div key={course._id}>
-                    <h4 className="font-bold">{course.title}</h4>
-                    {(course.modules || []).map((mod) => (
-                      <div key={mod._id} className="mt-3 ms-4">
-                        <div className="font-semibold text-[var(--ce-primary)]">{mod.title}</div>
-                        <ul className="mt-2 space-y-1">
-                          {(mod.lessons || []).map((lesson) => (
-                            <li key={lesson._id} className="text-sm text-[var(--ce-muted)]">
-                              ▶ {lesson.title}
-                              {lesson.videoUrl && (
-                                <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="ms-2 text-[var(--ce-primary)] underline">
-                                  {t('student.watch')}
-                                </a>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
+                <div className="flex flex-wrap gap-2">
+                  {['lectures', 'assignments', 'quizzes'].map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className={`rounded-xl px-3 py-1.5 text-sm font-semibold ${subjectTab === key ? 'bg-[var(--ce-primary)] text-white' : 'bg-[var(--ce-bg)] text-[var(--ce-primary)]'}`}
+                      onClick={() => setSubjectTab(key)}
+                    >
+                      {t(`student.tab.${key}`)}
+                    </button>
+                  ))}
+                </div>
+
+                {subjectTab === 'lectures' && (
+                  <>
+                    {(subject.courses || []).map((course) => (
+                      <div key={course._id}>
+                        <h4 className="font-bold">{course.title}</h4>
+                        {(course.modules || []).map((mod) => (
+                          <div key={mod._id} className="mt-3 ms-4">
+                            <div className="font-semibold text-[var(--ce-primary)]">{mod.title}</div>
+                            <ul className="mt-2 space-y-1">
+                              {(mod.lessons || []).map((lesson) => (
+                                <li key={lesson._id} className="text-sm text-[var(--ce-muted)]">
+                                  ▶ {lesson.title}
+                                  {lesson.videoUrl && (
+                                    <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="ms-2 text-[var(--ce-primary)] underline">
+                                      {t('student.watch')}
+                                    </a>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
                       </div>
                     ))}
-                  </div>
-                ))}
-                {(subject.quizzes || []).length > 0 && (
+                    {!(subject.courses || []).length && (
+                      <p className="text-sm text-[var(--ce-muted)]">{t('student.noLectures')}</p>
+                    )}
+                  </>
+                )}
+
+                {subjectTab === 'assignments' && (
                   <div>
-                    <h4 className="font-bold">{t('dashboard.quizzes')}</h4>
-                    <ul className="mt-2 space-y-1">
-                      {subject.quizzes.map((q) => (
-                        <li key={q._id} className="text-sm">📝 {q.title}</li>
-                      ))}
-                    </ul>
+                    {(subject.assignments || []).length ? (
+                      <ul className="space-y-2">
+                        {subject.assignments.map((a) => (
+                          <li key={a._id} className="flex items-center justify-between rounded-xl bg-[var(--ce-bg)] p-3 text-sm">
+                            <span className="font-semibold">{a.title}</span>
+                            <Link to="/dashboard/student/assignments" className="text-[var(--ce-primary)] underline">{t('student.viewAssignment')}</Link>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-[var(--ce-muted)]">{t('student.noAssignments')}</p>
+                    )}
+                  </div>
+                )}
+
+                {subjectTab === 'quizzes' && (
+                  <div>
+                    {(subject.quizzes || []).length ? (
+                      <ul className="space-y-2">
+                        {subject.quizzes.map((q) => (
+                          <li key={q._id} className="flex items-center justify-between rounded-xl bg-[var(--ce-bg)] p-3 text-sm">
+                            <span className="font-semibold">{q.title}</span>
+                            <Link to={`/dashboard/student/quizzes/${q._id}`} className="text-[var(--ce-primary)] underline">{t('student.startQuiz')}</Link>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-[var(--ce-muted)]">{t('student.noQuizzes')}</p>
+                    )}
                   </div>
                 )}
               </div>

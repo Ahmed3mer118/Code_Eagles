@@ -70,6 +70,40 @@ export default function ExamTakingPage() {
     loadSession();
   }, [loadSession]);
 
+  useEffect(() => {
+    const blockCopy = (e) => {
+      e.preventDefault();
+      return false;
+    };
+    const blockKeys = (e) => {
+      const key = e.key?.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'a', 'p', 's', 'u'].includes(key)) {
+        e.preventDefault();
+      }
+      if (key === 'f12' || ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i', 'j', 'c'].includes(key))) {
+        e.preventDefault();
+      }
+    };
+    document.body.classList.add('ce-exam-mode');
+    document.addEventListener('copy', blockCopy);
+    document.addEventListener('cut', blockCopy);
+    document.addEventListener('contextmenu', blockCopy);
+    document.addEventListener('paste', blockCopy);
+    document.addEventListener('keydown', blockKeys);
+    document.addEventListener('selectstart', blockCopy);
+    document.addEventListener('dragstart', blockCopy);
+    return () => {
+      document.body.classList.remove('ce-exam-mode');
+      document.removeEventListener('copy', blockCopy);
+      document.removeEventListener('cut', blockCopy);
+      document.removeEventListener('contextmenu', blockCopy);
+      document.removeEventListener('paste', blockCopy);
+      document.removeEventListener('keydown', blockKeys);
+      document.removeEventListener('selectstart', blockCopy);
+      document.removeEventListener('dragstart', blockCopy);
+    };
+  }, []);
+
   const persist = useCallback(async (silent = true) => {
     if (!attempt?._id || settings.autoSaveEnabled === false) return;
     setSaving(true);
@@ -135,7 +169,7 @@ export default function ExamTakingPage() {
   const currentQuestion = questions[currentIndex];
 
   return (
-    <div className="min-h-screen bg-[var(--ce-bg)] pb-8">
+    <div className="ce-exam-taking min-h-screen select-none bg-[var(--ce-bg)] pb-8">
       <div className="sticky top-0 z-40 border-b border-[var(--ce-border)] bg-[var(--ce-surface)]/95 backdrop-blur">
         <div className="ce-container flex flex-wrap items-center justify-between gap-4 py-4">
           <div>

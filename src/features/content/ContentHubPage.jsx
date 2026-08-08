@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { BookOpen, ChevronRight, Layers, PlayCircle, Video } from 'lucide-react';
 import { contentApi } from '../../shared/api/platformApi';
 import PageHeader from '../../shared/ui/PageHeader';
 import EmptyState from '../../shared/ui/EmptyState';
@@ -178,13 +179,25 @@ export default function ContentHubPage() {
           ) : subjects.length === 0 ? (
             <p className="mt-4 text-sm text-[var(--ce-muted)]">{t('content.noSubjects')}</p>
           ) : (
-            <ul className="mt-4 divide-y divide-[var(--ce-border)]">
+            <ul className="mt-4 space-y-2">
               {subjects.map((s) => (
-                <li key={s._id} className="flex items-center justify-between gap-2 py-3">
-                  <button type="button" className={`text-start font-semibold ${selectedId === s._id ? 'text-[var(--ce-accent)]' : ''}`} onClick={() => setSelectedId(s._id)}>
-                    {s.name}
+                <li key={s._id}>
+                  <button
+                    type="button"
+                    className={`flex w-full items-center justify-between gap-2 rounded-xl border px-4 py-3 text-start transition ${
+                      selectedId === s._id
+                        ? 'border-[var(--ce-accent)] bg-amber-50'
+                        : 'border-[var(--ce-border)] hover:border-[var(--ce-primary)]/30'
+                    }`}
+                    onClick={() => { setSelectedId(s._id); setActiveLesson(null); setLectures([]); }}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-bold text-[var(--ce-primary)]">{s.name}</p>
+                      <p className="text-xs text-[var(--ce-muted)]">{s.gradeLevel || '—'}</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-[var(--ce-muted)]" />
                   </button>
-                  <div className="flex gap-1">
+                  <div className="mt-1 flex justify-end gap-1 px-1">
                     <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => { setEditingSubject(s._id); setSubjectForm({ name: s.name, gradeLevel: s.gradeLevel, description: s.description || '' }); }}>{t('content.edit')}</button>
                     <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => setConfirm({ type: 'subject', id: s._id })}>{t('content.delete')}</button>
                   </div>
@@ -200,16 +213,22 @@ export default function ContentHubPage() {
           ) : (
             <div className="space-y-6">
               <div className="ce-card p-5">
-                <h3 className="font-extrabold text-[var(--ce-primary)]">{t('content.units')}</h3>
+                <div className="flex items-center gap-2">
+                  <Layers className="h-5 w-5 text-[var(--ce-accent)]" />
+                  <h3 className="font-extrabold text-[var(--ce-primary)]">{tree?.name || t('content.units')}</h3>
+                </div>
                 <div className="mt-3 flex gap-2">
                   <input className="ce-input flex-1" placeholder={t('content.unitName')} value={unitTitle} onChange={(e) => setUnitTitle(e.target.value)} />
                   <button type="button" className="ce-btn ce-btn-accent" onClick={addUnit}>{t('content.addUnit')}</button>
                 </div>
                 <div className="mt-4 space-y-4">
                   {(course?.modules || []).map((mod, mi) => (
-                    <div key={mod._id} className="rounded-xl border border-[var(--ce-border)] p-4">
+                    <div key={mod._id} className="rounded-xl border border-[var(--ce-border)] bg-[var(--ce-bg)]/40 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-bold">{mod.title}</span>
+                        <span className="flex items-center gap-2 font-bold text-[var(--ce-primary)]">
+                          <BookOpen className="h-4 w-4 text-[var(--ce-accent)]" />
+                          {mod.title}
+                        </span>
                         <div className="flex gap-1">
                           <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => moveItem('module', course.modules, mi, -1)}>↑</button>
                           <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => moveItem('module', course.modules, mi, 1)}>↓</button>
@@ -218,8 +237,11 @@ export default function ContentHubPage() {
                       </div>
                       <ul className="mt-3 space-y-2">
                         {(mod.lessons || []).map((lesson, li) => (
-                          <li key={lesson._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[var(--ce-bg)] px-3 py-2 text-sm">
-                            <button type="button" className="font-semibold" onClick={() => loadLectures(lesson._id)}>{lesson.title}</button>
+                          <li key={lesson._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--ce-border)] bg-white px-3 py-2 text-sm">
+                            <button type="button" className="flex items-center gap-2 font-semibold text-[var(--ce-primary)]" onClick={() => loadLectures(lesson._id)}>
+                              <PlayCircle className="h-4 w-4 text-[var(--ce-accent)]" />
+                              {lesson.title}
+                            </button>
                             <div className="flex gap-1">
                               <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => moveItem('lesson', mod.lessons, li, -1)}>↑</button>
                               <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => moveItem('lesson', mod.lessons, li, 1)}>↓</button>
@@ -239,7 +261,10 @@ export default function ContentHubPage() {
 
               {activeLesson && (
                 <div className="ce-card p-5">
-                  <h3 className="font-extrabold text-[var(--ce-primary)]">{t('content.lectures')}</h3>
+                  <div className="flex items-center gap-2">
+                    <Video className="h-5 w-5 text-[var(--ce-accent)]" />
+                    <h3 className="font-extrabold text-[var(--ce-primary)]">{t('content.lectures')}</h3>
+                  </div>
                   <form onSubmit={saveLecture} className="mt-4 grid gap-3 md:grid-cols-2">
                     <FormField label={t('content.lectureTitle')} required>
                       <input className="ce-input" value={lectureForm.title} onChange={(e) => setLectureForm({ ...lectureForm, title: e.target.value })} />
@@ -252,18 +277,26 @@ export default function ContentHubPage() {
                     </FormField>
                     <button type="submit" className="ce-btn ce-btn-accent md:col-span-2">{lectureForm._id ? t('common.save') : t('content.addLecture')}</button>
                   </form>
-                  <ul className="mt-4 space-y-2">
+                  <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                     {lectures.map((lec, i) => (
-                      <li key={lec._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--ce-border)] px-3 py-2">
-                        <div>
-                          <div className="font-semibold">{lec.title}</div>
-                          {lec.videoUrl && <a href={lec.videoUrl} target="_blank" rel="noreferrer" className="text-xs text-[var(--ce-primary)] underline">{t('student.watch')}</a>}
+                      <li key={lec._id} className="flex flex-col rounded-xl border border-[var(--ce-border)] bg-white p-4 shadow-sm">
+                        <div className="flex aspect-video items-center justify-center rounded-lg bg-[var(--ce-bg)]">
+                          <PlayCircle className="h-10 w-10 text-[var(--ce-accent)]" />
                         </div>
-                        <div className="flex gap-1">
-                          <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => setLectureForm({ ...lec })}>{t('content.edit')}</button>
-                          <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => moveItem('lecture', lectures, i, -1)}>↑</button>
-                          <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => moveItem('lecture', lectures, i, 1)}>↓</button>
-                          <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => setConfirm({ type: 'lecture', id: lec._id })}>{t('content.delete')}</button>
+                        <div className="mt-3 flex flex-1 flex-col gap-2">
+                          <div className="font-semibold text-[var(--ce-primary)]">{lec.title}</div>
+                          {lec.description && <p className="line-clamp-2 text-xs text-[var(--ce-muted)]">{lec.description}</p>}
+                          {lec.videoUrl && (
+                            <a href={lec.videoUrl} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[var(--ce-primary)] underline">
+                              {t('student.watch')}
+                            </a>
+                          )}
+                          <div className="mt-auto flex flex-wrap gap-1 pt-2">
+                            <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => setLectureForm({ ...lec })}>{t('content.edit')}</button>
+                            <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => moveItem('lecture', lectures, i, -1)}>↑</button>
+                            <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => moveItem('lecture', lectures, i, 1)}>↓</button>
+                            <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => setConfirm({ type: 'lecture', id: lec._id })}>{t('content.delete')}</button>
+                          </div>
                         </div>
                       </li>
                     ))}

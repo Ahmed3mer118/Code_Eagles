@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import LanguageSwitcher from '../ui/LanguageSwitcher';
+import resolveMediaUrl from '../utils/mediaUrl';
 
 import ThemeToggle from '../../features/marketing/components/ThemeToggle';
 
@@ -96,7 +97,7 @@ export default function AcademyLayout({ tenant, children }) {
 
             {tenant?.logoUrl ? (
 
-              <img src={tenant.logoUrl} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
+              <img src={resolveMediaUrl(tenant.logoUrl)} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
 
             ) : (
 

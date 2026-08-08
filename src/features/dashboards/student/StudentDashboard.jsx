@@ -1,6 +1,7 @@
 import DashboardShell from '../../../shared/layouts/DashboardShell';
 
 const navItems = [
+  { to: '/dashboard/student/select-academy', labelKey: 'student.selectAcademyTitle' },
   { to: '/dashboard/student', labelKey: 'dashboard.overview', end: true },
   { to: '/dashboard/student/join', labelKey: 'student.joinGroup' },
   { to: '/dashboard/student/courses', labelKey: 'dashboard.myCourses' },

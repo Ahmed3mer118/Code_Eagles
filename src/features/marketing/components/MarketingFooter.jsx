@@ -1,10 +1,30 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Facebook, Instagram, Mail, Send, Youtube } from 'lucide-react';
+import { readPlatformSiteCache, DEFAULT_PLATFORM_SITE } from '../../../shared/utils/platformSiteCache';
+
+const ICON_MAP = { facebook: Facebook, instagram: Instagram, youtube: Youtube, mail: Mail, email: Mail };
 
 export default function MarketingFooter() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language?.startsWith('en') ? 'en' : 'ar';
   const year = new Date().getFullYear();
+  const [footer, setFooter] = useState(() => readPlatformSiteCache()?.site?.footer || DEFAULT_PLATFORM_SITE.site.footer);
+
+  useEffect(() => {
+    setFooter(readPlatformSiteCache()?.site?.footer || DEFAULT_PLATFORM_SITE.site.footer);
+  }, []);
+
+  const aboutText = footer?.text?.[lang] || t('footer.about');
+  const socialLinks = footer?.socialLinks?.length
+    ? footer.socialLinks
+    : [
+        { platform: 'facebook', url: '/contact', label: 'Facebook' },
+        { platform: 'instagram', url: '/contact', label: 'Instagram' },
+        { platform: 'youtube', url: '/contact', label: 'Youtube' },
+        { platform: 'mail', url: `mailto:${footer?.contactEmail || 'contact@code-eagles.com'}`, label: 'Email' },
+      ];
 
   const linkGroups = [
     {
@@ -48,19 +68,24 @@ export default function MarketingFooter() {
               </div>
             </div>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
-              {t('footer.about')}
+              {aboutText}
             </p>
             <div className="mt-5 flex gap-3">
-              {[Facebook, Instagram, Youtube, Mail].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="/contact"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-[var(--ce-accent)] hover:text-[#1a1200]"
-                  aria-label="Social"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+              {socialLinks.map((item, i) => {
+                const Icon = ICON_MAP[item.platform?.toLowerCase()] || Mail;
+                return (
+                  <a
+                    key={i}
+                    href={item.url || '/contact'}
+                    target={item.url?.startsWith('http') ? '_blank' : undefined}
+                    rel={item.url?.startsWith('http') ? 'noreferrer' : undefined}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-[var(--ce-accent)] hover:text-[#1a1200]"
+                    aria-label={item.label || item.platform}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </a>
+                );
+              })}
             </div>
           </div>
 

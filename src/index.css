@@ -348,3 +348,20 @@ html.dark .ce-section-alt {
     padding-bottom: 0;
   }
 }
+
+body.ce-exam-mode,
+body.ce-exam-mode .ce-exam-question {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body.ce-exam-mode input,
+body.ce-exam-mode textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+body.ce-exam-mode img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}

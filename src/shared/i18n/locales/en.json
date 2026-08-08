@@ -1,6 +1,7 @@
 {
   "brand": {
     "name": "Code Eagles",
+    "academy": "Academy",
     "tagline": "Multi-tenant educational platform"
   },
   "nav": {
@@ -232,6 +233,7 @@
     "reports": "Reports",
     "settings": "Settings",
     "children": "Children",
+    "createdBy": "Created by Code Eagles",
     "myCourses": "My courses",
     "leaderboard": "Leaderboard",
     "certificates": "Certificates",
@@ -260,6 +262,7 @@
   },
   "settings": {
     "account": "Account details",
+    "accountHint": "You can update your name and phone number here.",
     "academy": "Academy details",
     "academyName": "Academy name",
     "academyEditor": "Customize academy page",
@@ -270,6 +273,7 @@
     "logo": "Logo image",
     "cover": "Cover image",
     "uploadSuccess": "Image uploaded",
+    "uploadedImages": "Uploaded images",
     "aboutTitle": "About section title",
     "aboutSubtitle": "About section subtitle",
     "aboutCards": "About cards",
@@ -301,7 +305,24 @@
       "branding": "Branding",
       "page": "Page content",
       "pricing": "Pricing",
-      "payment": "Payment info"
+      "payment": "Payment info",
+      "students": "Student policy"
+    },
+    "studentPolicyHint": "Control what students can do inside your academy.",
+    "allowSelfJoin": "Allow students to request joining groups",
+    "allowProfileEdit": "Allow students to edit profile",
+    "allowPasswordReset": "Allow password reset",
+    "requireApprovedPayment": "Require approved payment before full access",
+    "maxDevices": "Maximum devices per student",
+    "restrictions": "Academy restrictions",
+    "restrictionsList": {
+      "noSelfJoin": "Self-enrollment is disabled by your academy",
+      "selfJoinAllowed": "You can request to join groups",
+      "noProfileEdit": "Profile editing is disabled by your academy",
+      "profileEditAllowed": "You can edit your profile",
+      "noPasswordReset": "Password reset is disabled by your academy",
+      "passwordResetAllowed": "You can reset your password",
+      "maxDevices": "Device limit: {{count}} devices"
     },
     "theme": {
       "primary": "Primary color",
@@ -337,7 +358,59 @@
     "selectAcademy": "Select academy",
     "recordPayment": "Record payment",
     "pendingEnrollments": "Pending enrollments",
-    "enrollmentsByMonth": "Monthly enrollments"
+    "enrollmentsByMonth": "Monthly enrollments",
+    "cmsTitle": "Platform CMS",
+    "cmsSubtitle": "Manage landing page sections, FAQ, and testimonials",
+    "sections": "Page sections",
+    "enabled": "Enabled",
+    "title": "Title",
+    "subtitle": "Subtitle",
+    "faq": "FAQ",
+    "addFaq": "Add FAQ item",
+    "questionAr": "Question (Arabic)",
+    "questionEn": "Question (English)",
+    "answerAr": "Answer (Arabic)",
+    "answerEn": "Answer (English)",
+    "testimonials": "Testimonials",
+    "items": "items",
+    "authorName": "Author name",
+    "academyName": "Academy name",
+    "reviewAr": "Review (Arabic)",
+    "reviewEn": "Review (English)",
+    "addTestimonial": "Add testimonial",
+    "show": "Show",
+    "hide": "Hide",
+    "backupTitle": "Backup settings",
+    "backupHint": "Configure automatic backups and run a manual backup when needed.",
+    "backupFrequency": "Backup frequency",
+    "lastBackup": "Last backup",
+    "runBackup": "Run backup now",
+    "backupSuccess": "Backup completed successfully",
+    "freq": {
+      "daily": "Daily",
+      "every3": "Every 3 days",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "custom": "Custom"
+    },
+    "tab": {
+      "sections": "Sections",
+      "faq": "FAQ",
+      "testimonials": "Testimonials",
+      "footer": "Footer",
+      "backup": "Backup"
+    },
+    "footer": "Footer",
+    "footerText": "Footer description",
+    "contactEmail": "Contact email",
+    "contactPhone": "Contact phone",
+    "socialLinks": "Social media links",
+    "addLink": "Add link",
+    "platform": "Platform",
+    "linkLabel": "Label",
+    "featuredMode": "Featured section mode",
+    "featuredProgramming": "Programming tracks",
+    "featuredAcademies": "Top-rated academies"
   },
   "features": {
     "quizzes": "Quizzes",
@@ -448,6 +521,8 @@
     "emptyDesc": "Click \"Create quiz\" to add your first quiz.",
     "questionImage": "Question image (optional)",
     "questionImageHint": "URL of an illustration for the question",
+    "imageUrlPlaceholder": "Or paste image URL",
+    "imageUploaded": "Image uploaded",
     "errors": {
       "titleRequired": "Please enter the quiz title.",
       "subjectRequired": "Please select a subject.",
@@ -500,12 +575,31 @@
     "goToAcademy": "Open academy page",
     "noGroups": "No groups available",
     "noGroupsDesc": "There are no open groups to join right now.",
+    "selectAcademyTitle": "Which academy would you like to enter?",
+    "resubmitRequest": "Submit again",
+    "myAcademies": "My academies",
+    "switchAcademy": "Switch academy",
+    "viewAssignment": "Open",
+    "startQuiz": "Start",
+    "noAssignments": "No assignments for this subject",
+    "noQuizzes": "No quizzes for this subject",
+    "tab": {
+      "lectures": "Lectures",
+      "assignments": "Assignments",
+      "quizzes": "Quizzes"
+    },
+    "selectAcademyHint": "Choose the academy you want to open now.",
+    "activeGroups": "{{count}} active groups",
+    "pendingGroups": "{{count}} pending",
+    "noAcademies": "You are not enrolled in any academy yet.",
     "status": {
       "pending": "Pending approval",
       "active": "Approved",
       "cancelled": "Rejected",
       "expired": "Expired"
-    }
+    },
+    "joinLiveSession": "Join live session",
+    "meetingLinkUnavailable": "Live session link is not available yet"
   },
   "academy": {
     "welcome": "Welcome to",
@@ -678,6 +772,21 @@
       "assistant": "Assistant"
     }
   },
+  "reports": {
+    "title": "Analytics & reports",
+    "subtitle": "Revenue, exams, enrollments, and homework overview",
+    "passRate": "Exam pass rate",
+    "avgScore": "Average exam score",
+    "revenue": "Approved revenue",
+    "examAttempts": "Exam attempts",
+    "paymentsByMonth": "Payments by month",
+    "attemptsByMonth": "Exam attempts by month",
+    "topStudents": "Top students (most exams)",
+    "topQuizzes": "Most completed exams",
+    "topSubjects": "Most popular subjects",
+    "attemptsShort": "attempts",
+    "enrollmentsShort": "enrollments"
+  },
   "results": {
     "title": "Student results",
     "subtitle": "Filter by group, subject, and quiz",
@@ -686,14 +795,81 @@
     "allSubjects": "All subjects",
     "allQuizzes": "All quizzes",
     "attempts": "Quiz attempts",
+    "attemptsCount": "Attempts",
+    "bestScore": "Best score",
+    "latestScore": "Latest score",
+    "viewAttempts": "View attempts",
+    "attemptNumber": "Attempt {{n}}",
+    "details": "Details",
     "noStudents": "No students found",
     "noAttempts": "No attempts yet"
   },
+  "students": {
+    "title": "Students",
+    "subtitle": "View profiles, suspend accounts, and track devices",
+    "search": "Search by name, email, or phone",
+    "name": "Name",
+    "phone": "Phone",
+    "groups": "Groups",
+    "devices": "Devices",
+    "deviceCount": "{{count}} registered devices",
+    "suspend": "Suspend account",
+    "activate": "Activate account"
+  },
+  "promo": {
+    "title": "Promo codes",
+    "subtitle": "Create discount codes for specific groups",
+    "add": "Add promo code",
+    "code": "Promo code",
+    "placeholder": "Enter code",
+    "discountType": "Discount type",
+    "percentage": "Percentage",
+    "fixed": "Fixed amount",
+    "discountValue": "Discount value",
+    "usageLimit": "Usage limit",
+    "expiryDate": "Expiry date",
+    "groups": "Applicable groups",
+    "used": "Used",
+    "deactivate": "Deactivate",
+    "empty": "No promo codes yet",
+    "apply": "Apply",
+    "applied": "Promo code applied",
+    "codeRequired": "Please enter a promo code",
+    "discount": "Discount",
+    "finalAmount": "Final amount",
+    "edit": "Edit promo code",
+    "invalid": "Invalid or unavailable promo code",
+    "checking": "Checking promo code…",
+    "holdExpired": "Promo hold expired — enter the code again or pay full amount",
+    "validUntil": "Discount reserved until {{time}}",
+    "statusActive": "Active",
+    "statusInactive": "Inactive"
+  },
   "leaderboard": {
-    "subtitle": "Students ranked by XP",
+    "subtitle": "Students ranked by XP within your groups",
     "level": "Level",
     "empty": "No leaderboard yet",
-    "emptyDesc": "Earn points by watching lectures and completing quizzes."
+    "emptyDesc": "Earn points by watching lectures and completing quizzes.",
+    "filterGroup": "Group",
+    "filterSubject": "Subject",
+    "allGroups": "My groups",
+    "allSubjects": "My subjects"
+  },
+  "parent": {
+    "childrenTitle": "My children",
+    "childrenSubtitle": "Track each child's academies, results, and payments",
+    "noChildren": "No linked children yet",
+    "childProfile": "Child profile",
+    "enrollments": "Groups & subjects",
+    "examResults": "Exam results",
+    "payments": "Payments",
+    "noPayment": "No payment submitted",
+    "notificationsNav": "Notifications",
+    "notificationsTitle": "Notifications",
+    "notificationsSubtitle": "Exam results, payments, and updates about your children",
+    "noNotifications": "No notifications yet",
+    "notification": "Notification",
+    "child": "Child"
   },
   "requests": {
     "title": "Pending join requests",
@@ -709,6 +885,7 @@
     "rejectTitle": "Reject request",
     "rejectHint": "You can add a rejection reason — the student will be notified.",
     "rejectReason": "Rejection reason (optional)",
+    "rejectionReason": "Rejection reason",
     "approvedSuccess": "Student approved — they can now access content.",
     "rejectedSuccess": "Request rejected and the student was notified.",
     "payment": {
@@ -727,6 +904,8 @@
     "submitHint": "Transfer the required amount, then upload your receipt photo.",
     "submitSuccess": "Payment receipt submitted successfully",
     "submitSuccessDetail": "Your request is pending teacher review.",
+    "alreadySubmitted": "A payment receipt was already submitted for this request",
+    "pendingLocked": "Payment is {{status}}. You cannot upload another receipt for this request.",
     "reviewHint": "Review pending payment requests and approve or reject.",
     "package": "Package",
     "amount": "Amount (EGP)",
@@ -784,6 +963,14 @@
       "approved": "Approved",
       "rejected": "Rejected",
       "under_review": "Under review"
+    },
+    "planType": "Plan type",
+    "trialDays": "Trial days",
+    "freeNoReceipt": "No receipt required — this payment is free.",
+    "planTypes": {
+      "standard": "Standard",
+      "free": "Free",
+      "trial": "Trial"
     }
   },
   "assignments": {
@@ -812,6 +999,21 @@
     "viewAll": "View all",
     "empty": "No homework assigned yet",
     "noSubmissions": "No submissions yet",
+    "selectStudent": "Select a student to review their submission",
+    "roster": {
+      "all": "All",
+      "submitted": "Submitted",
+      "not_submitted": "Not submitted",
+      "late": "Late",
+      "graded": "Graded"
+    },
+    "rosterStatus": {
+      "not_submitted": "Not submitted",
+      "submitted": "Submitted",
+      "late": "Late",
+      "graded": "Graded",
+      "pending": "Pending"
+    },
     "status": {
       "pending": "Not submitted",
       "submitted": "Submitted",

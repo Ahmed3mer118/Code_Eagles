@@ -24,6 +24,7 @@ const StudentDashboard = React.lazy(() => import('./features/dashboards/student/
 const SuperAdminOverview = React.lazy(() => import('./features/dashboards/superAdmin/SuperAdminOverview.jsx'));
 const TenantsPage = React.lazy(() => import('./features/dashboards/superAdmin/TenantsPage.jsx'));
 const SubscriptionsPage = React.lazy(() => import('./features/dashboards/superAdmin/SubscriptionsPage.jsx'));
+const PlatformCmsPage = React.lazy(() => import('./features/dashboards/superAdmin/PlatformCmsPage.jsx'));
 const TeacherOverview = React.lazy(() => import('./features/dashboards/teacher/TeacherOverview.jsx'));
 const SubjectsPage = React.lazy(() => import('./features/content/ContentHubPage.jsx'));
 const GroupsPage = React.lazy(() => import('./features/groups/GroupsPage.jsx'));
@@ -31,6 +32,7 @@ const AssistantsPage = React.lazy(() => import('./features/assistants/Assistants
 const TeacherQuizzesPage = React.lazy(() => import('./features/quizzes/TeacherQuizzesPage.jsx'));
 const PaymentReviewPage = React.lazy(() => import('./features/payments/PaymentReviewPage.jsx'));
 const PaymentPlansPage = React.lazy(() => import('./features/payments/PaymentPlansPage.jsx'));
+const PromoCodesPage = React.lazy(() => import('./features/payments/PromoCodesPage.jsx'));
 const PaymentHistoryPage = React.lazy(() => import('./features/payments/PaymentHistoryPage.jsx'));
 const PaymentSubmitPage = React.lazy(() => import('./features/payments/PaymentSubmitPage.jsx'));
 const StudentCoursesPage = React.lazy(() => import('./features/student/StudentCoursesPage.jsx'));
@@ -43,12 +45,17 @@ const ExamHistoryPage = React.lazy(() => import('./features/exams/pages/ExamHist
 const AttemptReviewPage = React.lazy(() => import('./features/exams/pages/AttemptReviewPage.jsx'));
 const PendingJoinRequestsPage = React.lazy(() => import('./features/teacher/PendingJoinRequestsPage.jsx'));
 const TeacherResultsPage = React.lazy(() => import('./features/teacher/TeacherResultsPage.jsx'));
+const TeacherReportsPage = React.lazy(() => import('./features/teacher/TeacherReportsPage.jsx'));
+const TeacherStudentsPage = React.lazy(() => import('./features/teacher/TeacherStudentsPage.jsx'));
 const StudentLeaderboardPage = React.lazy(() => import('./features/student/StudentLeaderboardPage.jsx'));
 const SettingsPage = React.lazy(() => import('./features/settings/SettingsPage.jsx'));
 const TeacherAssignmentsPage = React.lazy(() => import('./features/assignments/TeacherAssignmentsPage.jsx'));
 const AssignmentReviewPage = React.lazy(() => import('./features/assignments/AssignmentReviewPage.jsx'));
 const StudentAssignmentsPage = React.lazy(() => import('./features/assignments/StudentAssignmentsPage.jsx'));
 const StudentOverviewPage = React.lazy(() => import('./features/student/StudentOverviewPage.jsx'));
+const StudentAcademySelectPage = React.lazy(() => import('./features/student/StudentAcademySelectPage.jsx'));
+const ParentChildrenPage = React.lazy(() => import('./features/parent/ParentChildrenPage.jsx'));
+const ParentNotificationsPage = React.lazy(() => import('./features/parent/ParentNotificationsPage.jsx'));
 const AcademyPublicPage = React.lazy(() => import('./features/academy/AcademyPublicPage.jsx'));
 
 const withRole = (roles, element) => <RoleGuard roles={roles}>{element}</RoleGuard>;
@@ -79,6 +86,7 @@ function App() {
         { index: true, element: <SuperAdminOverview /> },
         { path: 'tenants', element: <TenantsPage /> },
         { path: 'subscriptions', element: <SubscriptionsPage /> },
+        { path: 'cms', element: <PlatformCmsPage /> },
         { path: 'settings', element: <SettingsPage /> },
       ],
     },
@@ -89,12 +97,15 @@ function App() {
         { index: true, element: <TeacherOverview /> },
         { path: 'subjects', element: <SubjectsPage /> },
         { path: 'groups', element: <GroupsPage /> },
+        { path: 'students', element: <TeacherStudentsPage /> },
         { path: 'requests', element: <PendingJoinRequestsPage /> },
         { path: 'quizzes', element: <TeacherQuizzesPage /> },
         { path: 'quizzes/:quizId/review/:attemptId', element: <AttemptReviewPage /> },
         { path: 'results', element: <TeacherResultsPage /> },
+        { path: 'reports', element: <TeacherReportsPage /> },
         { path: 'payments', element: <PaymentReviewPage /> },
         { path: 'payment-plans', element: <PaymentPlansPage /> },
+        { path: 'promo-codes', element: <PromoCodesPage /> },
         { path: 'payment-history', element: <PaymentHistoryPage /> },
         { path: 'assignments', element: <TeacherAssignmentsPage /> },
         { path: 'assignments/:id', element: <AssignmentReviewPage /> },
@@ -124,7 +135,8 @@ function App() {
       path: '/dashboard/parent',
       element: withRole(['parent'], <ParentDashboard />),
       children: [
-        { index: true, element: <Navigate to="payments" replace /> },
+        { index: true, element: <ParentChildrenPage /> },
+        { path: 'notifications', element: <ParentNotificationsPage /> },
         { path: 'payments', element: <PaymentSubmitPage /> },
         { path: 'settings', element: <SettingsPage /> },
       ],
@@ -133,6 +145,7 @@ function App() {
       path: '/dashboard/student',
       element: withRole(['student'], <StudentDashboard />),
       children: [
+        { path: 'select-academy', element: <StudentAcademySelectPage /> },
         { index: true, element: <StudentOverviewPage /> },
         { path: 'join', element: <StudentJoinPage /> },
         { path: 'courses', element: <StudentCoursesPage /> },

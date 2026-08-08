@@ -1,14 +1,75 @@
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import TeacherGlobalSearch from '../ui/TeacherGlobalSearch';
 import AuthServices from '../api/authService';
+import resolveMediaUrl from '../utils/mediaUrl';
 
-export default function DashboardShell({ titleKey, navItems = [], showTeacherSearch = false }) {
+function readStoredTenant() {
+  try {
+    const raw = localStorage.getItem('ce_tenant');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export default function DashboardShell({
+  titleKey,
+  navItems = [],
+  showTeacherSearch = false,
+  brandMode = 'academy',
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const auth = new AuthServices();
   const userName = auth.getUserName?.() || 'User';
+  const [brand, setBrand] = useState(() => {
+    if (brandMode === 'platform') {
+      return { name: '', logoUrl: '/images/LOGO.png' };
+    }
+    const tenant = readStoredTenant();
+    return {
+      name: tenant?.name || '',
+      logoUrl: tenant?.logoUrl || '/images/LOGO.png',
+    };
+  });
+
+  useEffect(() => {
+    if (brandMode === 'platform') {
+      setBrand({ name: t('brand.name'), logoUrl: '/images/LOGO.png' });
+      return;
+    }
+
+    const stored = readStoredTenant();
+    if (stored?.name) {
+      setBrand({
+        name: stored.name,
+        logoUrl: stored.logoUrl || '/images/LOGO.png',
+      });
+    }
+
+    auth.me()
+      .then((data) => {
+        if (data.tenant) {
+          localStorage.setItem('ce_tenant', JSON.stringify(data.tenant));
+          if (data.tenant.slug) sessionStorage.setItem('ce_tenant_slug', data.tenant.slug);
+          setBrand({
+            name: data.tenant.name,
+            logoUrl: data.tenant.logoUrl || '/images/LOGO.png',
+          });
+        } else if (data.user?.name && brandMode === 'academy') {
+          setBrand({
+            name: data.user.name,
+            logoUrl: '/images/LOGO.png',
+          });
+        }
+      })
+      .catch(() => {});
+  }, [brandMode, t]);
+
+  const displayName = brand.name || (brandMode === 'platform' ? t('brand.name') : t('brand.academy'));
 
   const logout = async () => {
     try {
@@ -21,11 +82,15 @@ export default function DashboardShell({ titleKey, navItems = [], showTeacherSea
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-[260px_1fr]">
-      <aside className="ce-sidebar border-b border-[var(--ce-border)] bg-[var(--ce-primary)] text-white md:sticky md:top-0 md:flex md:h-screen md:flex-col md:border-b-0 md:overflow-y-auto">
+      <aside className="ce-sidebar flex min-h-0 flex-col border-b border-[var(--ce-border)] bg-[var(--ce-primary)] text-white md:sticky md:top-0 md:h-screen md:border-b-0 md:overflow-y-auto">
         <div className="flex items-center gap-3 px-5 py-5">
-          <img src="/images/LOGO.png" alt="" className="h-9 w-9 rounded-lg bg-white/10 p-1" />
-          <div>
-            <div className="font-extrabold">{t('brand.name')}</div>
+          <img
+            src={resolveMediaUrl(brand.logoUrl) || '/images/LOGO.png'}
+            alt=""
+            className="h-9 w-9 rounded-lg bg-white/10 object-contain p-1"
+          />
+          <div className="min-w-0">
+            <div className="truncate font-extrabold">{displayName}</div>
             <div className="text-xs text-white/70">{t(titleKey)}</div>
           </div>
         </div>
@@ -45,13 +110,16 @@ export default function DashboardShell({ titleKey, navItems = [], showTeacherSea
             </NavLink>
           ))}
         </nav>
+        <div className="mt-auto border-t border-white/10 px-5 py-4 text-center text-xs text-white/50">
+          {t('dashboard.createdBy')}
+        </div>
       </aside>
 
       <div className="flex min-h-screen flex-col">
         <header className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ce-border)] bg-white/90 px-4 py-3 backdrop-blur md:px-6">
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-extrabold text-[var(--ce-primary)]">{t(titleKey)}</h1>
-            <p className="text-sm text-[var(--ce-muted)]">{t('dashboard.welcome', { name: userName })}</p>
+            <h1 className="truncate text-lg font-extrabold text-[var(--ce-primary)]">{displayName}</h1>
+            <p className="text-sm text-[var(--ce-muted)]">{t(titleKey)} · {t('dashboard.welcome', { name: userName })}</p>
           </div>
           {showTeacherSearch && <TeacherGlobalSearch />}
           <div className="flex items-center gap-2">

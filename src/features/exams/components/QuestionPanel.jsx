@@ -1,6 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Flag } from 'lucide-react';
 
+const blockClipboard = (e) => {
+  e.preventDefault();
+  return false;
+};
+
 export default function QuestionPanel({
   question,
   index,
@@ -16,7 +21,13 @@ export default function QuestionPanel({
   const qid = String(question._id);
 
   return (
-    <article className="ce-card p-6">
+    <article
+      className="ce-card ce-exam-question p-6 select-none"
+      onCopy={blockClipboard}
+      onCut={blockClipboard}
+      onPaste={blockClipboard}
+      onContextMenu={blockClipboard}
+    >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-bold uppercase tracking-wide text-[var(--ce-accent)]">
@@ -39,10 +50,10 @@ export default function QuestionPanel({
         </button>
       </div>
 
-      <h3 className="text-lg font-extrabold leading-relaxed text-[var(--ce-primary)]">{question.text}</h3>
+      <h3 className="pointer-events-none text-lg font-extrabold leading-relaxed text-[var(--ce-primary)]">{question.text}</h3>
 
       {question.imageUrl && (
-        <img src={question.imageUrl} alt="" className="mt-4 max-h-64 w-full rounded-xl object-contain" />
+        <img src={question.imageUrl} alt="" draggable={false} className="pointer-events-none mt-4 max-h-64 w-full rounded-xl object-contain" />
       )}
 
       {question.hint && (
@@ -74,6 +85,12 @@ export default function QuestionPanel({
             className="ce-input min-h-[160px]"
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
+            onPaste={blockClipboard}
+            onCopy={blockClipboard}
+            onCut={blockClipboard}
+            onDrop={blockClipboard}
+            autoComplete="off"
+            spellCheck={false}
             placeholder={t('exams.writeAnswer')}
           />
         )}
@@ -91,7 +108,7 @@ export default function QuestionPanel({
                 <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--ce-primary)] text-xs font-bold text-white">
                   {String.fromCharCode(65 + oi)}
                 </span>
-                <span className="font-medium leading-relaxed">{opt}</span>
+                <span className="pointer-events-none font-medium leading-relaxed">{opt}</span>
               </label>
             ))}
           </div>

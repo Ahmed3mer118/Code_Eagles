@@ -35,7 +35,7 @@ class AuthServices {
   private isRefreshing = false;
 
   constructor() {
-    this.URLAPI = import.meta.env.VITE_API_URL;
+    this.URLAPI = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     this.token = localStorage.getItem("token") || "";
     this.axiosInstance = axios.create({
       baseURL: this.URLAPI,
@@ -212,6 +212,11 @@ class AuthServices {
     } finally {
       this.isRefreshing = false;
     }
+  }
+
+  async updateProfile(payload: { name?: string; phone_number?: string; gradeLevel?: string }) {
+    const response = await this.axiosInstance.patch("/api/auth/profile", payload);
+    return response.data;
   }
 
   handleLogout() {

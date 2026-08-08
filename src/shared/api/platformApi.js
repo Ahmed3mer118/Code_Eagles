@@ -169,8 +169,11 @@ export const assignmentApi = {
   submit(id, payload) {
     return getApiClient().post(`/api/assignments/${id}/submit`, payload).then((r) => r.data);
   },
-  listSubmissions(id) {
-    return getApiClient().get(`/api/assignments/${id}/submissions`).then((r) => r.data);
+  listSubmissions(id, params = {}) {
+    return getApiClient().get(`/api/assignments/${id}/submissions`, { params }).then((r) => r.data);
+  },
+  roster(id, params = {}) {
+    return getApiClient().get(`/api/assignments/${id}/roster`, { params }).then((r) => r.data);
   },
   grade(id, submissionId, payload) {
     return getApiClient().patch(`/api/assignments/${id}/submissions/${submissionId}/grade`, payload).then((r) => r.data);
@@ -207,6 +210,9 @@ export const groupApi = {
   },
   listPendingAll() {
     return getApiClient().get('/api/groups/enrollments/pending').then((r) => r.data);
+  },
+  getMeetingLink(groupId) {
+    return getApiClient().get(`/api/groups/${groupId}/meeting-link`).then((r) => r.data);
   },
 };
 
@@ -252,6 +258,9 @@ export const tenantApi = {
   },
   updatePublicPage(id, payload) {
     return getApiClient().patch(`/api/tenants/${id}/public-page`, payload).then((r) => r.data);
+  },
+  updateStudentPolicy(id, payload) {
+    return getApiClient().patch(`/api/tenants/${id}/student-policy`, payload).then((r) => r.data);
   },
 };
 
@@ -319,6 +328,36 @@ export const teacherApi = {
   studentResults(params = {}) {
     return getApiClient().get('/api/teacher/student-results', { params }).then((r) => r.data);
   },
+  listStudents(params = {}) {
+    return getApiClient().get('/api/teacher/students', { params }).then((r) => r.data);
+  },
+  getStudent(id) {
+    return getApiClient().get(`/api/teacher/students/${id}`).then((r) => r.data);
+  },
+  updateStudentStatus(id, status) {
+    return getApiClient().patch(`/api/teacher/students/${id}/status`, { status }).then((r) => r.data);
+  },
+  reports() {
+    return getApiClient().get('/api/teacher/reports').then((r) => r.data);
+  },
+};
+
+export const promoApi = {
+  list() {
+    return getApiClient().get('/api/promo-codes').then((r) => r.data);
+  },
+  create(payload) {
+    return getApiClient().post('/api/promo-codes', payload).then((r) => r.data);
+  },
+  update(id, payload) {
+    return getApiClient().patch(`/api/promo-codes/${id}`, payload).then((r) => r.data);
+  },
+  remove(id) {
+    return getApiClient().delete(`/api/promo-codes/${id}`).then((r) => r.data);
+  },
+  validate(payload) {
+    return getApiClient().post('/api/promo-codes/validate', payload).then((r) => r.data);
+  },
 };
 
 export const studentApi = {
@@ -328,11 +367,65 @@ export const studentApi = {
   dashboard() {
     return getApiClient().get('/api/students/dashboard').then((r) => r.data);
   },
+  myAcademies() {
+    return getApiClient().get('/api/students/my-academies').then((r) => r.data);
+  },
+};
+
+export const parentApi = {
+  listChildren() {
+    return getApiClient().get('/api/parent/children').then((r) => r.data);
+  },
+  childOverview(studentId) {
+    return getApiClient().get(`/api/parent/children/${studentId}/overview`).then((r) => r.data);
+  },
+  notifications() {
+    return getApiClient().get('/api/parent/notifications').then((r) => r.data);
+  },
+};
+
+export const platformSiteApi = {
+  getPublic() {
+    return getApiClient().get('/api/platform/site').then((r) => r.data);
+  },
+  getAdmin() {
+    return getApiClient().get('/api/platform/site/admin').then((r) => r.data);
+  },
+  updateSection(key, payload) {
+    return getApiClient().patch(`/api/platform/site/sections/${key}`, payload).then((r) => r.data);
+  },
+  updateFooter(payload) {
+    return getApiClient().patch('/api/platform/site/footer', payload).then((r) => r.data);
+  },
+  createFaq(payload) {
+    return getApiClient().post('/api/platform/faq', payload).then((r) => r.data);
+  },
+  deleteFaq(id) {
+    return getApiClient().delete(`/api/platform/faq/${id}`).then((r) => r.data);
+  },
+  updateBackupSettings(payload) {
+    return getApiClient().patch('/api/platform/site/backup-settings', payload).then((r) => r.data);
+  },
+  runBackup(payload = {}) {
+    return getApiClient().post('/api/platform/site/run-backup', payload).then((r) => r.data);
+  },
+  listTestimonials(params = {}) {
+    return getApiClient().get('/api/platform/testimonials', { params }).then((r) => r.data);
+  },
+  createTestimonial(payload) {
+    return getApiClient().post('/api/platform/testimonials', payload).then((r) => r.data);
+  },
+  updateTestimonial(id, payload) {
+    return getApiClient().patch(`/api/platform/testimonials/${id}`, payload).then((r) => r.data);
+  },
+  removeTestimonial(id) {
+    return getApiClient().delete(`/api/platform/testimonials/${id}`).then((r) => r.data);
+  },
 };
 
 export const gamificationApi = {
-  leaderboard() {
-    return getApiClient().get('/api/gamification/leaderboard').then((r) => r.data);
+  leaderboard(params = {}) {
+    return getApiClient().get('/api/gamification/leaderboard', { params }).then((r) => r.data);
   },
 };
 

@@ -1,0 +1,8 @@
+User-agent: *
+User-agent : GPTbot
+Disallow: /dashboard/
+Disallow: /instructor/
+
+Allow: /
+
+Sitemap: https://www.code-eagles.com/sitemap.xml

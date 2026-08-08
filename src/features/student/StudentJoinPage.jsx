@@ -141,6 +141,9 @@ export default function StudentJoinPage() {
                       {t('payments.payNow')}
                     </Link>
                   )}
+                  {en.status === 'cancelled' && en.rejectionReason && (
+                    <p className="w-full text-xs text-red-700">{t('requests.rejectionReason')}: {en.rejectionReason}</p>
+                  )}
                 </div>
               </li>
             ))}
@@ -164,7 +167,17 @@ export default function StudentJoinPage() {
                   <p className="mt-2 text-xs text-[var(--ce-muted)]">{group.startTime} - {group.endTime}</p>
                 )}
                 {existing ? (
-                  <p className="mt-4 text-sm font-semibold">{t(`student.status.${existing.status}`)}</p>
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm font-semibold">{t(`student.status.${existing.status}`)}</p>
+                    {existing.status === 'cancelled' && existing.rejectionReason && (
+                      <p className="text-xs text-red-700">{t('requests.rejectionReason')}: {existing.rejectionReason}</p>
+                    )}
+                    {existing.status === 'cancelled' && (
+                      <button type="button" className="ce-btn ce-btn-accent w-full text-sm" onClick={() => setJoinTarget(group)}>
+                        {t('student.resubmitRequest')}
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <button type="button" className="ce-btn ce-btn-accent mt-4 w-full text-sm" onClick={() => setJoinTarget(group)}>
                     {t('student.requestJoin')}

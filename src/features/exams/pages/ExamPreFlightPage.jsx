@@ -7,7 +7,7 @@ import { quizApi } from '../../../shared/api/platformApi';
 import LoadingScreen from '../../../shared/ui/LoadingScreen';
 import StudentWaitingView from '../../student/StudentWaitingView';
 import ExamStatCard from '../components/ExamStatCard';
-import { formatDateTime, getAvailabilityLabel, getResultModeLabel, canStartExam } from '../utils/examHelpers';
+import { formatDateTime, getAvailabilityLabel, getResultModeLabel, canStartExam, getExamInstructions } from '../utils/examHelpers';
 
 export default function ExamPreFlightPage() {
   const { quizId } = useParams();
@@ -105,14 +105,8 @@ export default function ExamPreFlightPage() {
             <BookOpen className="h-5 w-5 text-[var(--ce-accent)]" />
             {t('exams.instructionsTitle')}
           </h2>
-          <div className="mt-4 space-y-3 text-sm leading-relaxed text-[var(--ce-muted)]">
-            <p>{exam?.instructions || t('exams.defaultInstructions')}</p>
-            <ul className="list-disc space-y-2 ps-5">
-              <li>{t('exams.ruleTimer')}</li>
-              <li>{t('exams.ruleAutosave')}</li>
-              <li>{t('exams.ruleNavigation')}</li>
-              <li>{t('exams.ruleSubmit')}</li>
-            </ul>
+          <div className="mt-4 space-y-3 whitespace-pre-line text-sm leading-relaxed text-[var(--ce-muted)]">
+            <p>{getExamInstructions(exam, i18n.language?.startsWith('en') ? 'en' : 'ar')}</p>
           </div>
 
           {attemptsExhausted ? (

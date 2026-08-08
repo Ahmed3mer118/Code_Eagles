@@ -1,27 +1,44 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { studentApi } from '../../shared/api/platformApi';
+import { studentApi, groupApi } from '../../shared/api/platformApi';
 import StudentWaitingView from './StudentWaitingView';
 import StatusBadge from '../../shared/ui/StatusBadge';
 
 export default function StudentOverviewPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
+  const [academies, setAcademies] = useState([]);
 
   useEffect(() => {
     (async () => {
       try {
+        const academiesRes = await studentApi.myAcademies().catch(() => ({ academies: [] }));
+        setAcademies(academiesRes.academies || []);
+        if ((academiesRes.academies || []).length > 1 && !sessionStorage.getItem('ce_tenant_slug')) {
+          navigate('/dashboard/student/select-academy', { replace: true });
+          return;
+        }
         const res = await studentApi.dashboard();
         setData(res);
       } catch (err) {
         toast.error(err?.message || t('common.error'));
       }
     })();
-  }, [t]);
+  }, [navigate, t]);
 
   if (!data) return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
+
+  const joinLiveSession = async (groupId) => {
+    try {
+      const res = await groupApi.getMeetingLink(groupId);
+      if (res.meetingLink) window.open(res.meetingLink, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || t('student.meetingLinkUnavailable'));
+    }
+  };
 
   const { groups, subjects, lectures, quizzes, assignments, recentAttempts, progress, pendingEnrollments } = data;
 
@@ -34,6 +51,28 @@ export default function StudentOverviewPage() {
           <div className="ce-stat-card"><p className="text-2xl font-extrabold">{progress.completedQuizzes}</p><p className="text-sm text-[var(--ce-muted)]">{t('student.myQuizzes')}</p></div>
           <div className="ce-stat-card"><p className="text-2xl font-extrabold">{progress.pendingAssignments}</p><p className="text-sm text-[var(--ce-muted)]">{t('student.myHomework')}</p></div>
         </div>
+
+        {academies.length > 1 && (
+          <section className="ce-card p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="font-extrabold text-[var(--ce-primary)]">{t('student.myAcademies')}</h3>
+              <Link to="/dashboard/student/select-academy" className="text-sm font-semibold text-[var(--ce-primary)]">
+                {t('student.switchAcademy')}
+              </Link>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {academies.map((ac) => (
+                <div key={ac.tenantId || ac.slug} className="rounded-xl border border-[var(--ce-border)] p-4">
+                  <p className="font-bold">{ac.name}</p>
+                  <p className="mt-1 text-xs text-[var(--ce-muted)]">
+                    {t('student.activeGroups', { count: ac.activeGroups || 0 })}
+                    {ac.pendingGroups ? ` · ${t('student.pendingGroups', { count: ac.pendingGroups })}` : ''}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {pendingEnrollments?.length > 0 && (
           <div className="ce-card p-5">
@@ -59,7 +98,14 @@ export default function StudentOverviewPage() {
               <div key={g._id} className="rounded-xl border border-[var(--ce-border)] p-4">
                 <p className="font-bold">{g.group?.name}</p>
                 <p className="text-sm text-[var(--ce-muted)]">{g.group?.subjectId?.name}</p>
-                <StatusBadge status="approved" label={t('student.status.active')} />
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <StatusBadge status="approved" label={t('student.status.active')} />
+                  {g.group?._id && (
+                    <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => joinLiveSession(g.group._id)}>
+                      {t('student.joinLiveSession')}
+                    </button>
+                  )}
+                </div>
               </div>
             )) : <p className="text-sm text-[var(--ce-muted)]">{t('student.noGroups')}</p>}
           </div>

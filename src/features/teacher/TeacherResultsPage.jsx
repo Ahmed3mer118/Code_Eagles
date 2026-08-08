@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { teacherApi, groupApi, contentApi, quizApi } from '../../shared/api/platformApi';
 import PageHeader from '../../shared/ui/PageHeader';
 import EmptyState from '../../shared/ui/EmptyState';
@@ -13,7 +14,8 @@ export default function TeacherResultsPage() {
   const [subjects, setSubjects] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [filters, setFilters] = useState({ groupId: '', subjectId: '', quizId: '' });
-  const [data, setData] = useState({ students: [], attempts: [] });
+  const [rows, setRows] = useState([]);
+  const [expanded, setExpanded] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,7 +39,8 @@ export default function TeacherResultsPage() {
       if (filters.subjectId) params.subjectId = filters.subjectId;
       if (filters.quizId) params.quizId = filters.quizId;
       const res = await teacherApi.studentResults(params);
-      setData(res);
+      setRows(res.rows || []);
+      setExpanded({});
     } catch (err) {
       toast.error(getFriendlyError(err));
     } finally {
@@ -47,18 +50,23 @@ export default function TeacherResultsPage() {
 
   useEffect(() => { loadResults(); }, [filters]);
 
+  const toggleRow = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+
   const exportCsv = () => {
-    const rows = [['Student', 'Quiz', 'Score', 'Percentage', 'Status']];
-    (data.attempts || []).forEach((a) => {
-      rows.push([
-        a.studentId?.name || '',
-        a.quizId?.title || '',
-        `${a.score}/${a.maxScore}`,
-        `${a.percentage}%`,
-        a.status,
-      ]);
+    const csvRows = [['Student', 'Quiz', 'Attempt', 'Score', 'Percentage', 'Status']];
+    rows.forEach((row) => {
+      (row.attempts || []).forEach((a) => {
+        csvRows.push([
+          row.student?.name || '',
+          a.quiz?.title || '',
+          a.attemptNumber || '',
+          `${a.score}/${a.maxScore}`,
+          `${a.percentage}%`,
+          a.status,
+        ]);
+      });
     });
-    const csv = rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+    const csv = csvRows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -91,51 +99,69 @@ export default function TeacherResultsPage() {
         </select>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="ce-card p-5">
-          <h3 className="font-extrabold text-[var(--ce-primary)]">{t('dashboard.students')}</h3>
-          {loading ? (
-            <p className="mt-4 text-sm text-[var(--ce-muted)]">{t('common.loading')}</p>
-          ) : (data.students || []).length === 0 ? (
-            <EmptyState icon="👥" title={t('results.noStudents')} />
-          ) : (
-            <ul className="mt-4 divide-y divide-[var(--ce-border)]">
-              {data.students.map((s) => (
-                <li key={s._id} className="flex items-center justify-between py-3">
-                  <div>
-                    <div className="font-semibold">{s.name}</div>
-                    <div className="text-xs text-[var(--ce-muted)]">{s.email}</div>
-                  </div>
-                  <span className="text-sm font-bold text-[var(--ce-accent)]">{s.xp || 0} XP</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="ce-card overflow-hidden">
-          <div className="border-b border-[var(--ce-border)] px-5 py-4 font-extrabold text-[var(--ce-primary)]">{t('results.attempts')}</div>
-          {loading ? (
-            <p className="p-5 text-sm text-[var(--ce-muted)]">{t('common.loading')}</p>
-          ) : (data.attempts || []).length === 0 ? (
-            <EmptyState icon="📝" title={t('results.noAttempts')} />
-          ) : (
-            <ul className="divide-y divide-[var(--ce-border)]">
-              {data.attempts.map((a) => (
-                <li key={a._id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-                  <div>
-                    <div className="font-semibold">{a.studentId?.name}</div>
-                    <div className="text-sm text-[var(--ce-muted)]">{a.quizId?.title}</div>
-                  </div>
-                  <div className="text-end">
-                    <div className="font-bold">{a.score}/{a.maxScore} ({a.percentage}%)</div>
-                    <StatusBadge status={a.passed ? 'approved' : 'pending'} label={a.status} />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      <div className="ce-card overflow-hidden">
+        {loading ? (
+          <p className="p-5 text-sm text-[var(--ce-muted)]">{t('common.loading')}</p>
+        ) : rows.length === 0 ? (
+          <EmptyState icon="📝" title={t('results.noAttempts')} />
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-[var(--ce-bg)]">
+              <tr>
+                <th className="px-4 py-3 text-start">{t('students.name')}</th>
+                <th className="px-4 py-3 text-start">{t('results.attemptsCount')}</th>
+                <th className="px-4 py-3 text-start">{t('results.bestScore')}</th>
+                <th className="px-4 py-3 text-start">{t('results.latestScore')}</th>
+                <th className="px-4 py-3 text-end">{t('results.details')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--ce-border)]">
+              {rows.map((row) => {
+                const sid = row.student?._id;
+                const open = expanded[sid];
+                return (
+                  <Fragment key={sid}>
+                    <tr className="hover:bg-[var(--ce-bg)]">
+                      <td className="px-4 py-3 font-semibold">{row.student?.name}</td>
+                      <td className="px-4 py-3">{row.attemptsCount}</td>
+                      <td className="px-4 py-3 font-bold text-[var(--ce-accent)]">{row.bestScore}%</td>
+                      <td className="px-4 py-3">{row.latestScore}%</td>
+                      <td className="px-4 py-3 text-end">
+                        <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => toggleRow(sid)}>
+                          {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          {t('results.viewAttempts')}
+                        </button>
+                      </td>
+                    </tr>
+                    {open && (
+                      <tr>
+                        <td colSpan={5} className="bg-[var(--ce-bg)] px-4 py-3">
+                          <div className="space-y-2">
+                            {(row.attempts || []).map((a) => (
+                              <div key={a._id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-3">
+                                <div>
+                                  <p className="font-semibold">{a.quiz?.title}</p>
+                                  <p className="text-xs text-[var(--ce-muted)]">
+                                    {t('results.attemptNumber', { n: a.attemptNumber })}
+                                    {a.submittedAt ? ` · ${new Date(a.submittedAt).toLocaleString()}` : ''}
+                                  </p>
+                                </div>
+                                <div className="text-end">
+                                  <p className="font-bold">{a.score}/{a.maxScore} ({a.percentage}%)</p>
+                                  <StatusBadge status={a.passed ? 'approved' : 'pending'} label={a.status} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

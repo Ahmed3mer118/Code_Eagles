@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { tenantApi, uploadApi } from '../../shared/api/platformApi';
+import resolveMediaUrl from '../../shared/utils/mediaUrl';
 
 const PACKAGE_KEYS = [
   { key: 'lecturesOnly', packageType: 'lectures_only', pricingKey: 'lecturesOnly' },
@@ -62,6 +63,14 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
     lecturesAndExams: tenant.studentPackages?.lecturesAndExams || 0,
   });
 
+  const [studentPolicy, setStudentPolicy] = useState({
+    allowSelfJoin: tenant.studentPolicy?.allowSelfJoin !== false,
+    allowProfileEdit: tenant.studentPolicy?.allowProfileEdit !== false,
+    allowPasswordReset: tenant.studentPolicy?.allowPasswordReset !== false,
+    requireApprovedPayment: tenant.studentPolicy?.requireApprovedPayment !== false,
+    maxDevices: tenant.studentPolicy?.maxDevices || 3,
+  });
+
   const [publicPage, setPublicPage] = useState(() => {
     const page = tenant.publicPage || {};
     const pricing = page.pricing || {};
@@ -97,6 +106,7 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
     { id: 'page', label: t('settings.tabs.page') },
     { id: 'pricing', label: t('settings.tabs.pricing') },
     { id: 'payment', label: t('settings.tabs.payment') },
+    { id: 'students', label: t('settings.tabs.students') },
   ]), [t]);
 
   const uploadField = async (file, field) => {
@@ -130,6 +140,19 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
     setSaving(true);
     try {
       const data = await tenantApi.updatePackages(tenant._id || tenant.id, { studentPackages: packages });
+      onSaved?.(data.tenant);
+      toast.success(t('common.success'));
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || t('common.error'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveStudentPolicy = async () => {
+    setSaving(true);
+    try {
+      const data = await tenantApi.updateStudentPolicy(tenant._id || tenant.id, { studentPolicy });
       onSaved?.(data.tenant);
       toast.success(t('common.success'));
     } catch (err) {
@@ -218,14 +241,40 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
             <label className="block">
               <span className="ce-label">{t('settings.logo')}</span>
               <input type="file" accept="image/*" className="ce-input" onChange={(e) => uploadField(e.target.files?.[0], 'logoUrl')} disabled={uploading} />
-              {branding.logoUrl && <img src={branding.logoUrl} alt="" className="mt-2 h-16 w-16 rounded-xl object-cover" />}
+              {branding.logoUrl && <img src={resolveMediaUrl(branding.logoUrl)} alt="" className="mt-2 h-20 w-20 rounded-xl border border-[var(--ce-border)] object-cover" />}
             </label>
             <label className="block">
               <span className="ce-label">{t('settings.cover')}</span>
               <input type="file" accept="image/*" className="ce-input" onChange={(e) => uploadField(e.target.files?.[0], 'coverUrl')} disabled={uploading} />
-              {branding.coverUrl && <img src={branding.coverUrl} alt="" className="mt-2 h-16 w-full rounded-xl object-cover" />}
+              {branding.coverUrl && <img src={resolveMediaUrl(branding.coverUrl)} alt="" className="mt-2 h-24 w-full rounded-xl border border-[var(--ce-border)] object-cover" />}
             </label>
           </div>
+
+          {(branding.logoUrl || branding.coverUrl || (publicPage.gallery || []).some((g) => g.url)) && (
+            <div>
+              <p className="ce-label">{t('settings.uploadedImages')}</p>
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                {branding.logoUrl && (
+                  <figure className="overflow-hidden rounded-xl border border-[var(--ce-border)]">
+                    <img src={resolveMediaUrl(branding.logoUrl)} alt="" className="aspect-square w-full object-cover" />
+                    <figcaption className="px-2 py-1 text-xs font-semibold text-[var(--ce-muted)]">{t('settings.logo')}</figcaption>
+                  </figure>
+                )}
+                {branding.coverUrl && (
+                  <figure className="overflow-hidden rounded-xl border border-[var(--ce-border)] md:col-span-2">
+                    <img src={resolveMediaUrl(branding.coverUrl)} alt="" className="aspect-video w-full object-cover" />
+                    <figcaption className="px-2 py-1 text-xs font-semibold text-[var(--ce-muted)]">{t('settings.cover')}</figcaption>
+                  </figure>
+                )}
+                {(publicPage.gallery || []).filter((g) => g.url).map((item, index) => (
+                  <figure key={`${item.url}-${index}`} className="overflow-hidden rounded-xl border border-[var(--ce-border)]">
+                    <img src={resolveMediaUrl(item.url)} alt="" className="aspect-square w-full object-cover" />
+                    <figcaption className="truncate px-2 py-1 text-xs text-[var(--ce-muted)]">{item.caption || t('settings.gallery')}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="grid gap-4 md:grid-cols-3">
             {['primary', 'accent', 'background'].map((key) => (
               <label key={key} className="block">
@@ -369,7 +418,7 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
                       toast.error(err?.message || t('common.error'));
                     }
                   }} />
-                  {item.url && <img src={item.url} alt="" className="h-24 rounded-xl object-cover" />}
+                  {item.url && <img src={resolveMediaUrl(item.url)} alt="" className="h-24 rounded-xl object-cover" />}
                   <input className="ce-input" placeholder={t('settings.galleryCaption')} value={item.caption || ''} onChange={(e) => {
                     const gallery = [...(publicPage.gallery || [])];
                     gallery[index] = { ...item, caption: e.target.value };
@@ -471,6 +520,42 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
             <textarea className="ce-input min-h-[100px]" value={publicPage.paymentInstructions} onChange={(e) => setPublicPage({ ...publicPage, paymentInstructions: e.target.value })} />
           </label>
           <button type="button" className="ce-btn ce-btn-primary" disabled={saving} onClick={savePublicPage}>
+            {t('common.save')}
+          </button>
+        </div>
+      )}
+
+      {tab === 'students' && (
+        <div className="ce-card space-y-4 p-6">
+          <h3 className="text-lg font-extrabold text-[var(--ce-primary)]">{t('settings.tabs.students')}</h3>
+          <p className="text-sm text-[var(--ce-muted)]">{t('settings.studentPolicyHint')}</p>
+          {[
+            { key: 'allowSelfJoin', label: t('settings.allowSelfJoin') },
+            { key: 'allowProfileEdit', label: t('settings.allowProfileEdit') },
+            { key: 'allowPasswordReset', label: t('settings.allowPasswordReset') },
+            { key: 'requireApprovedPayment', label: t('settings.requireApprovedPayment') },
+          ].map(({ key, label }) => (
+            <label key={key} className="flex items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                checked={studentPolicy[key]}
+                onChange={(e) => setStudentPolicy({ ...studentPolicy, [key]: e.target.checked })}
+              />
+              {label}
+            </label>
+          ))}
+          <label className="block max-w-xs">
+            <span className="ce-label">{t('settings.maxDevices')}</span>
+            <input
+              type="number"
+              min="1"
+              max="10"
+              className="ce-input"
+              value={studentPolicy.maxDevices}
+              onChange={(e) => setStudentPolicy({ ...studentPolicy, maxDevices: Number(e.target.value) })}
+            />
+          </label>
+          <button type="button" className="ce-btn ce-btn-primary" disabled={saving} onClick={saveStudentPolicy}>
             {t('common.save')}
           </button>
         </div>

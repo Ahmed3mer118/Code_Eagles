@@ -7,7 +7,7 @@ import StatusBadge from '../../shared/ui/StatusBadge';
 import FormModal from '../../shared/ui/FormModal';
 import FormField from '../../shared/ui/FormField';
 
-const emptyPlan = { name: '', price: 0, description: '', status: 'active', packageType: 'lectures_and_exams' };
+const emptyPlan = { name: '', price: 0, description: '', status: 'active', packageType: 'lectures_and_exams', planType: 'standard', trialDays: 0 };
 
 export default function PaymentPlansPage() {
   const { t } = useTranslation();
@@ -82,6 +82,10 @@ export default function PaymentPlansPage() {
                 <StatusBadge status={plan.status === 'active' ? 'approved' : 'pending'} label={t(`payments.planStatus.${plan.status}`)} />
               </div>
               {plan.description && <p className="mt-3 text-sm text-[var(--ce-muted)]">{plan.description}</p>}
+              <p className="mt-2 text-xs font-semibold uppercase text-[var(--ce-muted)]">
+                {t(`payments.planTypes.${plan.planType || 'standard'}`)}
+                {plan.planType === 'trial' && plan.trialDays ? ` · ${plan.trialDays} ${t('payments.trialDays')}` : ''}
+              </p>
               <div className="mt-4 flex gap-2">
                 <button type="button" className="ce-btn ce-btn-ghost text-sm" onClick={() => setModal({ plan })}>{t('content.edit')}</button>
                 {plan.status === 'active' && (
@@ -118,6 +122,18 @@ export default function PaymentPlansPage() {
                 <option value="lectures_and_exams">{t('payments.fullPackage')}</option>
               </select>
             </FormField>
+            <FormField label={t('payments.planType')}>
+              <select className="ce-input" value={values.planType || 'standard'} onChange={(e) => setValues({ ...values, planType: e.target.value })}>
+                <option value="standard">{t('payments.planTypes.standard')}</option>
+                <option value="free">{t('payments.planTypes.free')}</option>
+                <option value="trial">{t('payments.planTypes.trial')}</option>
+              </select>
+            </FormField>
+            {values.planType === 'trial' && (
+              <FormField label={t('payments.trialDays')}>
+                <input type="number" min="1" className="ce-input" value={values.trialDays || 0} onChange={(e) => setValues({ ...values, trialDays: Number(e.target.value) })} />
+              </FormField>
+            )}
           </div>
         )}
       </FormModal>

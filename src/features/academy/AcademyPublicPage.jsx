@@ -13,6 +13,7 @@ import {
   Users,
 } from 'lucide-react';
 import { tenantApi } from '../../shared/api/platformApi';
+import resolveMediaUrl from '../../shared/utils/mediaUrl';
 import AcademyLayout from '../../shared/layouts/AcademyLayout';
 import LoadingScreen from '../../shared/ui/LoadingScreen';
 import SectionHeader from '../marketing/components/SectionHeader';
@@ -232,7 +233,7 @@ function AcademyLanding({
       <section className="relative overflow-hidden">
         {tenant.coverUrl ? (
           <div className="absolute inset-0">
-            <img src={tenant.coverUrl} alt="" className="h-full w-full object-cover" loading="eager" />
+            <img src={resolveMediaUrl(tenant.coverUrl)} alt="" className="h-full w-full object-cover" loading="eager" />
             <div className="absolute inset-0 bg-[var(--ce-primary)]/85" />
           </div>
         ) : (
@@ -245,7 +246,7 @@ function AcademyLanding({
               <div className="flex items-center gap-4">
                 {tenant.logoUrl ? (
                   <img
-                    src={tenant.logoUrl}
+                    src={resolveMediaUrl(tenant.logoUrl)}
                     alt=""
                     className="h-16 w-16 rounded-2xl border-2 border-white/30 object-cover shadow-xl"
                   />
@@ -382,7 +383,7 @@ function AcademyLanding({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {galleryItems.map((item) => (
                 <figure key={item.url} className="ce-card overflow-hidden">
-                  <img src={item.url} alt={item.caption || tenant.name} className="h-56 w-full object-cover" loading="lazy" />
+                  <img src={resolveMediaUrl(item.url)} alt={item.caption || tenant.name} className="h-56 w-full object-cover" loading="lazy" />
                   {item.caption && <figcaption className="p-4 text-sm text-[var(--ce-muted)]">{item.caption}</figcaption>}
                 </figure>
               ))}

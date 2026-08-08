@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { quizApi, contentApi, groupApi } from '../../shared/api/platformApi';
+import { quizApi, contentApi, groupApi, uploadApi } from '../../shared/api/platformApi';
 import PageHeader from '../../shared/ui/PageHeader';
 import ConfirmDialog from '../../shared/ui/ConfirmDialog';
 import FormModal from '../../shared/ui/FormModal';
@@ -103,6 +103,17 @@ function QuizFormFields({ values, setValues, errors, subjects, groups, t }) {
   const removeQuestion = (index) => {
     if (values.questions.length <= 1) return;
     setValues({ ...values, questions: values.questions.filter((_, i) => i !== index) });
+  };
+
+  const uploadQuestionImage = async (index, file) => {
+    if (!file) return;
+    try {
+      const data = await uploadApi.uploadImage(file);
+      updateQuestion(index, { imageUrl: data.url });
+      toast.success(t('quizzes.imageUploaded'));
+    } catch (err) {
+      toast.error(getFriendlyError(err));
+    }
   };
 
   return (
@@ -278,7 +289,11 @@ function QuizFormFields({ values, setValues, errors, subjects, groups, t }) {
             )}
 
             <FormField label={t('quizzes.questionImage')} helper={t('quizzes.questionImageHint')}>
-              <input className="ce-input" value={q.imageUrl || ''} onChange={(e) => updateQuestion(qi, { imageUrl: e.target.value })} />
+              <div className="space-y-2">
+                <input type="file" accept="image/*" className="ce-input" onChange={(e) => uploadQuestionImage(qi, e.target.files?.[0])} />
+                <input className="ce-input" value={q.imageUrl || ''} onChange={(e) => updateQuestion(qi, { imageUrl: e.target.value })} placeholder={t('quizzes.imageUrlPlaceholder')} />
+                {q.imageUrl && <img src={q.imageUrl} alt="" className="max-h-32 rounded-lg border border-[var(--ce-border)] object-contain" />}
+              </div>
             </FormField>
             <input className="ce-input mt-2" placeholder={t('quizzes.explanation')} value={q.explanation} onChange={(e) => updateQuestion(qi, { explanation: e.target.value })} />
             <input className="ce-input mt-2" placeholder={t('exams.hint')} value={q.hint || ''} onChange={(e) => updateQuestion(qi, { hint: e.target.value })} />

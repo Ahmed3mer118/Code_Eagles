@@ -1,6 +1,7 @@
 {
   "brand": {
     "name": "Code Eagles",
+    "academy": "الأكاديمية",
     "tagline": "منصة تعليمية متعددة الأكاديميات"
   },
   "nav": {
@@ -232,6 +233,7 @@
     "reports": "التقارير",
     "settings": "الإعدادات",
     "children": "الأبناء",
+    "createdBy": "تم إنشاؤه بواسطة Code Eagles",
     "myCourses": "موادي",
     "leaderboard": "المتصدرون",
     "certificates": "الشهادات",
@@ -249,6 +251,7 @@
   },
   "settings": {
     "account": "بيانات الحساب",
+    "accountHint": "يمكنك تعديل اسمك ورقم هاتفك من هنا.",
     "academy": "بيانات الأكاديمية",
     "academyName": "اسم الأكاديمية",
     "academyEditor": "تخصيص صفحة الأكاديمية",
@@ -259,6 +262,7 @@
     "logo": "شعار الأكاديمية",
     "cover": "صورة الغلاف",
     "uploadSuccess": "تم رفع الصورة",
+    "uploadedImages": "الصور المرفوعة",
     "aboutTitle": "عنوان قسم من نحن",
     "aboutSubtitle": "وصف قسم من نحن",
     "aboutCards": "بطاقات التعريف",
@@ -295,7 +299,24 @@
       "branding": "الهوية",
       "page": "محتوى الصفحة",
       "pricing": "الأسعار",
-      "payment": "بيانات الدفع"
+      "payment": "بيانات الدفع",
+      "students": "سياسة الطلاب"
+    },
+    "studentPolicyHint": "تحكم في ما يمكن للطلاب فعله داخل أكاديميتك.",
+    "allowSelfJoin": "السماح للطلاب بطلب الانضمام للمجموعات",
+    "allowProfileEdit": "السماح بتعديل الملف الشخصي",
+    "allowPasswordReset": "السماح بإعادة تعيين كلمة المرور",
+    "requireApprovedPayment": "اشتراط موافقة الدفع قبل الوصول الكامل",
+    "maxDevices": "الحد الأقصى للأجهزة لكل طالب",
+    "restrictions": "قيود الأكاديمية",
+    "restrictionsList": {
+      "noSelfJoin": "الانضمام الذاتي معطّل من قبل أكاديميتك",
+      "selfJoinAllowed": "يمكنك طلب الانضمام للمجموعات",
+      "noProfileEdit": "تعديل الملف الشخصي معطّل من قبل أكاديميتك",
+      "profileEditAllowed": "يمكنك تعديل ملفك الشخصي",
+      "noPasswordReset": "إعادة تعيين كلمة المرور معطّلة من قبل أكاديميتك",
+      "passwordResetAllowed": "يمكنك إعادة تعيين كلمة المرور",
+      "maxDevices": "حد الأجهزة: {{count}} أجهزة"
     },
     "theme": {
       "primary": "اللون الأساسي",
@@ -321,7 +342,59 @@
     "selectAcademy": "اختر أكاديمية",
     "recordPayment": "تسجيل دفعة",
     "pendingEnrollments": "طلبات انضمام معلقة",
-    "enrollmentsByMonth": "الاشتراكات الشهرية"
+    "enrollmentsByMonth": "الاشتراكات الشهرية",
+    "cmsTitle": "إدارة محتوى المنصة",
+    "cmsSubtitle": "تحكم في أقسام الصفحة الرئيسية والأسئلة الشائعة والآراء",
+    "sections": "أقسام الصفحة",
+    "enabled": "مفعّل",
+    "title": "العنوان",
+    "subtitle": "الوصف الفرعي",
+    "faq": "الأسئلة الشائعة",
+    "addFaq": "إضافة سؤال",
+    "questionAr": "السؤال (عربي)",
+    "questionEn": "السؤال (إنجليزي)",
+    "answerAr": "الإجابة (عربي)",
+    "answerEn": "الإجابة (إنجليزي)",
+    "testimonials": "آراء العملاء",
+    "items": "عناصر",
+    "authorName": "اسم الكاتب",
+    "academyName": "اسم الأكاديمية",
+    "reviewAr": "الرأي (عربي)",
+    "reviewEn": "الرأي (إنجليزي)",
+    "addTestimonial": "إضافة رأي",
+    "show": "إظهار",
+    "hide": "إخفاء",
+    "backupTitle": "إعدادات النسخ الاحتياطي",
+    "backupHint": "اضبط النسخ التلقائي وشغّل نسخة احتياطية يدوية عند الحاجة.",
+    "backupFrequency": "تكرار النسخ الاحتياطي",
+    "lastBackup": "آخر نسخة احتياطية",
+    "runBackup": "تشغيل نسخة احتياطية الآن",
+    "backupSuccess": "تمت النسخة الاحتياطية بنجاح",
+    "freq": {
+      "daily": "يومي",
+      "every3": "كل 3 أيام",
+      "weekly": "أسبوعي",
+      "monthly": "شهري",
+      "custom": "مخصص"
+    },
+    "tab": {
+      "sections": "الأقسام",
+      "faq": "الأسئلة الشائعة",
+      "testimonials": "آراء العملاء",
+      "footer": "التذييل",
+      "backup": "النسخ الاحتياطي"
+    },
+    "footer": "التذييل",
+    "footerText": "نص التذييل",
+    "contactEmail": "البريد الإلكتروني",
+    "contactPhone": "رقم الهاتف",
+    "socialLinks": "روابط السوشيال ميديا",
+    "addLink": "إضافة رابط",
+    "platform": "المنصة",
+    "linkLabel": "التسمية",
+    "featuredMode": "وضع قسم المميز",
+    "featuredProgramming": "مسارات البرمجة",
+    "featuredAcademies": "أعلى الأكاديميات تقييماً"
   },
   "features": {
     "quizzes": "الاختبارات",
@@ -432,6 +505,8 @@
     "emptyDesc": "اضغط «إنشاء اختبار» لإضافة اختبار جديد.",
     "questionImage": "صورة السؤال (اختياري)",
     "questionImageHint": "رابط صورة توضيحية للسؤال",
+    "imageUrlPlaceholder": "أو الصق رابط الصورة",
+    "imageUploaded": "تم رفع الصورة",
     "errors": {
       "titleRequired": "من فضلك أدخل عنوان الاختبار.",
       "subjectRequired": "من فضلك اختر المادة.",
@@ -484,12 +559,31 @@
     "goToAcademy": "افتح صفحة الأكاديمية",
     "noGroups": "لا توجد مجموعات متاحة",
     "noGroupsDesc": "لا توجد مجموعات مفتوحة للانضمام حالياً.",
+    "selectAcademyTitle": "أي أكاديمية تريد الدخول إليها؟",
+    "resubmitRequest": "إرسال الطلب مرة أخرى",
+    "myAcademies": "أكاديمياتي",
+    "switchAcademy": "تغيير الأكاديمية",
+    "viewAssignment": "فتح",
+    "startQuiz": "ابدأ",
+    "noAssignments": "لا توجد واجبات لهذه المادة",
+    "noQuizzes": "لا توجد اختبارات لهذه المادة",
+    "tab": {
+      "lectures": "المحاضرات",
+      "assignments": "الواجبات",
+      "quizzes": "الاختبارات"
+    },
+    "selectAcademyHint": "اختر الأكاديمية التي تريد فتحها الآن.",
+    "activeGroups": "{{count}} مجموعات نشطة",
+    "pendingGroups": "{{count}} معلقة",
+    "noAcademies": "أنت غير مسجل في أي أكاديمية بعد.",
     "status": {
       "pending": "في انتظار الموافقة",
       "active": "مقبول",
       "cancelled": "مرفوض",
       "expired": "منتهي"
-    }
+    },
+    "joinLiveSession": "انضم للحصة المباشرة",
+    "meetingLinkUnavailable": "رابط الحصة المباشرة غير متاح حالياً"
   },
   "academy": {
     "welcome": "مرحباً بك في",
@@ -623,6 +717,8 @@
     "submitHint": "حوّل المبلغ المطلوب ثم ارفع صورة الإيصال من الموبايل أو الكمبيوتر.",
     "submitSuccess": "تم إرسال إيصال الدفع بنجاح",
     "submitSuccessDetail": "طلبك قيد مراجعة المعلم.",
+    "alreadySubmitted": "تم إرسال إيصال دفع لهذا الطلب بالفعل",
+    "pendingLocked": "الدفع {{status}}. لا يمكنك رفع إيصال آخر لهذا الطلب.",
     "reviewHint": "راجع طلبات الدفع المعلقة ووافق أو ارفض.",
     "package": "الباقة",
     "amount": "المبلغ (ج.م)",
@@ -677,6 +773,14 @@
       "approved": "مقبول",
       "rejected": "مرفوض",
       "under_review": "قيد المراجعة"
+    },
+    "planType": "نوع الخطة",
+    "trialDays": "أيام التجربة",
+    "freeNoReceipt": "لا يلزم إيصال — هذه الدفعة مجانية.",
+    "planTypes": {
+      "standard": "عادية",
+      "free": "مجانية",
+      "trial": "تجريبية"
     }
   },
   "assignments": {
@@ -705,6 +809,21 @@
     "viewAll": "عرض الكل",
     "empty": "لا توجد واجبات بعد",
     "noSubmissions": "لا توجد تسليمات بعد",
+    "selectStudent": "اختر طالباً لمراجعة تسليمه",
+    "roster": {
+      "all": "الكل",
+      "submitted": "مُسلّم",
+      "not_submitted": "لم يُسلّم",
+      "late": "متأخر",
+      "graded": "تم التقييم"
+    },
+    "rosterStatus": {
+      "not_submitted": "لم يُسلّم",
+      "submitted": "مُسلّم",
+      "late": "متأخر",
+      "graded": "تم التقييم",
+      "pending": "معلق"
+    },
     "status": {
       "pending": "لم يُسلّم",
       "submitted": "مُسلّم",
@@ -754,6 +873,21 @@
       "assistant": "مساعد"
     }
   },
+  "reports": {
+    "title": "التقارير والتحليلات",
+    "subtitle": "نظرة على الإيرادات والاختبارات والاشتراكات والواجبات",
+    "passRate": "نسبة النجاح في الاختبارات",
+    "avgScore": "متوسط درجة الاختبار",
+    "revenue": "الإيرادات المعتمدة",
+    "examAttempts": "محاولات الاختبار",
+    "paymentsByMonth": "المدفوعات حسب الشهر",
+    "attemptsByMonth": "محاولات الاختبار حسب الشهر",
+    "topStudents": "أكثر الطلاب نشاطاً",
+    "topQuizzes": "الاختبارات الأكثر إنجازاً",
+    "topSubjects": "المواد الأكثر إقبالاً",
+    "attemptsShort": "محاولات",
+    "enrollmentsShort": "اشتراكات"
+  },
   "results": {
     "title": "نتائج الطلاب",
     "subtitle": "فلترة حسب المجموعة والمادة والاختبار",
@@ -762,14 +896,81 @@
     "allSubjects": "كل المواد",
     "allQuizzes": "كل الاختبارات",
     "attempts": "محاولات الاختبارات",
+    "attemptsCount": "المحاولات",
+    "bestScore": "أفضل درجة",
+    "latestScore": "آخر درجة",
+    "viewAttempts": "عرض المحاولات",
+    "attemptNumber": "المحاولة {{n}}",
+    "details": "التفاصيل",
     "noStudents": "لا يوجد طلاب",
     "noAttempts": "لا توجد محاولات"
   },
+  "students": {
+    "title": "الطلاب",
+    "subtitle": "عرض الملفات وإيقاف الحسابات وتتبع الأجهزة",
+    "search": "بحث بالاسم أو الإيميل أو الهاتف",
+    "name": "الاسم",
+    "phone": "الهاتف",
+    "groups": "المجموعات",
+    "devices": "الأجهزة",
+    "deviceCount": "{{count}} أجهزة مسجّلة",
+    "suspend": "إيقاف الحساب",
+    "activate": "تفعيل الحساب"
+  },
+  "promo": {
+    "title": "أكواد الخصم",
+    "subtitle": "أنشئ أكواد خصم لمجموعات محددة",
+    "add": "إضافة كود خصم",
+    "code": "كود الخصم",
+    "placeholder": "أدخل الكود",
+    "discountType": "نوع الخصم",
+    "percentage": "نسبة مئوية",
+    "fixed": "مبلغ ثابت",
+    "discountValue": "قيمة الخصم",
+    "usageLimit": "حد الاستخدام",
+    "expiryDate": "تاريخ الانتهاء",
+    "groups": "المجموعات المطبّقة",
+    "used": "مستخدم",
+    "deactivate": "إلغاء التفعيل",
+    "empty": "لا توجد أكواد خصم بعد",
+    "apply": "تطبيق",
+    "applied": "تم تطبيق كود الخصم",
+    "codeRequired": "من فضلك أدخل كود الخصم",
+    "discount": "الخصم",
+    "finalAmount": "المبلغ النهائي",
+    "edit": "تعديل كود الخصم",
+    "invalid": "كود الخصم غير صالح أو غير متاح",
+    "checking": "جاري التحقق من الكود…",
+    "holdExpired": "انتهت مهلة الخصم — أعد إدخال الكود أو ادفع المبلغ كاملاً",
+    "validUntil": "الخصم محجوز حتى {{time}}",
+    "statusActive": "نشط",
+    "statusInactive": "غير نشط"
+  },
   "leaderboard": {
-    "subtitle": "تصنيف الطلاب حسب النقاط",
+    "subtitle": "تصنيف الطلاب حسب النقاط ضمن مجموعاتك",
     "level": "المستوى",
     "empty": "لا يوجد متصدرون بعد",
-    "emptyDesc": "اكسب نقاطاً بمشاهدة المحاضرات وإكمال الاختبارات."
+    "emptyDesc": "اكسب نقاطاً بمشاهدة المحاضرات وإكمال الاختبارات.",
+    "filterGroup": "المجموعة",
+    "filterSubject": "المادة",
+    "allGroups": "مجموعاتي",
+    "allSubjects": "موادي"
+  },
+  "parent": {
+    "childrenTitle": "أبنائي",
+    "childrenSubtitle": "تابع أكاديميات ونتائج ومدفوعات كل ابن",
+    "noChildren": "لا يوجد أبناء مرتبطون بعد",
+    "childProfile": "ملف الابن",
+    "enrollments": "المجموعات والمواد",
+    "examResults": "نتائج الامتحانات",
+    "payments": "المدفوعات",
+    "noPayment": "لم يتم تقديم دفع",
+    "notificationsNav": "الإشعارات",
+    "notificationsTitle": "الإشعارات",
+    "notificationsSubtitle": "نتائج الامتحانات والمدفوعات وتحديثات أبنائك",
+    "noNotifications": "لا توجد إشعارات بعد",
+    "notification": "إشعار",
+    "child": "الابن"
   },
   "requests": {
     "title": "طلبات الانضمام المعلقة",
@@ -785,6 +986,7 @@
     "rejectTitle": "رفض الطلب",
     "rejectHint": "يمكنك كتابة سبب الرفض — سيصل للطالب.",
     "rejectReason": "سبب الرفض (اختياري)",
+    "rejectionReason": "سبب الرفض",
     "approvedSuccess": "تم قبول الطالب — يمكنه الآن الوصول للمحتوى.",
     "rejectedSuccess": "تم رفض الطلب وإرسال إشعار للطالب.",
     "payment": {
