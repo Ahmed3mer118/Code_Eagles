@@ -6,6 +6,7 @@ import PageHeader from '../../shared/ui/PageHeader';
 import EmptyState from '../../shared/ui/EmptyState';
 import StatusBadge from '../../shared/ui/StatusBadge';
 import Modal from '../../shared/ui/Modal';
+import ReceiptViewer from '../../shared/ui/ReceiptViewer';
 import SearchInput, { filterByQuery } from '../../shared/ui/SearchInput';
 import { getFriendlyError } from '../../shared/ui/FormField';
 
@@ -101,11 +102,7 @@ export default function PendingJoinRequestsPage() {
 
               {item.notes && <p className="mt-3 rounded-lg bg-[var(--ce-bg)] p-3 text-sm">{item.notes}</p>}
 
-              {item.receiptImageUrl && (
-                <a href={item.receiptImageUrl} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm font-semibold text-[var(--ce-primary)] underline">
-                  {t('payments.viewReceipt')}
-                </a>
-              )}
+              <ReceiptViewer url={item.receiptImageUrl} variant="link" className="mt-3" />
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <button type="button" className="ce-btn ce-btn-ghost text-sm" onClick={() => setDetail(item)}>{t('requests.viewDetails')}</button>
@@ -139,9 +136,7 @@ export default function PendingJoinRequestsPage() {
               <p><strong>{t('payments.package')}:</strong> {detail.packageLabel}</p>
               <p><strong>{t('requests.paymentStatus')}:</strong> {detail.paymentStatus}</p>
             </div>
-            {detail.receiptImageUrl && (
-              <img src={detail.receiptImageUrl} alt="" className="max-h-64 rounded-xl border border-[var(--ce-border)] object-contain" />
-            )}
+            <ReceiptViewer url={detail.receiptImageUrl} />
           </div>
         )}
       </Modal>

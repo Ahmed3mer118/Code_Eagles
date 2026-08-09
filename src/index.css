@@ -144,6 +144,59 @@ a {
   animation: ce-fade-up 0.7s ease 0.12s both;
 }
 
+/* Dashboard sidebar: off-canvas drawer on small screens, sticky column from lg up. */
+.ce-sidebar {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 50;
+  width: min(17rem, 85vw);
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+}
+
+[dir='rtl'] .ce-sidebar {
+  transform: translateX(100%);
+}
+
+.ce-sidebar.is-open,
+[dir='rtl'] .ce-sidebar.is-open {
+  transform: translateX(0);
+  box-shadow: 0 24px 80px rgba(11, 31, 51, 0.35);
+}
+
+.ce-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(11, 31, 51, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+@media (min-width: 1024px) {
+  .ce-sidebar,
+  [dir='rtl'] .ce-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    width: auto;
+    height: 100vh;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .ce-sidebar-backdrop {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ce-sidebar {
+    transition: none;
+  }
+}
+
 .ce-modal-backdrop {
   position: fixed;
   inset: 0;

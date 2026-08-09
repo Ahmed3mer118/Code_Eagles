@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronRight,
   Layers,
+  Lock,
   Pencil,
   PlayCircle,
   Plus,
@@ -19,6 +20,7 @@ import FormModal from '../../shared/ui/FormModal';
 import FormField, { getFriendlyError } from '../../shared/ui/FormField';
 import SearchInput from '../../shared/ui/SearchInput';
 import VisibilityToggle from '../../shared/ui/VisibilityToggle';
+import useTenantFeatures from '../../shared/hooks/useTenantFeatures';
 
 const emptySubject = { name: '', gradeLevel: 'grade_12', description: '' };
 const emptyUnit = { title: '' };
@@ -27,6 +29,8 @@ const emptyLecture = { title: '', description: '', videoUrl: '', order: 0, isVis
 
 export default function ContentHubPage() {
   const { t } = useTranslation();
+  const { isEnabled, loading: featuresLoading } = useTenantFeatures();
+  const canAuthorLectures = isEnabled('lectures');
   const [subjects, setSubjects] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [tree, setTree] = useState(null);
@@ -70,7 +74,7 @@ export default function ContentHubPage() {
   };
 
   useEffect(() => { loadSubjects(); }, [search]);
-  useEffect(() => { if (selectedId) loadTree(selectedId); }, [selectedId]);
+  useEffect(() => { if (selectedId && canAuthorLectures) loadTree(selectedId); }, [selectedId, canAuthorLectures]);
 
   const loadLectures = async (lessonId) => {
     setActiveLesson(lessonId);
@@ -172,7 +176,7 @@ export default function ContentHubPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={t('content.hubTitle')}
+        title={canAuthorLectures ? t('content.hubTitle') : t('dashboard.subjects')}
         subtitle={t('content.subjectsHint')}
         actions={
           <button type="button" className="ce-btn ce-btn-accent text-sm" onClick={() => setSubjectModal({ id: null })}>
@@ -184,7 +188,7 @@ export default function ContentHubPage() {
 
       <SearchInput value={search} onChange={setSearch} placeholder={t('common.search')} />
 
-      <div className="grid gap-6 xl:grid-cols-[340px_1fr]">
+      <div className={`grid gap-6 ${canAuthorLectures ? 'xl:grid-cols-[340px_1fr]' : 'lg:grid-cols-2'}`}>
         <div className="ce-card p-5">
           <div className="flex items-center justify-between gap-2">
             <h3 className="font-extrabold text-[var(--ce-primary)]">{t('dashboard.subjects')}</h3>
@@ -207,13 +211,14 @@ export default function ContentHubPage() {
                         ? 'border-[var(--ce-accent)] bg-[var(--ce-accent)]/10 shadow-sm'
                         : 'border-[var(--ce-border)] hover:border-[var(--ce-primary)]/30'
                     }`}
+                    disabled={!canAuthorLectures}
                     onClick={() => { setSelectedId(s._id); setActiveLesson(null); setLectures([]); }}
                   >
                     <div className="min-w-0">
                       <p className="truncate font-bold text-[var(--ce-primary)]">{s.name}</p>
                       <p className="text-xs text-[var(--ce-muted)]">{s.gradeLevel || '—'}</p>
                     </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-[var(--ce-muted)]" />
+                    {canAuthorLectures && <ChevronRight className="h-4 w-4 shrink-0 text-[var(--ce-muted)]" />}
                   </button>
                   <div className="mt-1 flex justify-end gap-1 px-1">
                     <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => setSubjectModal({ id: s._id, values: { name: s.name, gradeLevel: s.gradeLevel, description: s.description || '' } })}>
@@ -232,7 +237,15 @@ export default function ContentHubPage() {
         </div>
 
         <div>
-          {!selectedId ? (
+          {featuresLoading ? (
+            <div className="ce-skeleton h-64 rounded-[var(--ce-radius)]" />
+          ) : !canAuthorLectures ? (
+            <EmptyState
+              icon={Lock}
+              title={t('features.lockedTitle')}
+              description={t('features.lockedHint', { feature: t('features.lectures') })}
+            />
+          ) : !selectedId ? (
             <EmptyState icon="📚" title={t('content.selectSubject')} description={t('content.subjectsHint')} />
           ) : (
             <div className="space-y-6">

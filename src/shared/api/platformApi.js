@@ -492,6 +492,7 @@ export const platformPlanApi = {
 export const FEATURE_KEYS = [
   'quizzes',
   'assignments',
+  'lectures',
   'certificates',
   'groups',
   'payments',
@@ -499,6 +500,9 @@ export const FEATURE_KEYS = [
   'discussions',
   'liveSessions',
 ];
+
+/** Features that stay hidden until the academy subscribes to them. */
+export const OPT_IN_FEATURES = ['lectures'];
 
 export const ASSISTANT_PERMISSIONS = [
   'record_attendance',

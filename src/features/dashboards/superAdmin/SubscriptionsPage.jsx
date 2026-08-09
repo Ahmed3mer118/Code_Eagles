@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Bell, CalendarClock, CreditCard, Mail } from 'lucide-react';
@@ -9,9 +9,11 @@ import StatusBadge from '../../../shared/ui/StatusBadge';
 import ToggleSwitch from '../../../shared/ui/ToggleSwitch';
 import FormModal from '../../../shared/ui/FormModal';
 import FormField from '../../../shared/ui/FormField';
-import resolveMediaUrl from '../../../shared/utils/mediaUrl';
+import ReceiptViewer from '../../../shared/ui/ReceiptViewer';
+import EmptyState from '../../../shared/ui/EmptyState';
 
 const TABS = ['plans', 'requests'];
+const STATUS_FILTERS = ['all', 'pending', 'approved', 'rejected'];
 
 const emptyNewPlan = {
   key: '',
@@ -34,6 +36,21 @@ export default function SubscriptionsPage() {
   const [savingPlan, setSavingPlan] = useState('');
   const [showNewPlan, setShowNewPlan] = useState(false);
   const [reminding, setReminding] = useState('');
+  const [statusFilter, setStatusFilter] = useState('pending');
+
+  const statusCounts = useMemo(
+    () =>
+      STATUS_FILTERS.reduce((acc, key) => {
+        acc[key] = key === 'all' ? items.length : items.filter((item) => item.status === key).length;
+        return acc;
+      }, {}),
+    [items]
+  );
+
+  const visibleRequests = useMemo(
+    () => (statusFilter === 'all' ? items : items.filter((item) => item.status === statusFilter)),
+    [items, statusFilter]
+  );
 
   const load = async () => {
     try {
@@ -274,11 +291,35 @@ export default function SubscriptionsPage() {
         <>
           <SearchInput value={search} onChange={setSearch} placeholder={t('admin.searchAcademy')} />
 
-          {items.length === 0 ? (
-            <div className="ce-card p-8 text-center text-sm text-[var(--ce-muted)]">{t('admin.noTeacherRequests')}</div>
+          <div className="flex flex-wrap gap-2">
+            {STATUS_FILTERS.map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setStatusFilter(key)}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
+                  statusFilter === key
+                    ? 'border-[var(--ce-primary)] bg-[var(--ce-primary)] text-white'
+                    : 'border-[var(--ce-border)] bg-[var(--ce-surface)] text-[var(--ce-muted)] hover:border-[var(--ce-primary)]/40'
+                }`}
+              >
+                {key === 'all' ? t('payments.allStatuses') : t(`payments.status.${key}`)}
+                <span
+                  className={`rounded-full px-2 text-xs font-bold ${
+                    statusFilter === key ? 'bg-white/20' : 'bg-[var(--ce-bg)]'
+                  }`}
+                >
+                  {statusCounts[key] || 0}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {visibleRequests.length === 0 ? (
+            <EmptyState icon={CreditCard} title={t('admin.noTeacherRequests')} />
           ) : (
             <div className="grid gap-4 lg:grid-cols-2">
-              {items.map((item) => (
+              {visibleRequests.map((item) => (
                 <article key={item._id} className="ce-card overflow-hidden">
                   <div className="border-b border-[var(--ce-border)] bg-[var(--ce-bg)] px-5 py-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -289,7 +330,7 @@ export default function SubscriptionsPage() {
                           {item.recordedBy?.email || '—'}
                         </p>
                       </div>
-                      <StatusBadge status={item.status === 'approved' ? 'approved' : item.status} label={item.status} />
+                      <StatusBadge status={item.status} label={t(`payments.status.${item.status}`)} />
                     </div>
                   </div>
 
@@ -314,9 +355,7 @@ export default function SubscriptionsPage() {
                     )}
 
                     {item.receiptImageUrl ? (
-                      <a href={resolveMediaUrl(item.receiptImageUrl)} target="_blank" rel="noreferrer" className="block">
-                        <img src={resolveMediaUrl(item.receiptImageUrl)} alt="" className="max-h-36 w-full rounded-xl border border-[var(--ce-border)] object-cover" />
-                      </a>
+                      <ReceiptViewer url={item.receiptImageUrl} />
                     ) : (
                       <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900">{t('admin.noReceiptYet')}</p>
                     )}

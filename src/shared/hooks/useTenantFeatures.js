@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import AuthServices from '../api/authService';
-import { studentApi, FEATURE_KEYS } from '../api/platformApi';
+import { studentApi, FEATURE_KEYS, OPT_IN_FEATURES } from '../api/platformApi';
 import { getStoredTenant, setStoredTenant } from '../api/tenantContext';
 
 export function isFeatureEnabled(features, key) {
   if (!key) return true;
-  if (!features) return true;
-  return features[key] !== false;
+  const value = features?.[key];
+  if (value === undefined || value === null) return !OPT_IN_FEATURES.includes(key);
+  return value !== false;
 }
 
 export function filterNavByFeatures(navItems, features) {

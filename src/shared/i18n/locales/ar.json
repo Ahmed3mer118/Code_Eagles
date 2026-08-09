@@ -240,6 +240,8 @@
     "myCourses": "موادي",
     "leaderboard": "المتصدرون",
     "certificates": "الشهادات",
+    "openMenu": "فتح القائمة",
+    "xpLevel": "النقاط / المستوى",
     "comingSoon": "قريباً في الوحدات التالية",
     "moduleHint": "هذه الوحدة جاهزة هيكلياً وسيتم ربطها بالبيانات تدريجياً."
   },
@@ -274,6 +276,14 @@
     "invalidRole": "نوع الحساب غير صالح.",
     "alreadyEnrolled": "أنت مسجّل بالفعل في هذه المجموعة.",
     "network": "تعذّر الاتصال بالخادم. تحقق من الإنترنت وحاول مرة أخرى."
+  },
+  "roles": {
+    "teacher": "مدرس",
+    "instructor": "مدرس",
+    "student": "طالب",
+    "parent": "ولي أمر",
+    "assistant": "مساعد",
+    "super_admin": "مدير النظام"
   },
   "settings": {
     "account": "بيانات الحساب",
@@ -521,8 +531,11 @@
     "selectedPlan": "الباقة المختارة"
   },
   "features": {
+    "lockedTitle": "هذه الميزة غير مفعّلة في اشتراكك",
+    "lockedHint": "ميزة \"{{feature}}\" غير متاحة في باقتك الحالية. رقّي اشتراكك أو تواصل مع إدارة المنصة لتفعيلها.",
     "quizzes": "الاختبارات",
     "assignments": "الواجبات",
+    "lectures": "الدروس والمحاضرات",
     "certificates": "الشهادات",
     "groups": "المجموعات",
     "payments": "المدفوعات",
@@ -939,6 +952,7 @@
     "allStatuses": "كل الحالات",
     "paymentDate": "تاريخ الدفع",
     "receipt": "الإيصال",
+    "openOriginal": "فتح الصورة الأصلية",
     "noHistory": "لا توجد مدفوعات بعد",
     "pendingTitle": "مدفوعات معلقة",
     "planStatus": { "active": "نشطة", "inactive": "متوقفة" },

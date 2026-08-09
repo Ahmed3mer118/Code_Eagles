@@ -1,13 +1,31 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { Pencil } from 'lucide-react';
+import {
+  BadgeCheck,
+  Building2,
+  CircleCheck,
+  CircleX,
+  CreditCard,
+  GraduationCap,
+  Link2,
+  Mail,
+  Pencil,
+  Phone,
+  ShieldCheck,
+  Trophy,
+  User,
+} from 'lucide-react';
 import AuthServices from '../../shared/api/authService';
 import { getStoredTenant } from '../../shared/api/tenantContext';
 import AcademySettingsEditor from './AcademySettingsEditor';
 import AcademyUrlCard from '../../shared/ui/AcademyUrlCard';
 import TenantFeaturesPanel from '../../shared/ui/TenantFeaturesPanel';
 import FormField from '../../shared/ui/FormField';
+import InfoGrid from '../../shared/ui/InfoGrid';
+import StatusBadge from '../../shared/ui/StatusBadge';
+import ContentLoader from '../../shared/ui/ContentLoader';
+
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -70,7 +88,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
+  if (loading) return <ContentLoader cards={0} rows={4} />;
   if (!profile) return null;
 
   const { user, tenant } = profile;
@@ -79,100 +97,113 @@ export default function SettingsPage() {
   const profileLocked = isStudent && tenant?.studentPolicy?.allowProfileEdit === false;
   const canEditProfile = !profileLocked;
   const studentAcademy = isStudent ? getStoredTenant() || tenant : null;
+  const roleLabel = t(`roles.${user.role}`, user.role);
+  const initial = (user.name || '?').trim().charAt(0).toUpperCase();
 
   return (
     <div className="space-y-6">
-      <div className="ce-card p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-extrabold text-[var(--ce-primary)]">{t('settings.account')}</h2>
-            <p className="mt-1 text-sm text-[var(--ce-muted)]">{t('settings.accountHint')}</p>
+      <div className="ce-card overflow-hidden">
+        <div className="flex flex-wrap items-center gap-4 border-b border-[var(--ce-border)] bg-gradient-to-r from-[var(--ce-primary)] to-[var(--ce-primary-soft)] px-6 py-5 text-white">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-2xl font-extrabold">
+            {initial}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-xl font-extrabold">{user.name}</h2>
+            <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/80">
+              <span className="inline-flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" />
+                {user.email}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-bold">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                {roleLabel}
+              </span>
+            </p>
           </div>
           {canEditProfile && !editing && (
-            <button type="button" className="ce-btn ce-btn-ghost inline-flex items-center gap-2 text-sm" onClick={() => setEditing(true)}>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/25"
+              onClick={() => setEditing(true)}
+            >
               <Pencil className="h-4 w-4" />
               {t('common.edit')}
             </button>
           )}
         </div>
 
-        {!editing ? (
-          <dl className="mt-6 grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-[var(--ce-border)] bg-[var(--ce-bg)] p-4">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--ce-muted)]">{t('auth.name')}</dt>
-              <dd className="mt-1 text-lg font-bold text-[var(--ce-primary)]">{user.name}</dd>
-            </div>
-            <div className="rounded-2xl border border-[var(--ce-border)] bg-[var(--ce-bg)] p-4">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--ce-muted)]">{t('auth.phone')}</dt>
-              <dd className="mt-1 text-lg font-bold text-[var(--ce-primary)]">{user.phone_number}</dd>
-            </div>
-            {isStudent && (
-              <div className="rounded-2xl border border-[var(--ce-border)] bg-[var(--ce-bg)] p-4">
-                <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--ce-muted)]">{t('auth.gradeLevel')}</dt>
-                <dd className="mt-1 text-lg font-bold text-[var(--ce-primary)]">{user.gradeLevel || '—'}</dd>
-              </div>
-            )}
-            {isStudent && studentAcademy && (
-              <div className="rounded-2xl border border-[var(--ce-border)] bg-[var(--ce-bg)] p-4 md:col-span-2">
-                <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--ce-muted)]">{t('settings.academyName')}</dt>
-                <dd className="mt-1 text-lg font-bold text-[var(--ce-primary)]">{studentAcademy.name}</dd>
-              </div>
-            )}
-            <div className="rounded-2xl border border-[var(--ce-border)] bg-[var(--ce-bg)] p-4 md:col-span-2">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--ce-muted)]">{t('auth.email')}</dt>
-              <dd className="mt-1 font-semibold text-[var(--ce-primary)]">{user.email}</dd>
-            </div>
-            <div className="rounded-2xl border border-[var(--ce-border)] bg-[var(--ce-bg)] p-4">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--ce-muted)]">{t('auth.role')}</dt>
-              <dd className="mt-1 font-semibold capitalize">{user.role}</dd>
-            </div>
-            {!isStudent && (
-              <div className="rounded-2xl border border-[var(--ce-border)] bg-[var(--ce-bg)] p-4">
-                <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--ce-muted)]">XP / Level</dt>
-                <dd className="mt-1 font-bold">{user.xp ?? 0} / {user.level ?? 1}</dd>
-              </div>
-            )}
-          </dl>
-        ) : (
-          <div className="mt-6 grid gap-1 md:grid-cols-2">
-            <FormField label={t('auth.name')} helper={t('settings.fieldNameHint')}>
-              <input className="ce-input" value={accountForm.name} onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })} />
-            </FormField>
-            <FormField label={t('auth.phone')} helper={t('settings.fieldPhoneHint')}>
-              <input className="ce-input" value={accountForm.phone_number} onChange={(e) => setAccountForm({ ...accountForm, phone_number: e.target.value })} />
-            </FormField>
-            {isStudent && (
-              <FormField label={t('auth.gradeLevel')} helper={t('settings.fieldGradeHint')}>
-                <input className="ce-input" value={accountForm.gradeLevel} onChange={(e) => setAccountForm({ ...accountForm, gradeLevel: e.target.value })} />
+        <div className="p-6">
+          <p className="text-sm text-[var(--ce-muted)]">{t('settings.accountHint')}</p>
+
+          {!editing ? (
+            <InfoGrid
+              className="mt-5"
+              items={[
+                { icon: User, label: t('auth.name'), value: user.name },
+                { icon: Phone, label: t('auth.phone'), value: user.phone_number },
+                isStudent && { icon: GraduationCap, label: t('auth.gradeLevel'), value: user.gradeLevel },
+                isStudent && studentAcademy && {
+                  icon: Building2,
+                  label: t('settings.academyName'),
+                  value: studentAcademy.name,
+                },
+                { icon: Mail, label: t('auth.email'), value: user.email, wide: true },
+                { icon: BadgeCheck, label: t('auth.role'), value: roleLabel },
+                !isStudent && {
+                  icon: Trophy,
+                  label: t('dashboard.xpLevel'),
+                  value: `${user.xp ?? 0} / ${user.level ?? 1}`,
+                },
+              ]}
+            />
+          ) : (
+            <div className="mt-5 grid gap-1 md:grid-cols-2">
+              <FormField label={t('auth.name')} helper={t('settings.fieldNameHint')}>
+                <input className="ce-input" value={accountForm.name} onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })} />
               </FormField>
-            )}
-            <FormField label={t('auth.email')} helper={t('settings.fieldEmailHint')}>
-              <input className="ce-input" value={user.email} disabled readOnly />
-            </FormField>
-            <FormField label={t('auth.role')} helper={t('settings.fieldRoleHint')}>
-              <input className="ce-input" value={user.role} disabled readOnly />
-            </FormField>
-            <div className="flex flex-wrap gap-2 md:col-span-2">
-              <button type="button" className="ce-btn ce-btn-primary" onClick={saveProfile} disabled={saving}>
-                {saving ? t('common.loading') : t('common.save')}
-              </button>
-              <button type="button" className="ce-btn ce-btn-ghost" onClick={cancelEdit} disabled={saving}>
-                {t('common.cancel')}
-              </button>
+              <FormField label={t('auth.phone')} helper={t('settings.fieldPhoneHint')}>
+                <input className="ce-input" value={accountForm.phone_number} onChange={(e) => setAccountForm({ ...accountForm, phone_number: e.target.value })} />
+              </FormField>
+              {isStudent && (
+                <FormField label={t('auth.gradeLevel')} helper={t('settings.fieldGradeHint')}>
+                  <input className="ce-input" value={accountForm.gradeLevel} onChange={(e) => setAccountForm({ ...accountForm, gradeLevel: e.target.value })} />
+                </FormField>
+              )}
+              <FormField label={t('auth.email')} helper={t('settings.fieldEmailHint')}>
+                <input className="ce-input" value={user.email} disabled readOnly />
+              </FormField>
+              <FormField label={t('auth.role')} helper={t('settings.fieldRoleHint')}>
+                <input className="ce-input" value={roleLabel} disabled readOnly />
+              </FormField>
+              <div className="flex flex-wrap gap-2 md:col-span-2">
+                <button type="button" className="ce-btn ce-btn-primary" onClick={saveProfile} disabled={saving}>
+                  {saving ? t('common.loading') : t('common.save')}
+                </button>
+                <button type="button" className="ce-btn ce-btn-ghost" onClick={cancelEdit} disabled={saving}>
+                  {t('common.cancel')}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {tenant && !isStudent && (
         <div className="ce-card p-6">
           <h2 className="text-xl font-extrabold text-[var(--ce-primary)]">{t('settings.academy')}</h2>
-          <dl className="mt-4 grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl bg-[var(--ce-bg)] p-4"><dt className="text-sm text-[var(--ce-muted)]">{t('settings.academyName')}</dt><dd className="font-bold">{tenant.name}</dd></div>
-            <div className="rounded-xl bg-[var(--ce-bg)] p-4"><dt className="text-sm text-[var(--ce-muted)]">{t('settings.slug')}</dt><dd className="font-bold">/{tenant.slug || '—'}</dd></div>
-            <div className="rounded-xl bg-[var(--ce-bg)] p-4"><dt className="text-sm text-[var(--ce-muted)]">{t('settings.plan')}</dt><dd className="font-bold">{tenant.plan}</dd></div>
-            <div className="rounded-xl bg-[var(--ce-bg)] p-4"><dt className="text-sm text-[var(--ce-muted)]">{t('settings.status')}</dt><dd className="font-bold">{tenant.status}</dd></div>
-          </dl>
+          <InfoGrid
+            className="mt-4"
+            items={[
+              { icon: Building2, label: t('settings.academyName'), value: tenant.name },
+              { icon: Link2, label: t('settings.slug'), value: `/${tenant.slug || '—'}` },
+              { icon: CreditCard, label: t('settings.plan'), value: tenant.plan },
+              {
+                icon: ShieldCheck,
+                label: t('settings.status'),
+                value: <StatusBadge status={tenant.status} label={t(`payments.planStatus.${tenant.status}`, tenant.status)} />,
+              },
+            ]}
+          />
         </div>
       )}
 
@@ -195,11 +226,43 @@ export default function SettingsPage() {
       {isStudent && tenant?.studentPolicy && (
         <div className="ce-card p-6">
           <h2 className="text-xl font-extrabold text-[var(--ce-primary)]">{t('settings.restrictions')}</h2>
-          <ul className="mt-4 space-y-2 text-sm">
-            <li>{tenant.studentPolicy.allowSelfJoin === false ? t('settings.restrictionsList.noSelfJoin') : t('settings.restrictionsList.selfJoinAllowed')}</li>
-            <li>{tenant.studentPolicy.allowProfileEdit === false ? t('settings.restrictionsList.noProfileEdit') : t('settings.restrictionsList.profileEditAllowed')}</li>
-            <li>{tenant.studentPolicy.allowPasswordReset === false ? t('settings.restrictionsList.noPasswordReset') : t('settings.restrictionsList.passwordResetAllowed')}</li>
-            <li>{t('settings.restrictionsList.maxDevices', { count: tenant.studentPolicy.maxDevices || 3 })}</li>
+          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+            {[
+              {
+                allowed: tenant.studentPolicy.allowSelfJoin !== false,
+                text: tenant.studentPolicy.allowSelfJoin === false
+                  ? t('settings.restrictionsList.noSelfJoin')
+                  : t('settings.restrictionsList.selfJoinAllowed'),
+              },
+              {
+                allowed: tenant.studentPolicy.allowProfileEdit !== false,
+                text: tenant.studentPolicy.allowProfileEdit === false
+                  ? t('settings.restrictionsList.noProfileEdit')
+                  : t('settings.restrictionsList.profileEditAllowed'),
+              },
+              {
+                allowed: tenant.studentPolicy.allowPasswordReset !== false,
+                text: tenant.studentPolicy.allowPasswordReset === false
+                  ? t('settings.restrictionsList.noPasswordReset')
+                  : t('settings.restrictionsList.passwordResetAllowed'),
+              },
+              {
+                allowed: true,
+                text: t('settings.restrictionsList.maxDevices', { count: tenant.studentPolicy.maxDevices || 3 }),
+              },
+            ].map(({ allowed, text }) => (
+              <li
+                key={text}
+                className="flex items-start gap-2 rounded-xl border border-[var(--ce-border)] bg-[var(--ce-bg)] px-4 py-3 text-sm"
+              >
+                {allowed ? (
+                  <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                ) : (
+                  <CircleX className="mt-0.5 h-4 w-4 shrink-0 text-red-600" aria-hidden="true" />
+                )}
+                <span>{text}</span>
+              </li>
+            ))}
           </ul>
         </div>
       )}

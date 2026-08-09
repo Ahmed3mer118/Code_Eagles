@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { paymentApi } from '../../shared/api/platformApi';
+import ReceiptViewer from '../../shared/ui/ReceiptViewer';
 
 export default function PaymentReviewPage() {
   const { t } = useTranslation();
@@ -66,11 +67,7 @@ export default function PaymentReviewPage() {
                 </button>
               </div>
             </div>
-            {item.receiptImageUrl && (
-              <a href={item.receiptImageUrl} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm font-semibold text-[var(--ce-primary)]">
-                {t('payments.viewReceipt')}
-              </a>
-            )}
+            <ReceiptViewer url={item.receiptImageUrl} variant="link" className="mt-3" />
           </div>
         ))
       )}

@@ -240,6 +240,8 @@
     "myCourses": "My courses",
     "leaderboard": "Leaderboard",
     "certificates": "Certificates",
+    "openMenu": "Open menu",
+    "xpLevel": "XP / Level",
     "comingSoon": "Coming in the next modules",
     "moduleHint": "This module shell is ready and will be wired to live data step by step."
   },
@@ -285,6 +287,14 @@
     "invalidRole": "Invalid account type.",
     "alreadyEnrolled": "You are already enrolled in this group.",
     "network": "Could not reach the server. Check your connection and try again."
+  },
+  "roles": {
+    "teacher": "Teacher",
+    "instructor": "Teacher",
+    "student": "Student",
+    "parent": "Parent",
+    "assistant": "Assistant",
+    "super_admin": "Platform admin"
   },
   "settings": {
     "account": "Account details",
@@ -537,8 +547,11 @@
     "selectedPlan": "Selected plan"
   },
   "features": {
+    "lockedTitle": "This feature is not part of your subscription",
+    "lockedHint": "\"{{feature}}\" is not included in your current plan. Upgrade your subscription or contact the platform admin to unlock it.",
     "quizzes": "Quizzes",
     "assignments": "Assignments",
+    "lectures": "Lessons & lectures",
     "certificates": "Certificates",
     "groups": "Groups",
     "payments": "Payments",
@@ -1139,6 +1152,7 @@
     "allStatuses": "All statuses",
     "paymentDate": "Payment date",
     "receipt": "Receipt",
+    "openOriginal": "Open original image",
     "noHistory": "No payment records yet",
     "pendingTitle": "Pending payments",
     "planStatus": {

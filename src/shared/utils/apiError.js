@@ -29,6 +29,11 @@ export function getApiErrorMessage(err, fallbackKey = 'common.error') {
   if (status === 401 || code === 'TOKEN_EXPIRED' || /jwt expired|token expired|invalid token|unauthorized/i.test(msg)) {
     return t('errors.sessionExpired');
   }
+  if (code === 'FEATURE_DISABLED') {
+    const featureKey = err?.response?.data?.feature;
+    const featureLabel = featureKey ? t(`features.${featureKey}`) : '';
+    return featureLabel ? t('features.lockedHint', { feature: featureLabel }) : t('features.lockedTitle');
+  }
   if (status === 403 && /verify your email/i.test(msg)) return t('errors.verifyEmailFirst');
   if (status === 403 && /suspended/i.test(msg)) return t('errors.accountSuspended');
   if (status === 403) return t('errors.forbidden');

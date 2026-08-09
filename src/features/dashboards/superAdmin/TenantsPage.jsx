@@ -14,6 +14,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { tenantApi, FEATURE_KEYS } from '../../../shared/api/platformApi';
+import { isFeatureEnabled } from '../../../shared/hooks/useTenantFeatures';
 import { formatSubscriptionExpiry } from '../../../shared/utils/subscriptionDays';
 import SearchInput from '../../../shared/ui/SearchInput';
 import ToggleSwitch from '../../../shared/ui/ToggleSwitch';
@@ -366,7 +367,7 @@ export default function TenantsPage() {
                   <ToggleSwitch
                     key={key}
                     label={t(`features.${key}`)}
-                    checked={detail.tenant?.features?.[key] !== false}
+                    checked={isFeatureEnabled(detail.tenant?.features, key)}
                     onChange={(v) => toggleFeature(key, v)}
                   />
                 ))}

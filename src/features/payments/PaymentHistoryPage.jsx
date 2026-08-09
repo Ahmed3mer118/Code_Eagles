@@ -5,6 +5,7 @@ import { paymentPlanApi } from '../../shared/api/platformApi';
 import PageHeader from '../../shared/ui/PageHeader';
 import SearchInput, { filterByQuery } from '../../shared/ui/SearchInput';
 import StatusBadge from '../../shared/ui/StatusBadge';
+import ReceiptViewer from '../../shared/ui/ReceiptViewer';
 
 export default function PaymentHistoryPage() {
   const { t } = useTranslation();
@@ -84,11 +85,7 @@ export default function PaymentHistoryPage() {
                     </td>
                     <td className="px-4 py-3 text-[var(--ce-muted)]">{new Date(item.createdAt).toLocaleString()}</td>
                     <td className="px-4 py-3">
-                      {item.receiptImageUrl ? (
-                        <a href={item.receiptImageUrl} target="_blank" rel="noreferrer" className="font-semibold text-[var(--ce-primary)]">
-                          {t('payments.viewReceipt')}
-                        </a>
-                      ) : '—'}
+                      {item.receiptImageUrl ? <ReceiptViewer url={item.receiptImageUrl} variant="link" /> : '—'}
                     </td>
                   </tr>
                 ))}

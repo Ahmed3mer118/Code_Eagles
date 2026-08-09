@@ -1,6 +1,14 @@
+/** Lucide icons are objects ({ $$typeof, render }), not plain functions. */
+function isIconComponent(icon) {
+  return (
+    typeof icon === 'function'
+    || (typeof icon === 'object' && icon !== null && '$$typeof' in icon)
+  );
+}
+
 /** `icon` accepts an emoji string or a lucide component for a cleaner look. */
 export default function EmptyState({ icon = '📭', title, description, action }) {
-  const Icon = typeof icon === 'function' ? icon : null;
+  const Icon = isIconComponent(icon) ? icon : null;
 
   return (
     <div className="ce-card flex flex-col items-center px-6 py-12 text-center">
