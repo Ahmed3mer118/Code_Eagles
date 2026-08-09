@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { History, PlayCircle } from 'lucide-react';
+import { History, PlayCircle, Trophy } from 'lucide-react';
 import { quizApi } from '../../shared/api/platformApi';
 import StudentWaitingView from './StudentWaitingView';
 import SearchInput, { filterByQuery } from '../../shared/ui/SearchInput';
 import StatusBadge from '../../shared/ui/StatusBadge';
 import PageHeader from '../../shared/ui/PageHeader';
-import { getAvailabilityLabel, canStartExam } from '../exams/utils/examHelpers';
+import { getAvailabilityLabel, getStudentExamAction } from '../exams/utils/examHelpers';
 
 export default function StudentQuizzesPage() {
   const { t } = useTranslation();
@@ -54,12 +54,8 @@ export default function StudentQuizzesPage() {
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((quiz) => {
-            const canStart = canStartExam(quiz);
-            const actionLabel = quiz.hasInProgress
-              ? t('exams.resumeExam')
-              : canStart
-                ? t('exams.openExam')
-                : t('exams.viewDetails');
+            const action = getStudentExamAction(quiz);
+            const result = action.result || quiz.latestResult;
 
             return (
               <article key={quiz._id} className="ce-card ce-card-hover flex flex-col p-5">
@@ -71,7 +67,7 @@ export default function StudentQuizzesPage() {
                     </p>
                   </div>
                   <StatusBadge
-                    status={canStart || quiz.hasInProgress ? 'approved' : 'pending'}
+                    status={!action.disabled ? 'approved' : 'pending'}
                     label={getAvailabilityLabel(quiz, t)}
                   />
                 </div>
@@ -91,13 +87,52 @@ export default function StudentQuizzesPage() {
                   </div>
                 </div>
 
-                <Link
-                  to={`/dashboard/student/quizzes/${quiz._id}`}
-                  className={`ce-btn mt-auto text-sm ${canStart || quiz.hasInProgress ? 'ce-btn-accent' : 'ce-btn-ghost'}`}
-                >
-                  <PlayCircle className="h-4 w-4" />
-                  {actionLabel}
-                </Link>
+                {result && (
+                  <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-bold text-emerald-800">
+                      <Trophy className="h-4 w-4" />
+                      {t('exams.yourResult')}
+                    </div>
+                    {result.score != null && result.maxScore != null ? (
+                      <p className="mt-2 text-lg font-extrabold text-[var(--ce-primary)]">
+                        {result.score}/{result.maxScore}
+                        {result.percentage != null && (
+                          <span className="ms-2 text-sm text-[var(--ce-muted)]">({result.percentage}%)</span>
+                        )}
+                      </p>
+                    ) : (
+                      <p className="mt-2 font-extrabold text-[var(--ce-primary)]">
+                        {result.passed ? t('quizzes.passed') : t('quizzes.failed')}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {action.disabled ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="ce-btn ce-btn-ghost mt-auto cursor-not-allowed text-sm opacity-60"
+                    title={t(`exams.availability.${action.reason || 'unavailable'}`)}
+                  >
+                    <PlayCircle className="h-4 w-4" />
+                    {t(action.labelKey)}
+                  </button>
+                ) : (
+                  <Link
+                    to={action.to}
+                    className={`ce-btn mt-auto text-sm ${action.accent ? 'ce-btn-accent' : 'ce-btn-ghost'}`}
+                  >
+                    <PlayCircle className="h-4 w-4" />
+                    {t(action.labelKey)}
+                  </Link>
+                )}
+
+                {action.disabled && action.reason && (
+                  <p className="mt-2 text-center text-xs font-semibold text-[var(--ce-muted)]">
+                    {t(`exams.availability.${action.reason}`, action.reason)}
+                  </p>
+                )}
               </article>
             );
           })}

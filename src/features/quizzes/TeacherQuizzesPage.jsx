@@ -8,6 +8,7 @@ import FormModal from '../../shared/ui/FormModal';
 import FormField, { getFriendlyError } from '../../shared/ui/FormField';
 import SearchInput, { filterByQuery } from '../../shared/ui/SearchInput';
 import StatusBadge from '../../shared/ui/StatusBadge';
+import GroupCheckboxList from '../../shared/ui/GroupCheckboxList';
 import Modal from '../../shared/ui/Modal';
 import EmptyState from '../../shared/ui/EmptyState';
 import { Link } from 'react-router-dom';
@@ -64,6 +65,8 @@ function normalizeQuizForm(quiz) {
     ...defaultForm,
     ...quiz,
     subjectId: quiz.subjectId?._id || quiz.subjectId || '',
+    moduleId: quiz.moduleId?._id || quiz.moduleId || '',
+    lessonId: quiz.lessonId?._id || quiz.lessonId || '',
     groupIds: (quiz.groupIds || []).map((g) => g?._id || g),
     startDate: quiz.startDate ? quiz.startDate.slice(0, 16) : '',
     endDate: quiz.endDate ? quiz.endDate.slice(0, 16) : '',
@@ -80,6 +83,8 @@ function validateQuiz(values, t) {
   const errors = {};
   if (!values.title?.trim()) errors.title = t('quizzes.errors.titleRequired');
   if (!values.subjectId) errors.subject = t('quizzes.errors.subjectRequired');
+  if (!values.moduleId) errors.module = t('quizzes.errors.moduleRequired');
+  if (!values.lessonId) errors.lesson = t('quizzes.errors.lessonRequired');
   if (!values.durationMinutes || values.durationMinutes < 1) errors.duration = t('quizzes.errors.durationRequired');
   values.questions?.forEach((q, i) => {
     if (!q.text?.trim()) errors[`q${i}`] = t('quizzes.errors.questionRequired', { n: i + 1 });
@@ -91,6 +96,33 @@ function validateQuiz(values, t) {
 }
 
 function QuizFormFields({ values, setValues, errors, subjects, groups, t }) {
+  const [modules, setModules] = useState([]);
+  const [lessons, setLessons] = useState([]);
+
+  useEffect(() => {
+    if (!values.subjectId) {
+      setModules([]);
+      setLessons([]);
+      return undefined;
+    }
+    contentApi.getSubjectTree(values.subjectId)
+      .then((data) => {
+        const tree = data.subject || data;
+        setModules((tree.courses || []).flatMap((c) => c.modules || []));
+      })
+      .catch(() => setModules([]));
+    return undefined;
+  }, [values.subjectId]);
+
+  useEffect(() => {
+    if (!values.moduleId) {
+      setLessons([]);
+      return;
+    }
+    const mod = modules.find((m) => m._id === values.moduleId);
+    setLessons(mod?.lessons || []);
+  }, [values.moduleId, modules]);
+
   const updateQuestion = (index, patch) => {
     setValues({
       ...values,
@@ -123,9 +155,40 @@ function QuizFormFields({ values, setValues, errors, subjects, groups, t }) {
           <input className="ce-input" value={values.title} onChange={(e) => setValues({ ...values, title: e.target.value })} />
         </FormField>
         <FormField label={t('content.subjectName')} required error={errors.subject}>
-          <select className="ce-input" value={values.subjectId} onChange={(e) => setValues({ ...values, subjectId: e.target.value })}>
+          <select
+            className="ce-input"
+            value={values.subjectId}
+            onChange={(e) => setValues({ ...values, subjectId: e.target.value, moduleId: '', lessonId: '' })}
+          >
             <option value="">{t('content.subjectName')}</option>
             {subjects.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
+          </select>
+        </FormField>
+      </div>
+
+      <p className="text-sm text-[var(--ce-muted)]">{t('quizzes.linkHint')}</p>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <FormField label={t('content.unitName')} required error={errors.module}>
+          <select
+            className="ce-input"
+            value={values.moduleId}
+            disabled={!values.subjectId || !modules.length}
+            onChange={(e) => setValues({ ...values, moduleId: e.target.value, lessonId: '' })}
+          >
+            <option value="">{t('quizzes.selectUnit')}</option>
+            {modules.map((m) => <option key={m._id} value={m._id}>{m.title}</option>)}
+          </select>
+        </FormField>
+        <FormField label={t('content.lessonName')} required error={errors.lesson}>
+          <select
+            className="ce-input"
+            value={values.lessonId}
+            disabled={!values.moduleId || !lessons.length}
+            onChange={(e) => setValues({ ...values, lessonId: e.target.value })}
+          >
+            <option value="">{t('quizzes.selectLesson')}</option>
+            {lessons.map((l) => <option key={l._id} value={l._id}>{l.title}</option>)}
           </select>
         </FormField>
       </div>
@@ -142,18 +205,12 @@ function QuizFormFields({ values, setValues, errors, subjects, groups, t }) {
         <input className="ce-input" value={values.coverImageUrl} onChange={(e) => setValues({ ...values, coverImageUrl: e.target.value })} />
       </FormField>
 
-      <FormField label={t('dashboard.groups')}>
-        <select
-          className="ce-input"
-          multiple
+      <FormField label={t('dashboard.groups')} helper={t('groups.selectHint')}>
+        <GroupCheckboxList
+          groups={groups}
           value={values.groupIds}
-          onChange={(e) => setValues({
-            ...values,
-            groupIds: Array.from(e.target.selectedOptions, (opt) => opt.value),
-          })}
-        >
-          {groups.map((g) => <option key={g._id} value={g._id}>{g.name}</option>)}
-        </select>
+          onChange={(groupIds) => setValues({ ...values, groupIds })}
+        />
       </FormField>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -320,6 +377,12 @@ export default function TeacherQuizzesPage() {
   const [editing, setEditing] = useState(null);
   const [formInitial, setFormInitial] = useState(defaultForm);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [selectedAttemptIds, setSelectedAttemptIds] = useState([]);
+  const [notifyParents, setNotifyParents] = useState(true);
+  const [bulkPublishing, setBulkPublishing] = useState(false);
+
+  const isPublishableAttempt = (attempt) => ['pending_review', 'submitted', 'graded'].includes(attempt.status);
+  const publishableAttempts = attempts.filter(isPublishableAttempt);
 
   const load = async () => {
     try {
@@ -350,6 +413,7 @@ export default function TeacherQuizzesPage() {
     setDetailQuiz(quiz);
     setDetailOpen(true);
     setDetailLoading(true);
+    setSelectedAttemptIds([]);
     try {
       const data = await quizApi.listAttempts(quiz._id);
       setAttempts(data.attempts || []);
@@ -359,6 +423,37 @@ export default function TeacherQuizzesPage() {
       setAttempts([]);
     } finally {
       setDetailLoading(false);
+    }
+  };
+
+  const toggleAttemptSelection = (attemptId) => {
+    setSelectedAttemptIds((prev) => (
+      prev.includes(attemptId) ? prev.filter((id) => id !== attemptId) : [...prev, attemptId]
+    ));
+  };
+
+  const toggleSelectAllPublishable = () => {
+    const ids = publishableAttempts.map((a) => a._id);
+    setSelectedAttemptIds((prev) => (prev.length === ids.length ? [] : ids));
+  };
+
+  const bulkPublish = async () => {
+    if (!detailQuiz?._id || !selectedAttemptIds.length) return;
+    setBulkPublishing(true);
+    try {
+      const data = await quizApi.bulkPublishAttempts(detailQuiz._id, {
+        attemptIds: selectedAttemptIds,
+        notifyParents,
+      });
+      toast.success(t('exams.bulkPublishSuccess', { count: data.published || selectedAttemptIds.length }));
+      setSelectedAttemptIds([]);
+      const refreshed = await quizApi.listAttempts(detailQuiz._id);
+      setAttempts(refreshed.attempts || []);
+      setAttemptSummary(refreshed.summary || null);
+    } catch (err) {
+      toast.error(getFriendlyError(err));
+    } finally {
+      setBulkPublishing(false);
     }
   };
 
@@ -376,6 +471,8 @@ export default function TeacherQuizzesPage() {
   const saveQuiz = async (values) => {
     const payload = {
       ...values,
+      moduleId: values.moduleId || null,
+      lessonId: values.lessonId || null,
       startDate: values.startDate || null,
       endDate: values.endDate || null,
       resultPublishAt: values.resultPublishAt || null,
@@ -441,7 +538,11 @@ export default function TeacherQuizzesPage() {
                   <div>
                     <div className="font-bold text-[var(--ce-primary)]">{quiz.title}</div>
                     <div className="text-sm text-[var(--ce-muted)]">
-                      {quiz.subjectId?.name} · {quiz.questions?.length || 0} {t('quizzes.questions')} · {quiz.durationMinutes} {t('quizzes.minutes')}
+                      {quiz.subjectId?.name}
+                      {quiz.moduleId?.title ? ` · ${quiz.moduleId.title}` : ''}
+                      {quiz.lessonId?.title ? ` · ${quiz.lessonId.title}` : ''}
+                      {' · '}
+                      {quiz.questions?.length || 0} {t('quizzes.questions')} · {quiz.durationMinutes} {t('quizzes.minutes')}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -513,13 +614,42 @@ export default function TeacherQuizzesPage() {
               </div>
             )}
             <div className="overflow-x-auto rounded-xl border border-[var(--ce-border)]">
-              <table className="w-full min-w-[520px] text-sm">
+              {publishableAttempts.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ce-border)] bg-[var(--ce-bg)] px-4 py-3">
+                  <label className="inline-flex items-center gap-2 text-sm font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={selectedAttemptIds.length === publishableAttempts.length && publishableAttempts.length > 0}
+                      onChange={toggleSelectAllPublishable}
+                    />
+                    {t('exams.selectAllPublishable')}
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={notifyParents}
+                      onChange={(e) => setNotifyParents(e.target.checked)}
+                    />
+                    {t('exams.notifyParents')}
+                  </label>
+                  <button
+                    type="button"
+                    className="ce-btn ce-btn-accent text-sm"
+                    disabled={!selectedAttemptIds.length || bulkPublishing}
+                    onClick={bulkPublish}
+                  >
+                    {bulkPublishing ? t('common.loading') : t('exams.bulkPublishResults', { count: selectedAttemptIds.length })}
+                  </button>
+                </div>
+              )}
+              <table className="w-full min-w-[640px] text-sm">
                 <thead className="bg-[var(--ce-bg)] text-start">
                   <tr>
+                    <th className="px-4 py-3 font-bold">{t('exams.select')}</th>
                     <th className="px-4 py-3 font-bold">{t('dashboard.students')}</th>
                     <th className="px-4 py-3 font-bold">{t('quizzes.score')}</th>
                     <th className="px-4 py-3 font-bold">{t('quizzes.attempt')}</th>
-                    <th className="px-4 py-3 font-bold">{t('requests.paymentStatus')}</th>
+                    <th className="px-4 py-3 font-bold">{t('exams.status')}</th>
                     <th className="px-4 py-3 font-bold">{t('requests.requestDate')}</th>
                     <th className="px-4 py-3 font-bold">{t('exams.review')}</th>
                   </tr>
@@ -528,16 +658,33 @@ export default function TeacherQuizzesPage() {
                   {attempts.map((a) => (
                     <tr key={a._id}>
                       <td className="px-4 py-3">
+                        {isPublishableAttempt(a) ? (
+                          <input
+                            type="checkbox"
+                            checked={selectedAttemptIds.includes(a._id)}
+                            onChange={() => toggleAttemptSelection(a._id)}
+                            aria-label={a.studentId?.name}
+                          />
+                        ) : (
+                          <span className="text-[var(--ce-muted)]">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
                         <div className="font-semibold">{a.studentId?.name}</div>
                         <div className="text-xs text-[var(--ce-muted)]">{a.studentId?.email}</div>
                       </td>
                       <td className="px-4 py-3 font-bold">
-                        {a.score}/{a.maxScore}
-                        <span className="ms-1 text-[var(--ce-muted)]">({a.percentage}%)</span>
+                        {a.score != null ? `${a.score}/${a.maxScore}` : '—'}
+                        {a.percentage != null && (
+                          <span className="ms-1 text-[var(--ce-muted)]">({a.percentage}%)</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">#{a.attemptNumber}</td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={a.passed ? 'approved' : 'pending'} label={a.passed ? t('quizzes.passed') : t('quizzes.failed')} />
+                        <StatusBadge
+                          status={a.status === 'published' ? 'approved' : 'pending'}
+                          label={t(`exams.attemptStatus.${a.status}`, a.status)}
+                        />
                       </td>
                       <td className="px-4 py-3 text-[var(--ce-muted)]">
                         {new Date(a.submittedAt || a.createdAt).toLocaleString()}

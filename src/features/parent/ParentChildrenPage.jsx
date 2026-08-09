@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { School, Users } from 'lucide-react';
 import { parentApi } from '../../shared/api/platformApi';
 import PageHeader from '../../shared/ui/PageHeader';
 import StatusBadge from '../../shared/ui/StatusBadge';
-import LoadingScreen from '../../shared/ui/LoadingScreen';
+import EmptyState from '../../shared/ui/EmptyState';
+import ContentLoader from '../../shared/ui/ContentLoader';
 
 export default function ParentChildrenPage() {
   const { t } = useTranslation();
@@ -38,7 +40,7 @@ export default function ParentChildrenPage() {
     }
   };
 
-  if (loading) return <LoadingScreen />;
+  if (loading) return <ContentLoader cards={3} rows={3} />;
 
   return (
     <div className="space-y-6">
@@ -50,17 +52,31 @@ export default function ParentChildrenPage() {
             key={item.linkId}
             type="button"
             onClick={() => openChild(item)}
-            className={`ce-card ce-card-hover p-5 text-start ${selected?.linkId === item.linkId ? 'ring-2 ring-[var(--ce-accent)]' : ''}`}
+            className={`ce-card ce-card-hover flex items-center gap-4 p-5 text-start ${
+              selected?.linkId === item.linkId ? 'ring-2 ring-[var(--ce-accent)]' : ''
+            }`}
           >
-            <h3 className="text-lg font-extrabold text-[var(--ce-primary)]">{item.student?.name}</h3>
-            <p className="mt-1 text-sm text-[var(--ce-muted)]">{item.academy?.name}</p>
-            <p className="mt-2 text-xs text-[var(--ce-muted)]">{item.student?.gradeLevel || '—'}</p>
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--ce-accent)]/15 text-lg font-extrabold text-[var(--ce-accent)]">
+              {item.student?.name?.trim()?.charAt(0) || '?'}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-lg font-extrabold text-[var(--ce-primary)]">{item.student?.name}</span>
+              <span className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-[var(--ce-muted)]">
+                <School className="h-3.5 w-3.5 shrink-0" />
+                {item.academy?.name || '—'}
+              </span>
+              {item.student?.gradeLevel && (
+                <span className="mt-2 inline-flex rounded-full bg-[var(--ce-bg)] px-2.5 py-0.5 text-xs font-bold text-[var(--ce-primary)]">
+                  {t(`auth.${item.student.gradeLevel.replace('grade_', 'grade')}`, item.student.gradeLevel)}
+                </span>
+              )}
+            </span>
           </button>
         ))}
       </div>
 
       {!children.length && (
-        <div className="ce-card p-8 text-center text-[var(--ce-muted)]">{t('parent.noChildren')}</div>
+        <EmptyState icon={Users} title={t('parent.noChildren')} description={t('parent.noChildrenHint')} />
       )}
 
       {selected && overview && (
@@ -79,11 +95,22 @@ export default function ParentChildrenPage() {
             <h3 className="font-bold text-[var(--ce-primary)]">{t('parent.enrollments')}</h3>
             <div className="mt-3 space-y-2">
               {(overview.enrollments || []).map((en) => (
-                <div key={en._id} className="flex items-center justify-between rounded-xl bg-[var(--ce-bg)] p-3 text-sm">
-                  <span>{en.groupId?.name} — {en.groupId?.subjectId?.name}</span>
-                  <StatusBadge status={en.status === 'active' ? 'approved' : 'pending'} label={en.status} />
+                <div
+                  key={en._id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--ce-border)] bg-[var(--ce-bg)]/60 px-4 py-3 text-sm"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-[var(--ce-primary)]">{en.groupId?.name}</p>
+                    <p className="truncate text-xs text-[var(--ce-muted)]">{en.groupId?.subjectId?.name}</p>
+                  </div>
+                  <StatusBadge status={en.status} label={t(`student.status.${en.status}`, en.status)} />
                 </div>
               ))}
+              {!overview.enrollments?.length && (
+                <p className="rounded-xl border border-dashed border-[var(--ce-border)] px-4 py-6 text-center text-sm text-[var(--ce-muted)]">
+                  {t('common.noData')}
+                </p>
+              )}
             </div>
           </section>
 

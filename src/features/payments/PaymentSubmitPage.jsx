@@ -2,9 +2,18 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { CheckCircle2 } from 'lucide-react';
+import {
+  CheckCircle2,
+  CreditCard,
+  FileUp,
+  Receipt,
+  Upload,
+  Wallet,
+} from 'lucide-react';
 import { groupApi, paymentApi, promoApi, uploadApi } from '../../shared/api/platformApi';
+import PageHeader from '../../shared/ui/PageHeader';
 import resolveMediaUrl from '../../shared/utils/mediaUrl';
+import getApiErrorMessage from '../../shared/utils/apiError';
 
 const PACKAGES = [
   { value: 'lectures_only', labelKey: 'payments.lecturesOnly' },
@@ -57,12 +66,12 @@ export default function PaymentSubmitPage() {
       try {
         await loadEnrollments();
       } catch (err) {
-        toast.error(err?.message || t('common.error'));
+        toast.error(getApiErrorMessage(err));
       } finally {
         setLoading(false);
       }
     })();
-  }, [t]);
+  }, []);
 
   const pendingEnrollments = useMemo(
     () => enrollments.filter((en) => en.status === 'pending'),
@@ -88,6 +97,8 @@ export default function PaymentSubmitPage() {
 
   const finalAmount = promoPreview?.finalAmount ?? form.amount;
   const isFreePayment = finalAmount <= 0;
+  const paymentInfo = tenantInfo?.paymentInfo || {};
+  const hasPaymentInfo = paymentInfo.vodafoneNumber || paymentInfo.instapayId || paymentInfo.bankDetails || paymentInfo.paymentInstructions;
 
   useEffect(() => {
     setPromoPreview(null);
@@ -149,14 +160,7 @@ export default function PaymentSubmitPage() {
     }, 600);
 
     return () => clearTimeout(timer);
-  }, [
-    promoCode,
-    form.amount,
-    form.enrollmentId,
-    paymentLocked,
-    selectedEnrollment,
-    t,
-  ]);
+  }, [promoCode, form.amount, form.enrollmentId, paymentLocked, selectedEnrollment, t]);
 
   const onFileChange = async (file) => {
     if (!file) return;
@@ -167,7 +171,7 @@ export default function PaymentSubmitPage() {
       setForm((prev) => ({ ...prev, receiptImageUrl: data.url || data.absoluteUrl }));
       toast.success(t('payments.receiptUploaded'));
     } catch (err) {
-      toast.error(err?.response?.data?.message || err?.message || t('common.error'));
+      toast.error(getApiErrorMessage(err));
       setReceiptPreview('');
     } finally {
       setUploading(false);
@@ -224,158 +228,236 @@ export default function PaymentSubmitPage() {
       setPromoPreview(null);
       setPromoError('');
     } catch (err) {
-      toast.error(err?.response?.data?.message || err?.message || t('common.error'));
+      toast.error(getApiErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const paymentInfo = tenantInfo?.paymentInfo || {};
-
   if (loading) return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
 
   return (
-    <div className="mx-auto max-w-xl space-y-4">
-      <div className="ce-card p-6">
-        <h2 className="text-xl font-extrabold text-[var(--ce-primary)]">{t('payments.submitTitle')}</h2>
-        <p className="mt-1 text-sm text-[var(--ce-muted)]">{t('payments.submitHint')}</p>
-
-        {(paymentInfo.vodafoneNumber || paymentInfo.instapayId || paymentInfo.bankDetails || paymentInfo.paymentInstructions) && (
-          <div className="mt-4 rounded-xl bg-[var(--ce-bg)] p-4 text-sm">
-            <p className="font-bold text-[var(--ce-primary)]">{t('payments.instructions')}</p>
-            {paymentInfo.vodafoneNumber && <p className="mt-2">{t('payments.vodafone')}: {paymentInfo.vodafoneNumber}</p>}
-            {paymentInfo.instapayId && <p className="mt-1">{t('payments.instapay')}: {paymentInfo.instapayId}</p>}
-            {paymentInfo.bankDetails && <p className="mt-1 whitespace-pre-wrap">{paymentInfo.bankDetails}</p>}
-            {paymentInfo.paymentInstructions && <p className="mt-2 whitespace-pre-wrap text-[var(--ce-muted)]">{paymentInfo.paymentInstructions}</p>}
-          </div>
-        )}
-      </div>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <PageHeader title={t('payments.submitTitle')} subtitle={t('payments.submitHint')} />
 
       {submittedRequest && (
-        <div className="ce-card border-emerald-200 bg-emerald-50 p-6">
+        <div className="ce-card border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-600" />
-            <div>
-              <h3 className="font-extrabold text-emerald-900">{t('payments.submitSuccess')}</h3>
+            <CheckCircle2 className="mt-0.5 h-7 w-7 shrink-0 text-emerald-600" />
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg font-extrabold text-emerald-900">{t('payments.submitSuccess')}</h3>
               <p className="mt-1 text-sm text-emerald-800">{t('payments.submitSuccessDetail')}</p>
-              <p className="mt-3 text-sm font-semibold text-emerald-900">
-                {t('payments.amount')}: {submittedRequest.amount} {t('academy.currency')}
-              </p>
-              <p className="text-sm text-emerald-800">
-                {t('common.status')}: {t(`payments.status.${submittedRequest.status}`, submittedRequest.status)}
-              </p>
+              <div className="mt-3 flex flex-wrap gap-4 text-sm">
+                <span className="font-bold text-emerald-900">
+                  {t('payments.amount')}: {submittedRequest.amount} {t('academy.currency')}
+                </span>
+                <span className="text-emerald-800">
+                  {t('common.status')}: {t(`payments.status.${submittedRequest.status}`, submittedRequest.status)}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {pendingEnrollments.length === 0 ? (
-        <div className="ce-card p-6 text-center">
-          <p className="text-[var(--ce-muted)]">{t('payments.noPendingEnrollment')}</p>
-          <Link to="/dashboard/student/join" className="ce-btn ce-btn-accent mt-4 inline-flex">{t('student.joinGroup')}</Link>
+        <div className="ce-card p-10 text-center">
+          <Receipt className="mx-auto h-12 w-12 text-[var(--ce-muted)]/40" />
+          <p className="mt-4 text-[var(--ce-muted)]">{t('payments.noPendingEnrollment')}</p>
+          <Link to="/dashboard/student/join" className="ce-btn ce-btn-accent mt-5 inline-flex">
+            {t('student.joinGroup')}
+          </Link>
         </div>
       ) : (
-        <form onSubmit={onSubmit} className="ce-card space-y-4 p-6">
-          <div>
-            <label className="ce-label">{t('payments.enrollment')}</label>
-            <select
-              className="ce-input"
-              value={form.enrollmentId}
-              onChange={(e) => setForm({ ...form, enrollmentId: e.target.value })}
-              required
-            >
-              <option value="">{t('payments.selectEnrollment')}</option>
-              {pendingEnrollments.map((en) => (
-                <option key={en._id} value={en._id}>
-                  {en.groupId?.name} — {en.groupId?.subjectId?.name} — {en.amountDue} {t('academy.currency')}
-                </option>
-              ))}
-            </select>
+        <form onSubmit={onSubmit} className="grid gap-6 lg:grid-cols-5">
+          <div className="space-y-4 lg:col-span-2">
+            <section className="ce-card overflow-hidden">
+              <div className="flex items-center gap-2 border-b border-[var(--ce-border)] bg-[var(--ce-bg)]/60 px-5 py-3">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ce-primary)] text-xs font-bold text-white">1</span>
+                <h3 className="font-extrabold text-[var(--ce-primary)]">{t('payments.stepEnrollment')}</h3>
+              </div>
+              <div className="space-y-4 p-5">
+                <div>
+                  <label className="ce-label">{t('payments.enrollment')}</label>
+                  <select
+                    className="ce-input"
+                    value={form.enrollmentId}
+                    onChange={(e) => setForm({ ...form, enrollmentId: e.target.value })}
+                    required
+                  >
+                    <option value="">{t('payments.selectEnrollment')}</option>
+                    {pendingEnrollments.map((en) => (
+                      <option key={en._id} value={en._id}>
+                        {en.groupId?.name} — {en.groupId?.subjectId?.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedEnrollment && (
+                  <div className="rounded-xl bg-[var(--ce-bg)] p-4 text-sm">
+                    <p className="text-xs font-bold uppercase text-[var(--ce-muted)]">{t('payments.package')}</p>
+                    <p className="mt-1 font-semibold text-[var(--ce-primary)]">
+                      {t(PACKAGES.find((p) => p.value === selectedEnrollment.packageType)?.labelKey || 'payments.fullPackage')}
+                    </p>
+                    <p className="mt-3 text-xs font-bold uppercase text-[var(--ce-muted)]">{t('payments.amount')}</p>
+                    <p className="mt-1 text-2xl font-extrabold text-[var(--ce-accent)]">
+                      {form.amount} {t('academy.currency')}
+                    </p>
+                    {promoPreview && (
+                      <div className="mt-3 space-y-1 border-t border-[var(--ce-border)] pt-3">
+                        <p className="text-[var(--ce-muted)]">{t('promo.discount')}: -{promoPreview.discountAmount} {t('academy.currency')}</p>
+                        <p className="font-extrabold text-emerald-700">{t('promo.finalAmount')}: {promoPreview.finalAmount} {t('academy.currency')}</p>
+                      </div>
+                    )}
+                    {isFreePayment && (
+                      <p className="mt-3 font-semibold text-emerald-700">{t('payments.freeNoReceipt')}</p>
+                    )}
+                  </div>
+                )}
+
+                {selectedEnrollment && paymentLocked && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                    {t('payments.pendingLocked', {
+                      status: t(`payments.status.${selectedPayment.status}`, selectedPayment.status),
+                    })}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {hasPaymentInfo && (
+              <section className="ce-card overflow-hidden">
+                <div className="flex items-center gap-2 border-b border-[var(--ce-border)] bg-[var(--ce-bg)]/60 px-5 py-3">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ce-primary)] text-xs font-bold text-white">2</span>
+                  <Wallet className="h-4 w-4 text-[var(--ce-primary)]" />
+                  <h3 className="font-extrabold text-[var(--ce-primary)]">{t('payments.instructions')}</h3>
+                </div>
+                <div className="space-y-3 p-5 text-sm">
+                  {paymentInfo.vodafoneNumber && (
+                    <div className="rounded-xl bg-[var(--ce-bg)] px-4 py-3">
+                      <p className="text-xs font-bold text-[var(--ce-muted)]">{t('payments.vodafone')}</p>
+                      <p className="mt-1 font-extrabold text-[var(--ce-primary)]">{paymentInfo.vodafoneNumber}</p>
+                    </div>
+                  )}
+                  {paymentInfo.instapayId && (
+                    <div className="rounded-xl bg-[var(--ce-bg)] px-4 py-3">
+                      <p className="text-xs font-bold text-[var(--ce-muted)]">{t('payments.instapay')}</p>
+                      <p className="mt-1 font-extrabold text-[var(--ce-primary)]">{paymentInfo.instapayId}</p>
+                    </div>
+                  )}
+                  {paymentInfo.bankDetails && (
+                    <div className="rounded-xl bg-[var(--ce-bg)] px-4 py-3 whitespace-pre-wrap">{paymentInfo.bankDetails}</div>
+                  )}
+                  {paymentInfo.paymentInstructions && (
+                    <p className="text-[var(--ce-muted)] whitespace-pre-wrap">{paymentInfo.paymentInstructions}</p>
+                  )}
+                </div>
+              </section>
+            )}
           </div>
 
-          {selectedEnrollment && (
-            <div className="rounded-xl bg-[var(--ce-bg)] p-4 text-sm">
-              <p className="font-bold text-[var(--ce-primary)]">{t('payments.package')}</p>
-              <p className="mt-1">{t(PACKAGES.find((p) => p.value === selectedEnrollment.packageType)?.labelKey || 'payments.fullPackage')}</p>
-              <p className="mt-3 font-bold text-[var(--ce-primary)]">{t('payments.amount')}</p>
-              <p className="mt-1 text-lg font-extrabold">{form.amount} {t('academy.currency')}</p>
-              {promoPreview && (
-                <div className="mt-3 space-y-1 border-t border-[var(--ce-border)] pt-3">
-                  <p className="text-[var(--ce-muted)]">{t('promo.discount')}: -{promoPreview.discountAmount} {t('academy.currency')}</p>
-                  <p className="font-extrabold text-[var(--ce-accent)]">{t('promo.finalAmount')}: {promoPreview.finalAmount} {t('academy.currency')}</p>
-                  {promoPreview.validUntil && (
-                    <p className="text-xs text-[var(--ce-muted)]">{t('promo.validUntil', { time: new Date(promoPreview.validUntil).toLocaleTimeString() })}</p>
+          <section className="ce-card overflow-hidden lg:col-span-3 lg:self-start">
+            <div className="flex items-center gap-2 border-b border-[var(--ce-border)] bg-[var(--ce-bg)]/60 px-5 py-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ce-accent)] text-xs font-bold text-white">
+                {hasPaymentInfo ? '3' : '2'}
+              </span>
+              <FileUp className="h-4 w-4 text-[var(--ce-primary)]" />
+              <h3 className="font-extrabold text-[var(--ce-primary)]">{t('payments.stepUpload')}</h3>
+            </div>
+
+            <div className="space-y-4 p-5">
+              {selectedEnrollment && form.amount > 0 && !paymentLocked && (
+                <div>
+                  <label className="ce-label">{t('promo.code')}</label>
+                  <input
+                    className="ce-input uppercase"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    placeholder={t('promo.placeholder')}
+                  />
+                  {validatingPromo && <p className="mt-2 text-xs text-[var(--ce-muted)]">{t('promo.checking')}</p>}
+                  {promoError && !validatingPromo && (
+                    <p className="mt-2 text-xs font-semibold text-red-600">{promoError}</p>
+                  )}
+                  {promoPreview && !promoError && (
+                    <p className="mt-2 text-xs font-semibold text-emerald-700">{t('promo.applied')}</p>
                   )}
                 </div>
               )}
-              {isFreePayment && (
-                <p className="mt-3 text-sm font-semibold text-emerald-700">{t('payments.freeNoReceipt')}</p>
+
+              <div>
+                <label className="ce-label">{t('payments.method')}</label>
+                <select
+                  className="ce-input"
+                  value={form.method}
+                  onChange={(e) => setForm({ ...form, method: e.target.value })}
+                  disabled={paymentLocked || !selectedEnrollment}
+                >
+                  {METHODS.map((m) => (
+                    <option key={m.value} value={m.value}>{t(m.labelKey)}</option>
+                  ))}
+                </select>
+              </div>
+
+              {!isFreePayment && (
+                <div>
+                  <label className="ce-label">{t('payments.receiptUpload')}</label>
+                  <label className={`mt-2 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-8 transition ${
+                    paymentLocked || !selectedEnrollment
+                      ? 'border-[var(--ce-border)] bg-[var(--ce-bg)]/50 opacity-60'
+                      : 'border-[var(--ce-accent)]/40 bg-[var(--ce-accent)]/5 hover:border-[var(--ce-accent)]'
+                  }`}>
+                    <Upload className="h-8 w-8 text-[var(--ce-accent)]" />
+                    <span className="mt-2 text-sm font-semibold text-[var(--ce-primary)]">{t('payments.uploadTap')}</span>
+                    <span className="mt-1 text-xs text-[var(--ce-muted)]">{t('payments.uploadFormats')}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={(e) => onFileChange(e.target.files?.[0])}
+                      disabled={uploading || paymentLocked || !selectedEnrollment}
+                    />
+                  </label>
+                  {uploading && <p className="mt-2 text-sm text-[var(--ce-muted)]">{t('payments.uploading')}</p>}
+                  {receiptPreview && (
+                    <img
+                      src={receiptPreview.startsWith('blob:') ? receiptPreview : resolveMediaUrl(receiptPreview)}
+                      alt=""
+                      className="mt-4 max-h-56 w-full rounded-2xl border border-[var(--ce-border)] object-contain"
+                    />
+                  )}
+                </div>
               )}
+
+              <div>
+                <label className="ce-label">{t('payments.notes')}</label>
+                <textarea
+                  className="ce-input min-h-[90px]"
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  disabled={paymentLocked || !selectedEnrollment}
+                  placeholder={t('payments.notesPlaceholder')}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="ce-btn ce-btn-primary w-full"
+                disabled={
+                  submitting
+                  || uploading
+                  || paymentLocked
+                  || !selectedEnrollment
+                  || (!isFreePayment && !form.receiptImageUrl)
+                }
+              >
+                <CreditCard className="h-4 w-4" />
+                {submitting ? t('common.loading') : t('payments.submit')}
+              </button>
             </div>
-          )}
-
-          {selectedEnrollment && form.amount > 0 && !paymentLocked && (
-            <div>
-              <label className="ce-label">{t('promo.code')}</label>
-              <input
-                className="ce-input uppercase"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                placeholder={t('promo.placeholder')}
-              />
-              {validatingPromo && <p className="mt-2 text-xs text-[var(--ce-muted)]">{t('promo.checking')}</p>}
-              {promoError && !validatingPromo && (
-                <p className="mt-2 text-xs font-semibold text-red-600">{promoError}</p>
-              )}
-              {promoPreview && !promoError && (
-                <p className="mt-2 text-xs font-semibold text-emerald-700">{t('promo.applied')}</p>
-              )}
-            </div>
-          )}
-
-          {selectedEnrollment && paymentLocked && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              {t('payments.pendingLocked', {
-                status: t(`payments.status.${selectedPayment.status}`, selectedPayment.status),
-              })}
-            </div>
-          )}
-
-          <div>
-            <label className="ce-label">{t('payments.method')}</label>
-            <select className="ce-input" value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })} disabled={paymentLocked}>
-              {METHODS.map((m) => (
-                <option key={m.value} value={m.value}>{t(m.labelKey)}</option>
-              ))}
-            </select>
-          </div>
-
-          {!isFreePayment && (
-            <div>
-              <label className="ce-label">{t('payments.receiptUpload')}</label>
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="ce-input"
-                onChange={(e) => onFileChange(e.target.files?.[0])}
-                disabled={uploading || paymentLocked}
-              />
-              {uploading && <p className="mt-2 text-sm text-[var(--ce-muted)]">{t('payments.uploading')}</p>}
-              {receiptPreview && (
-                <img src={receiptPreview.startsWith('blob:') ? receiptPreview : resolveMediaUrl(receiptPreview)} alt="" className="mt-3 max-h-48 rounded-xl border border-[var(--ce-border)] object-contain" />
-              )}
-            </div>
-          )}
-
-          <div>
-            <label className="ce-label">{t('payments.notes')}</label>
-            <textarea className="ce-input min-h-[90px]" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} disabled={paymentLocked} />
-          </div>
-
-          <button type="submit" className="ce-btn ce-btn-primary w-full" disabled={submitting || uploading || paymentLocked || (!isFreePayment && !form.receiptImageUrl)}>
-            {submitting ? t('common.loading') : t('payments.submit')}
-          </button>
+          </section>
         </form>
       )}
     </div>

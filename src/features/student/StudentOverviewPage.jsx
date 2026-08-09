@@ -2,85 +2,132 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { studentApi, groupApi } from '../../shared/api/platformApi';
+import { BookOpen, ClipboardList, Layers, Plus, Trophy } from 'lucide-react';
+import { studentApi } from '../../shared/api/platformApi';
+import { clearStoredTenant } from '../../shared/api/tenantContext';
 import StudentWaitingView from './StudentWaitingView';
 import StatusBadge from '../../shared/ui/StatusBadge';
+import ConfirmDialog from '../../shared/ui/ConfirmDialog';
+import StudentAcademyPanel from './components/StudentAcademyPanel';
+import { useStudentAcademy } from './useStudentAcademy';
+import getApiErrorMessage from '../../shared/utils/apiError';
+
+const statIcons = [Layers, BookOpen, Trophy, ClipboardList];
 
 export default function StudentOverviewPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { academies, currentAcademy, loading: academiesLoading, hasMultipleAcademies, reload: reloadAcademies } = useStudentAcademy({ autoRedirect: true });
   const [data, setData] = useState(null);
-  const [academies, setAcademies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
+  const currentEntry = academies.find((a) => a.academy._id === currentAcademy?._id);
 
   useEffect(() => {
+    if (academiesLoading) return;
+    if (!currentAcademy) return;
+
     (async () => {
+      setLoading(true);
       try {
-        const academiesRes = await studentApi.myAcademies().catch(() => ({ academies: [] }));
-        setAcademies(academiesRes.academies || []);
-        if ((academiesRes.academies || []).length > 1 && !sessionStorage.getItem('ce_tenant_slug')) {
-          navigate('/dashboard/student/select-academy', { replace: true });
-          return;
-        }
         const res = await studentApi.dashboard();
         setData(res);
       } catch (err) {
-        toast.error(err?.message || t('common.error'));
+        toast.error(getApiErrorMessage(err));
+      } finally {
+        setLoading(false);
       }
     })();
-  }, [navigate, t]);
+  }, [academiesLoading, currentAcademy?.slug]);
 
-  if (!data) return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
+  if (academiesLoading || loading) {
+    return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
+  }
 
-  const joinLiveSession = async (groupId) => {
-    try {
-      const res = await groupApi.getMeetingLink(groupId);
-      if (res.meetingLink) window.open(res.meetingLink, '_blank', 'noopener,noreferrer');
-    } catch (err) {
-      toast.error(err?.response?.data?.message || err?.message || t('student.meetingLinkUnavailable'));
-    }
-  };
+  if (!currentAcademy) {
+    return null;
+  }
+
+  if (!data) {
+    return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
+  }
 
   const { groups, subjects, lectures, quizzes, assignments, recentAttempts, progress, pendingEnrollments } = data;
+  const statItems = [
+    { label: t('student.myGroups'), value: progress.activeGroups },
+    { label: t('student.mySubjects'), value: progress.subjects },
+    { label: t('student.myQuizzes'), value: progress.completedQuizzes },
+    { label: t('student.myHomework'), value: progress.pendingAssignments },
+  ];
+
+  const handleLeaveAcademy = async () => {
+    setLeaving(true);
+    try {
+      await studentApi.leaveAcademy();
+      toast.success(t('student.leftAcademySuccess'));
+      clearStoredTenant();
+      setLeaveOpen(false);
+      await reloadAcademies();
+      navigate('/dashboard/student/select-academy', { replace: true });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || t('common.error'));
+    } finally {
+      setLeaving(false);
+    }
+  };
 
   return (
     <StudentWaitingView>
       <div className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="ce-stat-card"><p className="text-2xl font-extrabold">{progress.activeGroups}</p><p className="text-sm text-[var(--ce-muted)]">{t('student.myGroups')}</p></div>
-          <div className="ce-stat-card"><p className="text-2xl font-extrabold">{progress.subjects}</p><p className="text-sm text-[var(--ce-muted)]">{t('student.mySubjects')}</p></div>
-          <div className="ce-stat-card"><p className="text-2xl font-extrabold">{progress.completedQuizzes}</p><p className="text-sm text-[var(--ce-muted)]">{t('student.myQuizzes')}</p></div>
-          <div className="ce-stat-card"><p className="text-2xl font-extrabold">{progress.pendingAssignments}</p><p className="text-sm text-[var(--ce-muted)]">{t('student.myHomework')}</p></div>
-        </div>
-
-        {academies.length > 1 && (
-          <section className="ce-card p-5">
-            <div className="flex items-center justify-between gap-3">
-              <h3 className="font-extrabold text-[var(--ce-primary)]">{t('student.myAcademies')}</h3>
-              <Link to="/dashboard/student/select-academy" className="text-sm font-semibold text-[var(--ce-primary)]">
-                {t('student.switchAcademy')}
-              </Link>
-            </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {academies.map((ac) => (
-                <div key={ac.tenantId || ac.slug} className="rounded-xl border border-[var(--ce-border)] p-4">
-                  <p className="font-bold">{ac.name}</p>
-                  <p className="mt-1 text-xs text-[var(--ce-muted)]">
-                    {t('student.activeGroups', { count: ac.activeGroups || 0 })}
-                    {ac.pendingGroups ? ` · ${t('student.pendingGroups', { count: ac.pendingGroups })}` : ''}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
+        {currentAcademy && (
+          <div className="space-y-3">
+            <StudentAcademyPanel
+              academy={currentAcademy}
+              activeCount={currentEntry?.activeCount ?? progress.activeGroups}
+              pendingCount={currentEntry?.pendingCount ?? 0}
+              leftCount={currentEntry?.leftCount ?? 0}
+              hasLeft={currentEntry?.hasLeft}
+              selected
+              showEnter={false}
+              onLeave={() => setLeaveOpen(true)}
+              leaving={leaving}
+            />
+            {hasMultipleAcademies && (
+              <div className="text-end">
+                <Link to="/dashboard/student/select-academy" className="text-sm font-semibold text-[var(--ce-primary)]">
+                  {t('student.switchAcademy')}
+                </Link>
+              </div>
+            )}
+          </div>
         )}
 
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {statItems.map((item, index) => {
+            const Icon = statIcons[index];
+            return (
+              <div key={item.label} className="ce-stat-card flex items-start gap-3">
+                <div className="rounded-xl bg-[var(--ce-primary)]/10 p-2.5 text-[var(--ce-primary)]">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-[var(--ce-primary)]">{item.value}</p>
+                  <p className="text-sm text-[var(--ce-muted)]">{item.label}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {pendingEnrollments?.length > 0 && (
-          <div className="ce-card p-5">
-            <h3 className="font-bold text-[var(--ce-primary)]">{t('student.pendingBanner')}</h3>
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+            <h3 className="font-bold text-amber-900">{t('student.pendingBanner')}</h3>
             <ul className="mt-3 space-y-2">
               {pendingEnrollments.map((en) => (
-                <li key={en._id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                  <span>{en.group?.name} — {en.group?.subjectId?.name}</span>
+                <li key={en._id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/70 px-4 py-3 text-sm">
+                  <span className="font-medium">{en.group?.name} — {en.group?.subjectId?.name}</span>
                   <Link to={`/dashboard/student/payments?enrollment=${en._id}`} className="ce-btn ce-btn-accent text-xs">{t('payments.payNow')}</Link>
                 </li>
               ))}
@@ -95,19 +142,29 @@ export default function StudentOverviewPage() {
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {groups.length ? groups.map((g) => (
-              <div key={g._id} className="rounded-xl border border-[var(--ce-border)] p-4">
-                <p className="font-bold">{g.group?.name}</p>
+              <div key={g._id} className="rounded-2xl border border-[var(--ce-border)] bg-[var(--ce-bg)]/40 p-4">
+                <p className="font-bold text-[var(--ce-primary)]">{g.group?.name}</p>
                 <p className="text-sm text-[var(--ce-muted)]">{g.group?.subjectId?.name}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <StatusBadge status="approved" label={t('student.status.active')} />
-                  {g.group?._id && (
-                    <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => joinLiveSession(g.group._id)}>
+                  {g.group?.meetingLink && (
+                    <a
+                      href={g.group.meetingLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ce-btn ce-btn-ghost text-xs"
+                    >
                       {t('student.joinLiveSession')}
-                    </button>
+                    </a>
                   )}
                 </div>
               </div>
-            )) : <p className="text-sm text-[var(--ce-muted)]">{t('student.noGroups')}</p>}
+            )) : (
+              <div className="md:col-span-2 rounded-2xl border border-dashed border-[var(--ce-border)] p-8 text-center">
+                <p className="text-sm text-[var(--ce-muted)]">{t('student.noGroups')}</p>
+                <Link to="/dashboard/student/join" className="ce-btn ce-btn-accent mt-4 text-sm">{t('student.requestJoin')}</Link>
+              </div>
+            )}
           </div>
         </section>
 
@@ -118,7 +175,7 @@ export default function StudentOverviewPage() {
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {subjects.length ? subjects.map((s) => (
-              <span key={s._id} className="rounded-full bg-[var(--ce-bg)] px-4 py-2 text-sm font-semibold">{s.name}</span>
+              <span key={s._id} className="rounded-full border border-[var(--ce-border)] bg-[var(--ce-bg)] px-4 py-2 text-sm font-semibold">{s.name}</span>
             )) : <p className="text-sm text-[var(--ce-muted)]">{t('student.noCourses')}</p>}
           </div>
         </section>
@@ -127,7 +184,7 @@ export default function StudentOverviewPage() {
           <h3 className="font-extrabold text-[var(--ce-primary)]">{t('student.myLectures')}</h3>
           <ul className="mt-4 space-y-2">
             {lectures.length ? lectures.map((lec) => (
-              <li key={lec._id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+              <li key={lec._id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[var(--ce-bg)] px-4 py-3 text-sm">
                 <span>{lec.title || lec.lessonTitle}</span>
                 {lec.videoUrl && <a href={lec.videoUrl} target="_blank" rel="noreferrer" className="font-semibold text-[var(--ce-primary)]">{t('student.watch')}</a>}
               </li>
@@ -143,7 +200,7 @@ export default function StudentOverviewPage() {
             </div>
             <ul className="mt-4 space-y-2 text-sm">
               {quizzes.length ? quizzes.map((q) => (
-                <li key={q._id}>{q.title}</li>
+                <li key={q._id} className="rounded-xl bg-[var(--ce-bg)] px-4 py-2">{q.title}</li>
               )) : <li className="text-[var(--ce-muted)]">{t('exams.noExams')}</li>}
             </ul>
           </section>
@@ -155,7 +212,7 @@ export default function StudentOverviewPage() {
             </div>
             <ul className="mt-4 space-y-2 text-sm">
               {assignments.length ? assignments.map((a) => (
-                <li key={a._id} className="flex justify-between gap-2">
+                <li key={a._id} className="flex justify-between gap-2 rounded-xl bg-[var(--ce-bg)] px-4 py-2">
                   <span>{a.title}</span>
                   <span className="text-[var(--ce-muted)]">{a.submission ? t(`assignments.status.${a.submission.status}`) : t('assignments.status.pending')}</span>
                 </li>
@@ -168,14 +225,25 @@ export default function StudentOverviewPage() {
           <h3 className="font-extrabold text-[var(--ce-primary)]">{t('student.myProgress')}</h3>
           <ul className="mt-4 space-y-2 text-sm">
             {recentAttempts.length ? recentAttempts.map((a) => (
-              <li key={a._id} className="flex flex-wrap justify-between gap-2">
+              <li key={a._id} className="flex flex-wrap justify-between gap-2 rounded-xl bg-[var(--ce-bg)] px-4 py-2">
                 <span>{a.quizTitle}</span>
-                <span className="font-semibold">{a.score != null ? `${a.score}/${a.maxScore}` : t(`exams.pendingReview`)}</span>
+                <span className="font-semibold">{a.score != null ? `${a.score}/${a.maxScore}` : t('exams.pendingReview')}</span>
               </li>
             )) : <li className="text-[var(--ce-muted)]">{t('student.noProgress')}</li>}
           </ul>
         </section>
       </div>
+
+      <ConfirmDialog
+        open={leaveOpen}
+        title={t('student.leaveAcademyTitle')}
+        message={t('student.leaveAcademyDesc')}
+        confirmLabel={t('student.leaveAcademy')}
+        cancelLabel={t('common.cancel')}
+        danger
+        onCancel={() => setLeaveOpen(false)}
+        onConfirm={handleLeaveAcademy}
+      />
     </StudentWaitingView>
   );
 }

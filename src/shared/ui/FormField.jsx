@@ -21,10 +21,8 @@ export default function FormField({
   );
 }
 
-export function getFriendlyError(err, fallback = 'Something went wrong. Please try again.') {
-  const msg = err?.response?.data?.message || err?.message;
-  if (!msg) return fallback;
-  if (msg === 'Tenant context required') return 'Please log in again or contact support — academy context is missing.';
-  if (msg === 'Invalid credentials') return 'Email or password is incorrect. Please check and try again.';
-  return msg;
+import getApiErrorMessage from '../utils/apiError';
+
+export function getFriendlyError(err, fallback) {
+  return getApiErrorMessage(err, fallback ? undefined : 'common.error');
 }

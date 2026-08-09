@@ -18,8 +18,8 @@ import AcademyLayout from '../../shared/layouts/AcademyLayout';
 import LoadingScreen from '../../shared/ui/LoadingScreen';
 import SectionHeader from '../marketing/components/SectionHeader';
 import CourseCard from '../marketing/components/CourseCard';
+import AcademyGroupCourseCard from './components/AcademyGroupCourseCard';
 import LearningPathTimeline from '../marketing/components/LearningPathTimeline';
-import GroupScheduleCard from '../marketing/components/GroupScheduleCard';
 import PricingTiers from '../marketing/components/PricingTiers';
 import ReviewCard from '../marketing/components/ReviewCard';
 import FaqAccordion from '../marketing/components/FaqAccordion';
@@ -120,9 +120,31 @@ function AcademyLanding({
     [page.gallery]
   );
 
-  const courseCards = useMemo(
+  const groupCatalog = useMemo(
     () =>
-      subjects.map((subject) => ({
+      groups.map((group) => ({
+        _id: group._id,
+        name: group.name,
+        description: group.subjectDetail?.description || group.subjectId?.name || '',
+        subjectName: group.subjectDetail?.name || group.subjectId?.name || '',
+        gradeLevel: group.gradeLevel || group.subjectDetail?.gradeLevel || group.subjectId?.gradeLevel,
+        lessonCount: group.contentStats?.lessonCount || group.subjectDetail?.lessonCount || 0,
+        group,
+      })),
+    [groups]
+  );
+
+  const orphanSubjects = useMemo(() => {
+    const linkedIds = new Set(
+      groups
+        .map((g) => g.subjectDetail?._id || g.subjectId?._id || g.subjectId)
+        .filter(Boolean)
+        .map((id) => id.toString())
+    );
+    return subjects
+      .filter((s) => !linkedIds.has(s._id.toString()))
+      .map((subject) => ({
+        type: 'subject',
         _id: subject._id,
         name: subject.name,
         description: subject.description,
@@ -139,26 +161,39 @@ function AcademyLanding({
         academyName: tenant.name,
         academySlug: slug,
         durationHours: Math.max((subject.lessonCount || 1) * 2, 4),
-      })),
-    [subjects, stats, packages, ownerName, tenant.name, slug]
+      }));
+  }, [groups, subjects, stats, packages, ownerName, tenant.name, slug]);
+
+  const catalogItems = useMemo(
+    () => [...groupCatalog.map((g) => ({ ...g, type: 'group' })), ...orphanSubjects],
+    [groupCatalog, orphanSubjects]
   );
 
-  const filteredCourses = useMemo(() => {
-    if (courseFilter === 'all') return courseCards;
-    if (courseFilter === 'secondary') {
-      return courseCards.filter((c) => c.gradeLevel?.startsWith('grade_'));
+  const matchesCourseFilter = (item, filter) => {
+    if (filter === 'all') return true;
+
+    const label = `${item.name || ''} ${item.description || ''} ${item.subjectName || ''}`.toLowerCase();
+    const grade = item.gradeLevel || '';
+
+    if (filter === 'secondary') {
+      return grade.startsWith('grade_') || /ثانو|secondary|prep|grade/i.test(label);
     }
-    if (courseFilter === 'programming') {
-      return courseCards.filter((c) => c.gradeLevel === 'general');
+    if (filter === 'programming') {
+      return grade === 'general' || /program|code|برمج|react|js|python|web|dev/i.test(label);
     }
-    if (courseFilter === 'beginner') {
-      return courseCards.filter((c) => (c.lessonCount || 0) <= 8);
+    if (filter === 'beginner') {
+      return item.type === 'group' || (item.lessonCount || 0) <= 8;
     }
-    if (courseFilter === 'advanced') {
-      return courseCards.filter((c) => (c.lessonCount || 0) > 8);
+    if (filter === 'advanced') {
+      return item.type !== 'group' && (item.lessonCount || 0) > 8;
     }
-    return courseCards;
-  }, [courseCards, courseFilter]);
+    return true;
+  };
+
+  const filteredCourses = useMemo(
+    () => catalogItems.filter((item) => matchesCourseFilter(item, courseFilter)),
+    [catalogItems, courseFilter]
+  );
 
   const reviews = useMemo(() => {
     if (page.reviews?.length) {
@@ -417,8 +452,18 @@ function AcademyLanding({
           </div>
           {filteredCourses.length ? (
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {filteredCourses.map((course) => (
-                <CourseCard key={course._id} course={course} />
+              {filteredCourses.map((item) => (
+                item.type === 'group' ? (
+                  <AcademyGroupCourseCard
+                    key={`group-${item._id}`}
+                    group={item.group}
+                    joinLink={joinLink}
+                    registerLink={registerLink}
+                    isApproved={isApproved}
+                  />
+                ) : (
+                  <CourseCard key={item._id} course={item} />
+                )
               ))}
             </div>
           ) : (
@@ -427,7 +472,7 @@ function AcademyLanding({
         </div>
       </section>
 
-      {learningPath?.length > 0 && (
+      {/* {learningPath?.length > 0 && (
         <section className="ce-section ce-section-alt">
           <div className="ce-container">
             <SectionHeader
@@ -437,7 +482,7 @@ function AcademyLanding({
             <LearningPathTimeline steps={learningPath} />
           </div>
         </section>
-      )}
+      )} */}
 
       <section className="ce-section">
         <div className="ce-container">
@@ -465,27 +510,8 @@ function AcademyLanding({
         </div>
       </section>
 
-      {groups.length > 0 && (
-        <section id="groups" className="ce-section">
-          <div className="ce-container">
-            <SectionHeader title={t('academy.groupsTitle')} subtitle={t('academy.groupsSubtitle')} />
-            <div className="grid gap-4 md:grid-cols-2">
-              {groups.map((group) => (
-                <GroupScheduleCard
-                  key={group._id}
-                  group={group}
-                  joinLink={joinLink}
-                  registerLink={registerLink}
-                  isApproved={isApproved}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {pricingTiers.some((tier) => tier.price > 0) && (
-        <section id="pricing" className="ce-section ce-section-alt">
+        <section id="pricing" className="ce-section">
           <div className="ce-container">
             <SectionHeader title={t('academy.packages')} subtitle={t('academy.pricingSubtitle')} />
             <PricingTiers tiers={pricingTiers.filter((tier) => tier.price > 0)} slug={slug} />
@@ -493,7 +519,7 @@ function AcademyLanding({
         </section>
       )}
 
-      <section className="ce-section">
+      <section className="ce-section ce-section-alt">
         <div className="ce-container">
           <SectionHeader title={t('academy.faqTitle')} subtitle={t('academy.faqSubtitle')} />
           <FaqAccordion items={faqItems} />

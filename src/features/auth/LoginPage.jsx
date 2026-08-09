@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import toast, { Toaster } from 'react-hot-toast';
 import AuthServices from '../../shared/api/authService';
 import { buildRegisterUrl, resolveReturnTo } from '../../shared/guards/RoleGuard';
+import { getCleanParam } from '../../shared/utils/queryParams';
+import getApiErrorMessage from '../../shared/utils/apiError';
+import { resolveStudentPostLoginPath } from '../student/useStudentAcademy';
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
@@ -24,11 +27,17 @@ export default function LoginPage() {
       if (res?.user?.preferredLanguage) {
         i18n.changeLanguage(res.user.preferredLanguage);
       }
+
+      if (res.role === 'student') {
+        const studentPath = await resolveStudentPostLoginPath(returnTo);
+        navigate(studentPath);
+        toast.success(t('auth.loginSuccess'));
+        return;
+      }
+
       toast.success(t('auth.loginSuccess'));
 
-      if (returnTo && res.role === 'student') {
-        navigate(returnTo);
-      } else if (returnTo && ['teacher', 'assistant'].includes(res.role) && returnTo.includes('/join')) {
+      if (returnTo && ['teacher', 'assistant'].includes(res.role) && returnTo.includes('/join')) {
         navigate(res.dashboardPath || auth.getDashboardPath(res.role));
       } else if (returnTo) {
         navigate(returnTo);
@@ -36,15 +45,15 @@ export default function LoginPage() {
         navigate(res.dashboardPath || auth.getDashboardPath(res.role));
       }
     } catch (err) {
-      toast.error(err?.message || t('common.error'));
+      toast.error(getApiErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
-  const registerHref = buildRegisterUrl(returnTo || undefined, {
-    academy: params.get('academy') || undefined,
-    group: params.get('group') || undefined,
+  const registerHref = buildRegisterUrl(returnTo, {
+    academy: getCleanParam(params, 'academy'),
+    group: getCleanParam(params, 'group'),
   });
 
   return (

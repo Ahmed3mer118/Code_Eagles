@@ -1,5 +1,6 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { jwtDecode } from "jwt-decode";
+import getApiErrorMessage from "../utils/apiError";
 
 type DecodedToken = {
   userId?: string;
@@ -20,6 +21,11 @@ const ROLE_DASHBOARD: Record<string, string> = {
   user: "/dashboard/student",
 };
 
+const TOKEN_KEY = "token";
+const REFRESH_ENDPOINT = "/api/auth/refresh";
+/** Endpoints that answer 401 for wrong credentials, not for an expired session. */
+const NO_REFRESH_ENDPOINTS = [REFRESH_ENDPOINT, "/api/auth/login", "/api/auth/register", "/api/auth/verify-email"];
+
 const normalizeRole = (role?: string | null) => {
   if (!role) return null;
   if (role === "admin") return "super_admin";
@@ -28,64 +34,115 @@ const normalizeRole = (role?: string | null) => {
   return role;
 };
 
-class AuthServices {
-  private URLAPI: string;
-  private token: string;
-  private axiosInstance: AxiosInstance;
-  private isRefreshing = false;
+const readToken = () => {
+  try {
+    return localStorage.getItem(TOKEN_KEY) || "";
+  } catch {
+    return "";
+  }
+};
 
-  constructor() {
-    this.URLAPI = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    this.token = localStorage.getItem("token") || "";
-    this.axiosInstance = axios.create({
-      baseURL: this.URLAPI,
-      headers: { "Content-Type": "application/json" },
-      withCredentials: true,
+/**
+ * One axios instance for the whole app: every `new AuthServices()` shares the same
+ * token, the same tenant header and the same refresh cycle, so parallel requests
+ * can never race each other into a false "session expired".
+ */
+const apiClient: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
+});
+
+let refreshPromise: Promise<string | null> | null = null;
+let mePromise: Promise<unknown> | null = null;
+let sessionExpiredNotified = false;
+
+const clearSession = (notifySessionExpired = false) => {
+  if (notifySessionExpired && !sessionExpiredNotified && typeof window !== "undefined") {
+    sessionExpiredNotified = true;
+    import("react-hot-toast").then(({ default: toast }) => {
+      toast.error(getApiErrorMessage({ response: { status: 401 } }));
     });
+    window.setTimeout(() => {
+      sessionExpiredNotified = false;
+    }, 4000);
+  }
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem("tokenExpiration");
+  localStorage.removeItem("ce_user_name");
+  localStorage.removeItem("ce_tenant");
+  sessionStorage.removeItem("ce_tenant_slug");
+};
 
-    if (this.token) {
-      this.axiosInstance.defaults.headers["Authorization"] = `Bearer ${this.token}`;
+apiClient.interceptors.request.use((config) => {
+  const token = readToken();
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  try {
+    const fromSession = sessionStorage.getItem("ce_tenant_slug");
+    const raw = localStorage.getItem("ce_tenant");
+    const slug = fromSession || (raw ? JSON.parse(raw)?.slug : null);
+    if (slug) {
+      config.headers = config.headers || {};
+      config.headers["X-Tenant-Slug"] = slug;
     }
-    this.setupInterceptors();
+  } catch {
+    /* tenant header is optional */
   }
 
-  private setupInterceptors() {
-    this.axiosInstance.interceptors.request.use((config) => {
-      try {
-        const fromSession = sessionStorage.getItem('ce_tenant_slug');
-        const raw = localStorage.getItem('ce_tenant');
-        const slug = fromSession || (raw ? JSON.parse(raw)?.slug : null);
-        if (slug) {
-          config.headers = config.headers || {};
-          config.headers['X-Tenant-Slug'] = slug;
-        }
-      } catch {
-        /* ignore */
-      }
-      return config;
-    });
+  return config;
+});
 
-    this.axiosInstance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry && this.getToken()) {
-          originalRequest._retry = true;
-          try {
-            const newToken = await this.refreshToken();
-            if (newToken) {
-              originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-              return this.axiosInstance(originalRequest);
-            }
-            this.handleLogout();
-          } catch {
-            this.handleLogout();
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
+/** Concurrent 401s wait on a single refresh call instead of triggering one each. */
+const refreshAccessToken = (): Promise<string | null> => {
+  if (!refreshPromise) {
+    refreshPromise = apiClient
+      .post(REFRESH_ENDPOINT, {}, { withCredentials: true })
+      .then((response) => {
+        const token = response.data?.accessToken || null;
+        if (token) localStorage.setItem(TOKEN_KEY, token);
+        return token;
+      })
+      .catch(() => null)
+      .finally(() => {
+        refreshPromise = null;
+      });
   }
+  return refreshPromise;
+};
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined;
+    const url = originalRequest?.url || "";
+    const isRetryable =
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !NO_REFRESH_ENDPOINTS.some((endpoint) => url.includes(endpoint)) &&
+      readToken();
+
+    if (isRetryable) {
+      originalRequest._retry = true;
+      const token = await refreshAccessToken();
+      if (token) {
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers["Authorization"] = `Bearer ${token}`;
+        return apiClient(originalRequest);
+      }
+      clearSession(true);
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+class AuthServices {
+  private axiosInstance: AxiosInstance = apiClient;
 
   async register(userData: Record<string, unknown> | string) {
     const response = await this.axiosInstance.post(`/api/auth/register`, userData);
@@ -97,8 +154,7 @@ class AuthServices {
     if (response.data.accessToken) {
       this.setToken(response.data.accessToken);
       if (response.data.user?.name) localStorage.setItem("ce_user_name", response.data.user.name);
-      if (response.data.tenant) localStorage.setItem("ce_tenant", JSON.stringify(response.data.tenant));
-      if (response.data.tenant?.slug) sessionStorage.setItem("ce_tenant_slug", response.data.tenant.slug);
+      this.storeTenant(response.data.tenant);
     }
     return response.data;
   }
@@ -112,9 +168,20 @@ class AuthServices {
     if (response.data.accessToken) this.setToken(response.data.accessToken);
     if (response.data.user?.name) localStorage.setItem("ce_user_name", response.data.user.name);
     if (response.data.user?.preferredLanguage) localStorage.setItem("ce_lang", response.data.user.preferredLanguage);
-    if (response.data.tenant) localStorage.setItem("ce_tenant", JSON.stringify(response.data.tenant));
-    if (response.data.tenant?.slug) sessionStorage.setItem("ce_tenant_slug", response.data.tenant.slug);
+    this.storeTenant(response.data.tenant);
     return response.data;
+  }
+
+  /** A signed-in account must never inherit the academy left behind by a previous session. */
+  private storeTenant(tenant?: { slug?: string | null } | null) {
+    if (tenant) {
+      localStorage.setItem("ce_tenant", JSON.stringify(tenant));
+      if (tenant.slug) sessionStorage.setItem("ce_tenant_slug", tenant.slug);
+      else sessionStorage.removeItem("ce_tenant_slug");
+      return;
+    }
+    localStorage.removeItem("ce_tenant");
+    sessionStorage.removeItem("ce_tenant_slug");
   }
 
   async forgotPassword(email: string) {
@@ -138,19 +205,28 @@ class AuthServices {
     }
   }
 
+  /**
+   * The shell, the feature flags hook and the landing page all need the profile on
+   * mount; sharing the in-flight request turns three round trips into one.
+   */
   async me() {
-    const response = await this.axiosInstance.get(`/api/auth/me`);
-    return response.data;
+    if (!mePromise) {
+      mePromise = this.axiosInstance
+        .get(`/api/auth/me`)
+        .then((response) => response.data)
+        .finally(() => {
+          mePromise = null;
+        });
+    }
+    return mePromise;
   }
 
   setToken(token: string) {
-    this.token = token;
-    localStorage.setItem("token", token);
-    this.axiosInstance.defaults.headers["Authorization"] = `Bearer ${token}`;
+    localStorage.setItem(TOKEN_KEY, token);
   }
 
   getToken(): string {
-    return this.token || localStorage.getItem("token") || "";
+    return readToken();
   }
 
   decoded(token: string): DecodedToken {
@@ -198,20 +274,8 @@ class AuthServices {
   }
 
   async refreshToken() {
-    if (!this.getToken() || this.isRefreshing) return null;
-    this.isRefreshing = true;
-    try {
-      const response = await this.axiosInstance.post("/api/auth/refresh", {}, { withCredentials: true });
-      if (response.data.accessToken) {
-        this.setToken(response.data.accessToken);
-        return response.data.accessToken;
-      }
-      return null;
-    } catch {
-      return null;
-    } finally {
-      this.isRefreshing = false;
-    }
+    if (!this.getToken()) return null;
+    return refreshAccessToken();
   }
 
   async updateProfile(payload: { name?: string; phone_number?: string; gradeLevel?: string }) {
@@ -219,13 +283,8 @@ class AuthServices {
     return response.data;
   }
 
-  handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("tokenExpiration");
-    localStorage.removeItem("ce_user_name");
-    localStorage.removeItem("ce_tenant");
-    this.token = "";
-    this.axiosInstance.defaults.headers["Authorization"] = "";
+  handleLogout(notifySessionExpired = false) {
+    clearSession(notifySessionExpired);
   }
 
   getAxiosInstance(): AxiosInstance {
@@ -234,4 +293,4 @@ class AuthServices {
 }
 
 export default AuthServices;
-export { ROLE_DASHBOARD, normalizeRole };
+export { ROLE_DASHBOARD, normalizeRole, apiClient };

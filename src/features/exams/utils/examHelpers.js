@@ -65,6 +65,56 @@ export function canStartExam(exam) {
   );
 }
 
+export function getStudentExamAction(exam) {
+  const quizId = exam?._id;
+
+  if (exam?.hasInProgress) {
+    return {
+      type: 'resume',
+      disabled: false,
+      labelKey: 'exams.resumeExam',
+      to: `/dashboard/student/quizzes/${quizId}`,
+      accent: true,
+    };
+  }
+
+  if (canStartExam(exam)) {
+    return {
+      type: 'start',
+      disabled: false,
+      labelKey: 'exams.openExam',
+      to: `/dashboard/student/quizzes/${quizId}`,
+      accent: true,
+    };
+  }
+
+  if (exam?.latestResult?.attemptId) {
+    return {
+      type: 'viewResult',
+      disabled: false,
+      labelKey: 'exams.viewResult',
+      to: `/dashboard/student/quizzes/${quizId}/results/${exam.latestResult.attemptId}`,
+      accent: true,
+      result: exam.latestResult,
+    };
+  }
+
+  const reason = !exam?.availability?.available
+    ? exam?.availability?.reason
+    : (exam?.attemptsRemaining ?? 0) <= 0
+      ? 'max_attempts'
+      : 'unavailable';
+
+  return {
+    type: 'disabled',
+    disabled: true,
+    labelKey: 'exams.startExam',
+    reason,
+    to: null,
+    accent: false,
+  };
+}
+
 export function getResultModeLabel(exam, t) {
   const key = exam?.resultMessageKey || exam?.resultMode;
   return t(`exams.resultModes.${key}`, t(`quizzes.result${exam?.resultMode === 'immediate' ? 'Immediate' : 'Teacher'}`, key));

@@ -26,6 +26,7 @@ const TenantsPage = React.lazy(() => import('./features/dashboards/superAdmin/Te
 const SubscriptionsPage = React.lazy(() => import('./features/dashboards/superAdmin/SubscriptionsPage.jsx'));
 const PlatformCmsPage = React.lazy(() => import('./features/dashboards/superAdmin/PlatformCmsPage.jsx'));
 const TeacherOverview = React.lazy(() => import('./features/dashboards/teacher/TeacherOverview.jsx'));
+const TeacherPlatformSubscriptionPage = React.lazy(() => import('./features/teacher/TeacherPlatformSubscriptionPage.jsx'));
 const SubjectsPage = React.lazy(() => import('./features/content/ContentHubPage.jsx'));
 const GroupsPage = React.lazy(() => import('./features/groups/GroupsPage.jsx'));
 const AssistantsPage = React.lazy(() => import('./features/assistants/AssistantsPage.jsx'));
@@ -60,116 +61,117 @@ const AcademyPublicPage = React.lazy(() => import('./features/academy/AcademyPub
 
 const withRole = (roles, element) => <RoleGuard roles={roles}>{element}</RoleGuard>;
 
-function App() {
-  const router = createBrowserRouter([
-    {
-      path: '/',
-      element: <MarketingLayout />,
-      children: [
-        { index: true, element: <LandingPage /> },
-        { path: 'contact', element: <ContactPage /> },
-      ],
-    },
-    {
-      path: '/auth',
-      children: [
-        { path: 'login', element: <LoginPage /> },
-        { path: 'register', element: <RegisterPage /> },
-        { path: 'verif-email', element: <VerifyEmailPage /> },
-        { path: 'forget-password', element: <ForgotPasswordPage /> },
-      ],
-    },
-    {
-      path: '/dashboard/super-admin',
-      element: withRole(['super_admin'], <SuperAdminDashboard />),
-      children: [
-        { index: true, element: <SuperAdminOverview /> },
-        { path: 'tenants', element: <TenantsPage /> },
-        { path: 'subscriptions', element: <SubscriptionsPage /> },
-        { path: 'cms', element: <PlatformCmsPage /> },
-        { path: 'settings', element: <SettingsPage /> },
-      ],
-    },
-    {
-      path: '/dashboard/teacher',
-      element: withRole(['teacher'], <TeacherDashboard />),
-      children: [
-        { index: true, element: <TeacherOverview /> },
-        { path: 'subjects', element: <SubjectsPage /> },
-        { path: 'groups', element: <GroupsPage /> },
-        { path: 'students', element: <TeacherStudentsPage /> },
-        { path: 'requests', element: <PendingJoinRequestsPage /> },
-        { path: 'quizzes', element: <TeacherQuizzesPage /> },
-        { path: 'quizzes/:quizId/review/:attemptId', element: <AttemptReviewPage /> },
-        { path: 'results', element: <TeacherResultsPage /> },
-        { path: 'reports', element: <TeacherReportsPage /> },
-        { path: 'payments', element: <PaymentReviewPage /> },
-        { path: 'payment-plans', element: <PaymentPlansPage /> },
-        { path: 'promo-codes', element: <PromoCodesPage /> },
-        { path: 'payment-history', element: <PaymentHistoryPage /> },
-        { path: 'assignments', element: <TeacherAssignmentsPage /> },
-        { path: 'assignments/:id', element: <AssignmentReviewPage /> },
-        { path: 'assistants', element: <AssistantsPage /> },
-        { path: 'settings', element: <SettingsPage /> },
-      ],
-    },
-    {
-      path: '/dashboard/assistant',
-      element: withRole(['assistant'], <AssistantDashboard />),
-      children: [
-        { index: true, element: <Navigate to="groups" replace /> },
-        { path: 'groups', element: <GroupsPage /> },
-        { path: 'requests', element: <PendingJoinRequestsPage /> },
-        { path: 'payments', element: <PaymentReviewPage /> },
-        { path: 'content', element: <SubjectsPage /> },
-        { path: 'quizzes', element: <TeacherQuizzesPage /> },
-        { path: 'quizzes/:quizId/review/:attemptId', element: <AttemptReviewPage /> },
-        { path: 'results', element: <TeacherResultsPage /> },
-        { path: 'payments', element: <PaymentReviewPage /> },
-        { path: 'assignments', element: <TeacherAssignmentsPage /> },
-        { path: 'assignments/:id', element: <AssignmentReviewPage /> },
-        { path: 'settings', element: <SettingsPage /> },
-      ],
-    },
-    {
-      path: '/dashboard/parent',
-      element: withRole(['parent'], <ParentDashboard />),
-      children: [
-        { index: true, element: <ParentChildrenPage /> },
-        { path: 'notifications', element: <ParentNotificationsPage /> },
-        { path: 'payments', element: <PaymentSubmitPage /> },
-        { path: 'settings', element: <SettingsPage /> },
-      ],
-    },
-    {
-      path: '/dashboard/student',
-      element: withRole(['student'], <StudentDashboard />),
-      children: [
-        { path: 'select-academy', element: <StudentAcademySelectPage /> },
-        { index: true, element: <StudentOverviewPage /> },
-        { path: 'join', element: <StudentJoinPage /> },
-        { path: 'courses', element: <StudentCoursesPage /> },
-        { path: 'assignments', element: <StudentAssignmentsPage /> },
-        { path: 'payments', element: <PaymentSubmitPage /> },
-        { path: 'quizzes', element: <StudentQuizzesPage /> },
-        { path: 'quizzes/history', element: <ExamHistoryPage /> },
-        { path: 'quizzes/:quizId', element: <ExamPreFlightPage /> },
-        { path: 'quizzes/:quizId/attempt/:attemptId', element: <ExamTakingPage /> },
-        { path: 'quizzes/:quizId/results/:attemptId', element: <ExamResultsPage /> },
-        { path: 'leaderboard', element: <StudentLeaderboardPage /> },
-        { path: 'settings', element: <SettingsPage /> },
-      ],
-    },
-    {
-      path: '/academy/:slug',
-      element: <AcademyPublicPage />,
-    },
-    { path: '/dashboard', element: <Navigate to="/dashboard/super-admin" replace /> },
-    { path: '/instructor', element: <Navigate to="/dashboard/teacher" replace /> },
-    { path: '/my-courses', element: <Navigate to="/dashboard/student/courses" replace /> },
-    { path: '*', element: <NotFoundPage /> },
-  ]);
+/** Built once at module level: rebuilding it on every render would remount every page. */
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <MarketingLayout />,
+    children: [
+      { index: true, element: <LandingPage /> },
+      { path: 'contact', element: <ContactPage /> },
+    ],
+  },
+  {
+    path: '/auth',
+    children: [
+      { path: 'login', element: <LoginPage /> },
+      { path: 'register', element: <RegisterPage /> },
+      { path: 'verif-email', element: <VerifyEmailPage /> },
+      { path: 'forget-password', element: <ForgotPasswordPage /> },
+    ],
+  },
+  {
+    path: '/dashboard/super-admin',
+    element: withRole(['super_admin'], <SuperAdminDashboard />),
+    children: [
+      { index: true, element: <SuperAdminOverview /> },
+      { path: 'tenants', element: <TenantsPage /> },
+      { path: 'subscriptions', element: <SubscriptionsPage /> },
+      { path: 'cms', element: <PlatformCmsPage /> },
+      { path: 'settings', element: <SettingsPage /> },
+    ],
+  },
+  {
+    path: '/dashboard/teacher',
+    element: withRole(['teacher'], <TeacherDashboard />),
+    children: [
+      { index: true, element: <TeacherOverview /> },
+      { path: 'requests', element: <PendingJoinRequestsPage /> },
+      { path: 'groups', element: <GroupsPage /> },
+      { path: 'subjects', element: <SubjectsPage /> },
+      { path: 'students', element: <TeacherStudentsPage /> },
+      { path: 'quizzes', element: <TeacherQuizzesPage /> },
+      { path: 'quizzes/:quizId/review/:attemptId', element: <AttemptReviewPage /> },
+      { path: 'assignments', element: <TeacherAssignmentsPage /> },
+      { path: 'assignments/:id', element: <AssignmentReviewPage /> },
+      { path: 'assistants', element: <AssistantsPage /> },
+      { path: 'results', element: <TeacherResultsPage /> },
+      { path: 'reports', element: <TeacherReportsPage /> },
+      { path: 'payments', element: <PaymentReviewPage /> },
+      { path: 'payment-plans', element: <PaymentPlansPage /> },
+      { path: 'promo-codes', element: <PromoCodesPage /> },
+      { path: 'payment-history', element: <PaymentHistoryPage /> },
+      { path: 'platform-subscription', element: <TeacherPlatformSubscriptionPage /> },
+      { path: 'settings', element: <SettingsPage /> },
+    ],
+  },
+  {
+    path: '/dashboard/assistant',
+    element: withRole(['assistant'], <AssistantDashboard />),
+    children: [
+      { index: true, element: <Navigate to="groups" replace /> },
+      { path: 'groups', element: <GroupsPage /> },
+      { path: 'requests', element: <PendingJoinRequestsPage /> },
+      { path: 'payments', element: <PaymentReviewPage /> },
+      { path: 'content', element: <SubjectsPage /> },
+      { path: 'quizzes', element: <TeacherQuizzesPage /> },
+      { path: 'quizzes/:quizId/review/:attemptId', element: <AttemptReviewPage /> },
+      { path: 'results', element: <TeacherResultsPage /> },
+      { path: 'assignments', element: <TeacherAssignmentsPage /> },
+      { path: 'assignments/:id', element: <AssignmentReviewPage /> },
+      { path: 'settings', element: <SettingsPage /> },
+    ],
+  },
+  {
+    path: '/dashboard/parent',
+    element: withRole(['parent'], <ParentDashboard />),
+    children: [
+      { index: true, element: <ParentChildrenPage /> },
+      { path: 'notifications', element: <ParentNotificationsPage /> },
+      { path: 'payments', element: <PaymentSubmitPage /> },
+      { path: 'settings', element: <SettingsPage /> },
+    ],
+  },
+  {
+    path: '/dashboard/student',
+    element: withRole(['student'], <StudentDashboard />),
+    children: [
+      { path: 'select-academy', element: <StudentAcademySelectPage /> },
+      { index: true, element: <StudentOverviewPage /> },
+      { path: 'join', element: <StudentJoinPage /> },
+      { path: 'courses', element: <StudentCoursesPage /> },
+      { path: 'assignments', element: <StudentAssignmentsPage /> },
+      { path: 'payments', element: <PaymentSubmitPage /> },
+      { path: 'quizzes', element: <StudentQuizzesPage /> },
+      { path: 'quizzes/history', element: <ExamHistoryPage /> },
+      { path: 'quizzes/:quizId', element: <ExamPreFlightPage /> },
+      { path: 'quizzes/:quizId/attempt/:attemptId', element: <ExamTakingPage /> },
+      { path: 'quizzes/:quizId/results/:attemptId', element: <ExamResultsPage /> },
+      { path: 'leaderboard', element: <StudentLeaderboardPage /> },
+      { path: 'settings', element: <SettingsPage /> },
+    ],
+  },
+  {
+    path: '/academy/:slug',
+    element: <AcademyPublicPage />,
+  },
+  { path: '/dashboard', element: <Navigate to="/dashboard/super-admin" replace /> },
+  { path: '/instructor', element: <Navigate to="/dashboard/teacher" replace /> },
+  { path: '/my-courses', element: <Navigate to="/dashboard/student/courses" replace /> },
+  { path: '*', element: <NotFoundPage /> },
+]);
 
+function App() {
   return (
     <HelmetProvider>
       <ErrorBoundary>

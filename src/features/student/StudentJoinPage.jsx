@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { Users } from 'lucide-react';
 import { groupApi } from '../../shared/api/platformApi';
 import { getStoredTenantSlug, setTenantSlug } from '../../shared/api/tenantContext';
 import PageHeader from '../../shared/ui/PageHeader';
@@ -9,6 +10,8 @@ import EmptyState from '../../shared/ui/EmptyState';
 import FormModal from '../../shared/ui/FormModal';
 import FormField, { getFriendlyError } from '../../shared/ui/FormField';
 import SearchInput, { filterByQuery } from '../../shared/ui/SearchInput';
+import StudentAcademyPanel from './components/StudentAcademyPanel';
+import { useStudentAcademy } from './useStudentAcademy';
 
 const PACKAGES = [
   { value: 'lectures_only', labelKey: 'payments.lecturesOnly' },
@@ -25,6 +28,7 @@ const statusClass = {
 export default function StudentJoinPage() {
   const { t } = useTranslation();
   const [params] = useSearchParams();
+  const { currentAcademy, academies, hasMultipleAcademies } = useStudentAcademy({ autoRedirect: true });
   const [groups, setGroups] = useState([]);
   const [mine, setMine] = useState([]);
   const [packages, setPackages] = useState({});
@@ -92,6 +96,7 @@ export default function StudentJoinPage() {
   };
 
   const filtered = filterByQuery(groups, search, ['name']);
+  const currentEntry = academies.find((a) => a.academy._id === currentAcademy?._id);
 
   if (loading) return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
 
@@ -105,7 +110,7 @@ export default function StudentJoinPage() {
           academySlug ? (
             <Link to={`/academy/${academySlug}`} className="ce-btn ce-btn-accent">{t('student.goToAcademy')}</Link>
           ) : (
-            <Link to="/" className="ce-btn ce-btn-accent">{t('nav.home')}</Link>
+            <Link to="/dashboard/student/select-academy" className="ce-btn ce-btn-accent">{t('student.switchAcademy')}</Link>
           )
         }
       />
@@ -116,17 +121,36 @@ export default function StudentJoinPage() {
     <div className="space-y-6">
       <PageHeader title={t('student.joinGroup')} subtitle={t('student.joinHint')} />
 
+      {currentAcademy && (
+        <div className="space-y-3">
+          <StudentAcademyPanel
+            academy={currentAcademy}
+            activeCount={currentEntry?.activeCount || 0}
+            pendingCount={currentEntry?.pendingCount || 0}
+            selected
+            showEnter={false}
+          />
+          {hasMultipleAcademies && (
+            <div className="text-end">
+              <Link to="/dashboard/student/select-academy" className="text-sm font-semibold text-[var(--ce-primary)]">
+                {t('student.switchAcademy')}
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+
       {mine.length > 0 && (
         <div className="ce-card p-6">
           <h3 className="font-bold text-[var(--ce-primary)]">{t('student.myRequests')}</h3>
           <ul className="mt-4 space-y-3">
             {mine.map((en) => (
-              <li key={en._id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--ce-border)] p-4">
+              <li key={en._id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--ce-border)] bg-[var(--ce-bg)]/40 p-4">
                 <div>
-                  <div className="font-semibold">{en.groupId?.name}</div>
+                  <div className="font-semibold text-[var(--ce-primary)]">{en.groupId?.name}</div>
                   <div className="text-sm text-[var(--ce-muted)]">{en.groupId?.subjectId?.name}</div>
                   {en.amountDue > 0 && (
-                    <div className="text-xs text-[var(--ce-muted)]">{t('student.expectedAmount')}: {en.amountDue} {t('academy.currency')}</div>
+                    <div className="mt-1 text-xs text-[var(--ce-muted)]">{t('student.expectedAmount')}: {en.amountDue} {t('academy.currency')}</div>
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -151,7 +175,7 @@ export default function StudentJoinPage() {
         </div>
       )}
 
-      <SearchInput value={search} onChange={setSearch} />
+      <SearchInput value={search} onChange={setSearch} placeholder={t('common.search')} />
 
       {filtered.length === 0 ? (
         <EmptyState icon="👥" title={t('student.noGroups')} description={t('student.noGroupsDesc')} />
@@ -160,29 +184,41 @@ export default function StudentJoinPage() {
           {filtered.map((group) => {
             const existing = getEnrollment(group._id);
             return (
-              <article key={group._id} className="ce-card p-5">
-                <h3 className="font-bold text-[var(--ce-primary)]">{group.name}</h3>
-                <p className="mt-1 text-sm text-[var(--ce-muted)]">{group.subjectId?.name} · {group.gradeLevel}</p>
-                {group.startTime && (
-                  <p className="mt-2 text-xs text-[var(--ce-muted)]">{group.startTime} - {group.endTime}</p>
-                )}
-                {existing ? (
-                  <div className="mt-4 space-y-2">
-                    <p className="text-sm font-semibold">{t(`student.status.${existing.status}`)}</p>
-                    {existing.status === 'cancelled' && existing.rejectionReason && (
-                      <p className="text-xs text-red-700">{t('requests.rejectionReason')}: {existing.rejectionReason}</p>
-                    )}
-                    {existing.status === 'cancelled' && (
-                      <button type="button" className="ce-btn ce-btn-accent w-full text-sm" onClick={() => setJoinTarget(group)}>
-                        {t('student.resubmitRequest')}
-                      </button>
-                    )}
+              <article key={group._id} className="ce-card overflow-hidden">
+                <div className="p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-[var(--ce-primary)]/10 p-2.5 text-[var(--ce-primary)]">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-[var(--ce-primary)]">{group.name}</h3>
+                      <p className="mt-1 text-sm text-[var(--ce-muted)]">{group.subjectId?.name}</p>
+                      {group.gradeLevel && (
+                        <span className="mt-2 inline-block rounded-full bg-[var(--ce-bg)] px-3 py-1 text-xs font-semibold">{group.gradeLevel}</span>
+                      )}
+                      {group.startTime && (
+                        <p className="mt-2 text-xs text-[var(--ce-muted)]">{group.startTime} - {group.endTime}</p>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <button type="button" className="ce-btn ce-btn-accent mt-4 w-full text-sm" onClick={() => setJoinTarget(group)}>
-                    {t('student.requestJoin')}
-                  </button>
-                )}
+                  {existing ? (
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm font-semibold">{t(`student.status.${existing.status}`)}</p>
+                      {existing.status === 'cancelled' && existing.rejectionReason && (
+                        <p className="text-xs text-red-700">{t('requests.rejectionReason')}: {existing.rejectionReason}</p>
+                      )}
+                      {existing.status === 'cancelled' && (
+                        <button type="button" className="ce-btn ce-btn-accent w-full text-sm" onClick={() => setJoinTarget(group)}>
+                          {t('student.resubmitRequest')}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <button type="button" className="ce-btn ce-btn-accent mt-4 w-full text-sm" onClick={() => setJoinTarget(group)}>
+                      {t('student.requestJoin')}
+                    </button>
+                  )}
+                </div>
               </article>
             );
           })}
@@ -231,8 +267,8 @@ export default function StudentJoinPage() {
                 </select>
               )}
             </FormField>
-            <FormField label={t('requests.parentPhone')}>
-              <input className="ce-input" value={values.parentPhone} onChange={(e) => setValues({ ...values, parentPhone: e.target.value })} />
+            <FormField label={t('requests.parentContact')} helper={t('requests.parentContactHint')}>
+              <input className="ce-input" value={values.parentPhone} onChange={(e) => setValues({ ...values, parentPhone: e.target.value })} placeholder={t('requests.parentContactHint')} />
             </FormField>
             <FormField label={t('payments.notes')}>
               <textarea className="ce-input min-h-[80px]" value={values.notes} onChange={(e) => setValues({ ...values, notes: e.target.value })} />

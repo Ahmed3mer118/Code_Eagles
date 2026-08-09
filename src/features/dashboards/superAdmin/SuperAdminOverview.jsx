@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { BadgeDollarSign, Building2, CircleCheckBig, GraduationCap } from 'lucide-react';
 import { statsApi } from '../../../shared/api/platformApi';
-import { StatCards, SimpleBarChart, SimpleLineChart } from '../../../shared/ui/Charts';
+import ContentLoader from '../../../shared/ui/ContentLoader';
+import { StatCards, SimpleBarChart, SimpleLineChart, CHART_COLORS } from '../../../shared/ui/Charts';
 
 export default function SuperAdminOverview() {
   const { t } = useTranslation();
@@ -22,7 +24,7 @@ export default function SuperAdminOverview() {
     })();
   }, [t]);
 
-  if (loading) return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
+  if (loading) return <ContentLoader cards={4} rows={3} />;
 
   const planData = (stats?.tenantsByPlan || []).map((p) => ({ name: p._id, count: p.count }));
 
@@ -30,10 +32,15 @@ export default function SuperAdminOverview() {
     <div className="space-y-6">
       <StatCards
         items={[
-          { label: t('dashboard.tenants'), value: stats?.totalTenants },
-          { label: t('admin.activeTenants'), value: stats?.activeTenants },
-          { label: t('dashboard.students'), value: stats?.totalStudents },
-          { label: t('admin.subscriptionRevenue'), value: `${stats?.subscriptionRevenue ?? 0} ج.م` },
+          { label: t('dashboard.tenants'), value: stats?.totalTenants, icon: Building2, tone: 'accent' },
+          { label: t('admin.activeTenants'), value: stats?.activeTenants, icon: CircleCheckBig, tone: 'success' },
+          { label: t('dashboard.students'), value: stats?.totalStudents, icon: GraduationCap },
+          {
+            label: t('admin.subscriptionRevenue'),
+            value: `${stats?.subscriptionRevenue ?? 0} ${t('academy.currency')}`,
+            icon: BadgeDollarSign,
+            tone: 'success',
+          },
         ]}
       />
 
@@ -50,7 +57,7 @@ export default function SuperAdminOverview() {
 
       <div className="ce-card p-6">
         <h3 className="mb-4 font-extrabold text-[var(--ce-primary)]">{t('admin.newTenantsByMonth')}</h3>
-        <SimpleBarChart data={stats?.tenantsByMonth || []} xKey="_id" yKey="count" color="#0B1F33" />
+        <SimpleBarChart data={stats?.tenantsByMonth || []} xKey="_id" yKey="count" color={CHART_COLORS.primary} />
       </div>
     </div>
   );

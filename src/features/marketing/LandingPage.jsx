@@ -333,7 +333,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {show('featured') && (
+      {/* {show('featured') && (
       <section className="ce-section">
         <div className="ce-container">
           <SectionHeader
@@ -354,7 +354,7 @@ export default function LandingPage() {
           )}
         </div>
       </section>
-      )}
+      )} */}
 
       {show('features') && (
       <section id="features" className="ce-section ce-section-alt">

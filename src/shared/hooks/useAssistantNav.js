@@ -1,19 +1,31 @@
 import { useEffect, useState } from 'react';
 import { assistantApi } from '../api/platformApi';
+import NAV_ICONS from '../ui/navIcons';
 
-const NAV_BY_PERMISSION = {
-  enroll_students: [{ to: '/dashboard/assistant/requests', labelKey: 'requests.title', end: false }, { to: '/dashboard/assistant/groups', labelKey: 'dashboard.groups', end: false }],
-  manage_groups: [{ to: '/dashboard/assistant/groups', labelKey: 'dashboard.groups', end: false }],
-  review_payments: [{ to: '/dashboard/assistant/payments', labelKey: 'dashboard.payments', end: false }],
-  view_student_reports: [{ to: '/dashboard/assistant/results', labelKey: 'dashboard.reports', end: false }],
-  view_limited_reports: [{ to: '/dashboard/assistant/results', labelKey: 'dashboard.reports', end: false }],
-  manage_content: [{ to: '/dashboard/assistant/content', labelKey: 'dashboard.subjects', end: false }],
-  manage_quizzes: [{ to: '/dashboard/assistant/quizzes', labelKey: 'dashboard.quizzes', end: false }],
-  quiz_review: [{ to: '/dashboard/assistant/quizzes', labelKey: 'dashboard.quizzes', end: false }],
-  homework_review: [{ to: '/dashboard/assistant/assignments', labelKey: 'dashboard.assignments', end: false }],
+const NAV = {
+  requests: { to: '/dashboard/assistant/requests', labelKey: 'requests.title', icon: NAV_ICONS.requests, end: false },
+  groups: { to: '/dashboard/assistant/groups', labelKey: 'dashboard.groups', icon: NAV_ICONS.groups, end: false },
+  payments: { to: '/dashboard/assistant/payments', labelKey: 'dashboard.payments', icon: NAV_ICONS.payments, end: false },
+  results: { to: '/dashboard/assistant/results', labelKey: 'dashboard.reports', icon: NAV_ICONS.results, end: false },
+  content: { to: '/dashboard/assistant/content', labelKey: 'dashboard.subjects', icon: NAV_ICONS.subjects, end: false },
+  quizzes: { to: '/dashboard/assistant/quizzes', labelKey: 'dashboard.quizzes', icon: NAV_ICONS.quizzes, end: false },
+  assignments: { to: '/dashboard/assistant/assignments', labelKey: 'dashboard.assignments', icon: NAV_ICONS.assignments, end: false },
+  settings: { to: '/dashboard/assistant/settings', labelKey: 'dashboard.settings', icon: NAV_ICONS.settings, end: false },
 };
 
-const BASE = [{ to: '/dashboard/assistant/settings', labelKey: 'dashboard.settings', end: false }];
+const NAV_BY_PERMISSION = {
+  enroll_students: [NAV.requests, NAV.groups],
+  manage_groups: [NAV.groups],
+  review_payments: [NAV.payments],
+  view_student_reports: [NAV.results],
+  view_limited_reports: [NAV.results],
+  manage_content: [NAV.content],
+  manage_quizzes: [NAV.quizzes],
+  quiz_review: [NAV.quizzes],
+  homework_review: [NAV.assignments],
+};
+
+const BASE = [NAV.settings];
 
 export function useAssistantNav() {
   const [navItems, setNavItems] = useState(BASE);

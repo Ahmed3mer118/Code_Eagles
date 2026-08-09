@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast, { Toaster } from 'react-hot-toast';
 import AuthServices from '../../shared/api/authService';
+import getApiErrorMessage from '../../shared/utils/apiError';
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
@@ -21,7 +22,7 @@ export default function ForgotPasswordPage() {
       toast.success(t('common.success'));
       setStep(2);
     } catch (err) {
-      toast.error(err?.message || t('common.error'));
+      toast.error(getApiErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -35,7 +36,7 @@ export default function ForgotPasswordPage() {
       toast.success(t('common.success'));
       setStep(3);
     } catch (err) {
-      toast.error(err?.message || t('common.error'));
+      toast.error(getApiErrorMessage(err));
     } finally {
       setLoading(false);
     }

@@ -1,30 +1,53 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { Trophy, BookOpen, Users } from 'lucide-react';
+import {
+  BadgeDollarSign,
+  BookOpen,
+  ChartNoAxesColumnIncreasing,
+  ClipboardCheck,
+  ClipboardList,
+  GraduationCap,
+  Target,
+  Trophy,
+  Users,
+} from 'lucide-react';
 import { teacherApi } from '../../shared/api/platformApi';
 import PageHeader from '../../shared/ui/PageHeader';
+import ContentLoader from '../../shared/ui/ContentLoader';
 import { StatCards, SimpleBarChart } from '../../shared/ui/Charts';
 
-function RankList({ title, icon: Icon, rows, renderRow }) {
+/** Top three keep the accent highlight so the ranking reads at a glance. */
+const rankStyle = (index) =>
+  index === 0
+    ? 'bg-[var(--ce-accent)] text-white'
+    : index < 3
+      ? 'bg-[var(--ce-accent)]/15 text-[var(--ce-accent)]'
+      : 'bg-[var(--ce-bg)] text-[var(--ce-muted)]';
+
+function RankList({ title, icon: Icon, rows, renderRow, emptyLabel }) {
   return (
     <div className="ce-card p-6">
       <div className="mb-4 flex items-center gap-2">
-        <Icon className="h-5 w-5 text-[var(--ce-accent)]" />
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--ce-accent)]/15 text-[var(--ce-accent)]">
+          <Icon className="h-[18px] w-[18px]" />
+        </span>
         <h3 className="font-extrabold text-[var(--ce-primary)]">{title}</h3>
       </div>
       {!rows?.length ? (
-        <p className="text-sm text-[var(--ce-muted)]">—</p>
+        <p className="rounded-xl border border-dashed border-[var(--ce-border)] px-4 py-8 text-center text-sm text-[var(--ce-muted)]">
+          {emptyLabel}
+        </p>
       ) : (
-        <ol className="space-y-3">
+        <ol className="divide-y divide-[var(--ce-border)]">
           {rows.map((row, index) => (
-            <li key={index} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--ce-bg)] px-4 py-3 text-sm">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--ce-primary)] text-xs font-bold text-white">
-                  {index + 1}
-                </span>
-                <div className="min-w-0 truncate font-semibold text-[var(--ce-primary)]">{renderRow(row)}</div>
-              </div>
+            <li key={index} className="flex items-center gap-3 py-3 text-sm first:pt-0 last:pb-0">
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold tabular-nums ${rankStyle(index)}`}
+              >
+                {index + 1}
+              </span>
+              <div className="min-w-0 flex-1 truncate font-semibold text-[var(--ce-primary)]">{renderRow(row)}</div>
             </li>
           ))}
         </ol>
@@ -43,7 +66,7 @@ export default function TeacherReportsPage() {
       .catch((err) => toast.error(err?.message || t('common.error')));
   }, [t]);
 
-  if (!data) return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
+  if (!data) return <ContentLoader cards={6} rows={4} />;
 
   const { stats, exams, homework, paymentsByMonth, attemptsByMonth, topStudents, topQuizzes, topSubjects } = data;
 
@@ -53,12 +76,17 @@ export default function TeacherReportsPage() {
 
       <StatCards
         items={[
-          { label: t('dashboard.students'), value: stats?.students },
-          { label: t('reports.passRate'), value: `${exams?.passRate || 0}%` },
-          { label: t('reports.avgScore'), value: `${exams?.averageScore || 0}%` },
-          { label: t('reports.revenue'), value: `${stats?.studentRevenue || 0} ${t('academy.currency')}` },
-          { label: t('reports.examAttempts'), value: exams?.totalAttempts },
-          { label: t('dashboard.assignments'), value: homework?.totalAssignments },
+          { label: t('dashboard.students'), value: stats?.students, icon: GraduationCap, tone: 'accent' },
+          { label: t('reports.passRate'), value: `${exams?.passRate || 0}%`, icon: Target, tone: 'success' },
+          { label: t('reports.avgScore'), value: `${exams?.averageScore || 0}%`, icon: ChartNoAxesColumnIncreasing },
+          {
+            label: t('reports.revenue'),
+            value: `${stats?.studentRevenue || 0} ${t('academy.currency')}`,
+            icon: BadgeDollarSign,
+            tone: 'success',
+          },
+          { label: t('reports.examAttempts'), value: exams?.totalAttempts, icon: ClipboardCheck },
+          { label: t('dashboard.assignments'), value: homework?.totalAssignments, icon: ClipboardList },
         ]}
       />
 
@@ -66,6 +94,7 @@ export default function TeacherReportsPage() {
         <RankList
           title={t('reports.topStudents')}
           icon={Users}
+          emptyLabel={t('common.noData')}
           rows={topStudents}
           renderRow={(row) => (
             <span>
@@ -79,6 +108,7 @@ export default function TeacherReportsPage() {
         <RankList
           title={t('reports.topQuizzes')}
           icon={Trophy}
+          emptyLabel={t('common.noData')}
           rows={topQuizzes}
           renderRow={(row) => (
             <span>
@@ -92,6 +122,7 @@ export default function TeacherReportsPage() {
         <RankList
           title={t('reports.topSubjects')}
           icon={BookOpen}
+          emptyLabel={t('common.noData')}
           rows={topSubjects}
           renderRow={(row) => (
             <span>

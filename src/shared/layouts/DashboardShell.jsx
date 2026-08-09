@@ -1,19 +1,40 @@
-import { useEffect, useState } from 'react';
+import { Suspense, memo, useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import TeacherGlobalSearch from '../ui/TeacherGlobalSearch';
+import ContentLoader from '../ui/ContentLoader';
 import AuthServices from '../api/authService';
+import { getStoredTenant, setStoredTenant } from '../api/tenantContext';
 import resolveMediaUrl from '../utils/mediaUrl';
 
-function readStoredTenant() {
-  try {
-    const raw = localStorage.getItem('ce_tenant');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
+/** Memoized so page navigation never re-renders the navigation column. */
+const SidebarNav = memo(function SidebarNav({ navItems }) {
+  const { t } = useTranslation();
+
+  return (
+    <nav className="flex gap-1 overflow-x-auto px-3 pb-4 md:flex-1 md:flex-col md:overflow-visible">
+      {navItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              `flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                isActive ? 'bg-white text-[var(--ce-primary)] shadow-sm' : 'text-white/80 hover:bg-white/10'
+              }`
+            }
+          >
+            {Icon && <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />}
+            <span>{t(item.labelKey)}</span>
+          </NavLink>
+        );
+      })}
+    </nav>
+  );
+});
 
 export default function DashboardShell({
   titleKey,
@@ -29,7 +50,7 @@ export default function DashboardShell({
     if (brandMode === 'platform') {
       return { name: '', logoUrl: '/images/LOGO.png' };
     }
-    const tenant = readStoredTenant();
+    const tenant = getStoredTenant();
     return {
       name: tenant?.name || '',
       logoUrl: tenant?.logoUrl || '/images/LOGO.png',
@@ -42,7 +63,7 @@ export default function DashboardShell({
       return;
     }
 
-    const stored = readStoredTenant();
+    const stored = getStoredTenant();
     if (stored?.name) {
       setBrand({
         name: stored.name,
@@ -50,11 +71,31 @@ export default function DashboardShell({
       });
     }
 
+    const role = auth.getRole();
+
     auth.me()
       .then((data) => {
+        if (role === 'student') {
+          const selected = getStoredTenant();
+          if (selected?.slug) {
+            setBrand({
+              name: selected.name,
+              logoUrl: selected.logoUrl || '/images/LOGO.png',
+            });
+            return;
+          }
+          if (data.tenant) {
+            setStoredTenant(data.tenant);
+            setBrand({
+              name: data.tenant.name,
+              logoUrl: data.tenant.logoUrl || '/images/LOGO.png',
+            });
+          }
+          return;
+        }
+
         if (data.tenant) {
-          localStorage.setItem('ce_tenant', JSON.stringify(data.tenant));
-          if (data.tenant.slug) sessionStorage.setItem('ce_tenant_slug', data.tenant.slug);
+          setStoredTenant(data.tenant);
           setBrand({
             name: data.tenant.name,
             logoUrl: data.tenant.logoUrl || '/images/LOGO.png',
@@ -94,22 +135,7 @@ export default function DashboardShell({
             <div className="text-xs text-white/70">{t(titleKey)}</div>
           </div>
         </div>
-        <nav className="flex gap-1 overflow-x-auto px-3 pb-4 md:flex-1 md:flex-col md:overflow-visible">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                  isActive ? 'bg-white text-[var(--ce-primary)] shadow-sm' : 'text-white/80 hover:bg-white/10'
-                }`
-              }
-            >
-              {t(item.labelKey)}
-            </NavLink>
-          ))}
-        </nav>
+        <SidebarNav navItems={navItems} />
         <div className="mt-auto border-t border-white/10 px-5 py-4 text-center text-xs text-white/50">
           {t('dashboard.createdBy')}
         </div>
@@ -130,7 +156,10 @@ export default function DashboardShell({
           </div>
         </header>
         <main className="flex-1 p-4 md:p-6">
-          <Outlet />
+          {/* Scoped boundary: lazy pages swap here while the sidebar stays mounted. */}
+          <Suspense fallback={<ContentLoader />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

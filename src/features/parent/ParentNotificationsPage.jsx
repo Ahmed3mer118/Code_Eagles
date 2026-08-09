@@ -47,9 +47,15 @@ export default function ParentNotificationsPage() {
               <p className="mt-2 text-sm text-[var(--ce-muted)]">
                 {item.body?.[lang] || item.body || item.message || '—'}
               </p>
-              {item.meta?.studentName && (
+              {(item.data?.studentName || item.meta?.studentName) && (
                 <p className="mt-2 text-xs font-semibold text-[var(--ce-primary)]">
-                  {t('parent.child')}: {item.meta.studentName}
+                  {t('parent.child')}: {item.data?.studentName || item.meta?.studentName}
+                </p>
+              )}
+              {item.data?.score != null && item.data?.maxScore != null && (
+                <p className="mt-1 text-xs text-[var(--ce-muted)]">
+                  {item.data.score}/{item.data.maxScore}
+                  {item.data.percentage != null ? ` (${item.data.percentage}%)` : ''}
                 </p>
               )}
             </article>

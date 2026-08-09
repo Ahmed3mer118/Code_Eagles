@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import toast, { Toaster } from 'react-hot-toast';
 import AuthServices from '../../shared/api/authService';
 import { resolveReturnTo } from '../../shared/guards/RoleGuard';
+import { buildQueryString, getCleanParam } from '../../shared/utils/queryParams';
+import getApiErrorMessage from '../../shared/utils/apiError';
+import { resolveStudentPostLoginPath } from '../student/useStudentAcademy';
 
 export default function VerifyEmailPage() {
   const { t, i18n } = useTranslation();
@@ -29,20 +32,26 @@ export default function VerifyEmailPage() {
           localStorage.setItem('ce_lang', res.user.preferredLanguage);
         }
         toast.success(t('auth.verifySuccess'));
-        if (res.role === 'student' && returnTo) navigate(returnTo);
-        else navigate(res.dashboardPath || auth.getDashboardPath(res.role));
+        if (res.role === 'student') {
+          const studentPath = await resolveStudentPostLoginPath(returnTo);
+          navigate(studentPath);
+          return;
+        }
+        navigate(res.dashboardPath || auth.getDashboardPath(res.role));
         return;
       }
       toast.success(t('common.success'));
-      const loginQs = new URLSearchParams({ email });
-      if (params.get('returnTo')) loginQs.set('returnTo', params.get('returnTo'));
-      else {
-        if (params.get('group')) loginQs.set('group', params.get('group'));
-        if (params.get('academy')) loginQs.set('academy', params.get('academy'));
-      }
-      navigate(`/auth/login?${loginQs.toString()}`);
+      const rawReturnTo = getCleanParam(params, 'returnTo');
+      const loginQs = rawReturnTo
+        ? buildQueryString({ email, returnTo: rawReturnTo })
+        : buildQueryString({
+            email,
+            group: getCleanParam(params, 'group'),
+            academy: getCleanParam(params, 'academy'),
+          });
+      navigate(`/auth/login?${loginQs}`);
     } catch (err) {
-      toast.error(err?.message || t('common.error'));
+      toast.error(getApiErrorMessage(err));
     } finally {
       setLoading(false);
     }

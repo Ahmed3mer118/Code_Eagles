@@ -112,6 +112,9 @@ export const quizApi = {
   reviewAttempt(quizId, attemptId, payload) {
     return getApiClient().patch(`/api/quizzes/${quizId}/attempts/${attemptId}`, payload).then((r) => r.data);
   },
+  bulkPublishAttempts(quizId, payload) {
+    return getApiClient().post(`/api/quizzes/${quizId}/attempts/bulk-publish`, payload).then((r) => r.data);
+  },
 };
 
 export const paymentApi = {
@@ -370,6 +373,9 @@ export const studentApi = {
   myAcademies() {
     return getApiClient().get('/api/students/my-academies').then((r) => r.data);
   },
+  leaveAcademy() {
+    return getApiClient().post('/api/students/leave-academy').then((r) => r.data);
+  },
 };
 
 export const parentApi = {
@@ -400,6 +406,9 @@ export const platformSiteApi = {
   createFaq(payload) {
     return getApiClient().post('/api/platform/faq', payload).then((r) => r.data);
   },
+  updateFaq(id, payload) {
+    return getApiClient().patch(`/api/platform/faq/${id}`, payload).then((r) => r.data);
+  },
   deleteFaq(id) {
     return getApiClient().delete(`/api/platform/faq/${id}`).then((r) => r.data);
   },
@@ -408,6 +417,15 @@ export const platformSiteApi = {
   },
   runBackup(payload = {}) {
     return getApiClient().post('/api/platform/site/run-backup', payload).then((r) => r.data);
+  },
+  listBackups() {
+    return getApiClient().get('/api/platform/site/backups').then((r) => r.data);
+  },
+  async downloadBackup(filename) {
+    const response = await getApiClient().get(`/api/platform/site/backups/${filename}`, {
+      responseType: 'blob',
+    });
+    return response.data;
   },
   listTestimonials(params = {}) {
     return getApiClient().get('/api/platform/testimonials', { params }).then((r) => r.data);
@@ -430,6 +448,15 @@ export const gamificationApi = {
 };
 
 export const subscriptionApi = {
+  mine() {
+    return getApiClient().get('/api/tenant-subscriptions/mine').then((r) => r.data);
+  },
+  request(payload) {
+    return getApiClient().post('/api/tenant-subscriptions/request', payload).then((r) => r.data);
+  },
+  updateMine(payload) {
+    return getApiClient().patch('/api/tenant-subscriptions/mine', payload).then((r) => r.data);
+  },
   list(params = {}) {
     return getApiClient().get('/api/tenant-subscriptions', { params }).then((r) => r.data);
   },
@@ -438,6 +465,27 @@ export const subscriptionApi = {
   },
   review(id, payload) {
     return getApiClient().patch(`/api/tenant-subscriptions/${id}/review`, payload).then((r) => r.data);
+  },
+  sendReminder(id) {
+    return getApiClient().post(`/api/tenant-subscriptions/${id}/remind`).then((r) => r.data);
+  },
+};
+
+export const platformPlanApi = {
+  listPublic() {
+    return getApiClient().get('/api/platform/plans').then((r) => r.data);
+  },
+  listAdmin() {
+    return getApiClient().get('/api/platform/plans/admin').then((r) => r.data);
+  },
+  update(key, payload) {
+    return getApiClient().patch(`/api/platform/plans/${key}`, payload).then((r) => r.data);
+  },
+  create(payload) {
+    return getApiClient().post('/api/platform/plans', payload).then((r) => r.data);
+  },
+  toggleStatus(key) {
+    return getApiClient().patch(`/api/platform/plans/${key}/toggle`).then((r) => r.data);
   },
 };
 

@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import AuthServices, { normalizeRole } from '../api/authService';
+import { buildQueryString, getCleanParam } from '../utils/queryParams';
 
 export function buildLoginUrl(returnPath) {
   const path = returnPath || '/dashboard/student/join';
@@ -7,22 +8,17 @@ export function buildLoginUrl(returnPath) {
 }
 
 export function buildRegisterUrl(returnPath, extra = {}) {
-  const params = new URLSearchParams({ role: 'student', ...extra });
-  if (returnPath) params.set('returnTo', returnPath);
-  return `/auth/register?${params.toString()}`;
+  const query = buildQueryString({ role: 'student', ...extra, returnTo: returnPath });
+  return `/auth/register?${query}`;
 }
 
 export function resolveReturnTo(params, fallback) {
-  const raw = params.get('returnTo');
+  const raw = getCleanParam(params, 'returnTo');
   if (raw && raw.startsWith('/')) return raw;
-  const group = params.get('group');
-  const academy = params.get('academy');
-  if (group) {
-    const qs = new URLSearchParams({ group });
-    if (academy) qs.set('academy', academy);
-    return `/dashboard/student/join?${qs.toString()}`;
-  }
-  if (academy) return `/dashboard/student/join?academy=${academy}`;
+  const group = getCleanParam(params, 'group');
+  const academy = getCleanParam(params, 'academy');
+  if (group) return `/dashboard/student/join?${buildQueryString({ group, academy })}`;
+  if (academy) return `/dashboard/student/join?${buildQueryString({ academy })}`;
   return fallback;
 }
 
