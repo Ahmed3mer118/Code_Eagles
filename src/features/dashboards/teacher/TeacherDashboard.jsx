@@ -16,9 +16,11 @@ const allNavItems = [
   { to: '/dashboard/teacher/reports', labelKey: 'reports.title', icon: NAV_ICONS.reports },
   { to: '/dashboard/teacher/payments', labelKey: 'payments.pendingTitle', icon: NAV_ICONS.payments, featureKey: 'payments' },
   { to: '/dashboard/teacher/payment-plans', labelKey: 'payments.plansTitle', icon: NAV_ICONS.paymentPlans, featureKey: 'payments' },
+  { to: '/dashboard/teacher/subscription', labelKey: 'platformSub.planNav', icon: NAV_ICONS.platformSubscription },
+  { to: '/dashboard/teacher/platform-payments', labelKey: 'platformSub.paymentNav', icon: NAV_ICONS.payments },
   { to: '/dashboard/teacher/promo-codes', labelKey: 'promo.title', icon: NAV_ICONS.promoCodes, featureKey: 'payments' },
   { to: '/dashboard/teacher/payment-history', labelKey: 'payments.historyTitle', icon: NAV_ICONS.paymentHistory, featureKey: 'payments' },
-  { to: '/dashboard/teacher/platform-subscription', labelKey: 'platformSub.nav', icon: NAV_ICONS.platformSubscription },
+  { to: '/dashboard/teacher/activity', labelKey: 'activity.nav', icon: NAV_ICONS.activity },
   { to: '/dashboard/teacher/settings', labelKey: 'dashboard.settings', icon: NAV_ICONS.settings },
 ];
 

@@ -148,6 +148,9 @@ export const paymentPlanApi = {
   history(params = {}) {
     return getApiClient().get('/api/payment-plans/history/all', { params }).then((r) => r.data);
   },
+  listPublic(slug) {
+    return getApiClient().get(`/api/payment-plans/public/${slug}`).then((r) => r.data);
+  },
 };
 
 export const assignmentApi = {
@@ -210,6 +213,9 @@ export const groupApi = {
   },
   myEnrollments(params = {}) {
     return getApiClient().get('/api/groups/enrollments/me', { params }).then((r) => r.data);
+  },
+  updateMyPlan(enrollmentId, payload) {
+    return getApiClient().patch(`/api/groups/enrollments/me/${enrollmentId}/plan`, payload).then((r) => r.data);
   },
   listPendingAll() {
     return getApiClient().get('/api/groups/enrollments/pending').then((r) => r.data);
@@ -363,6 +369,24 @@ export const promoApi = {
   },
 };
 
+export const notificationApi = {
+  listMine() {
+    return getApiClient().get('/api/notifications/me').then((r) => r.data);
+  },
+  markRead(id) {
+    return getApiClient().patch(`/api/notifications/${id}/read`).then((r) => r.data);
+  },
+  markAllRead() {
+    return getApiClient().patch('/api/notifications/read-all').then((r) => r.data);
+  },
+};
+
+export const activityApi = {
+  listMine(params = {}) {
+    return getApiClient().get('/api/activities/me', { params }).then((r) => r.data);
+  },
+};
+
 export const studentApi = {
   accessStatus() {
     return getApiClient().get('/api/students/access-status').then((r) => r.data);
@@ -376,6 +400,18 @@ export const studentApi = {
   leaveAcademy() {
     return getApiClient().post('/api/students/leave-academy').then((r) => r.data);
   },
+  lookupParent(contact) {
+    return getApiClient().post('/api/students/link-requests/lookup-parent', { contact }).then((r) => r.data);
+  },
+  createLinkRequest(payload) {
+    return getApiClient().post('/api/students/link-requests', payload).then((r) => r.data);
+  },
+  listPendingLinkRequests() {
+    return getApiClient().get('/api/students/link-requests/pending').then((r) => r.data);
+  },
+  respondLinkRequest(id, payload) {
+    return getApiClient().patch(`/api/students/link-requests/${id}/respond`, payload).then((r) => r.data);
+  },
 };
 
 export const parentApi = {
@@ -387,6 +423,21 @@ export const parentApi = {
   },
   notifications() {
     return getApiClient().get('/api/parent/notifications').then((r) => r.data);
+  },
+  markNotificationRead(id) {
+    return getApiClient().patch(`/api/parent/notifications/${id}/read`).then((r) => r.data);
+  },
+  lookupStudent(contact) {
+    return getApiClient().post('/api/parent/link-requests/lookup-student', { contact }).then((r) => r.data);
+  },
+  createLinkRequest(payload) {
+    return getApiClient().post('/api/parent/link-requests', payload).then((r) => r.data);
+  },
+  listPendingLinkRequests() {
+    return getApiClient().get('/api/parent/link-requests/pending').then((r) => r.data);
+  },
+  respondLinkRequest(id, payload) {
+    return getApiClient().patch(`/api/parent/link-requests/${id}/respond`, payload).then((r) => r.data);
   },
 };
 
@@ -402,6 +453,9 @@ export const platformSiteApi = {
   },
   updateFooter(payload) {
     return getApiClient().patch('/api/platform/site/footer', payload).then((r) => r.data);
+  },
+  updatePlatformPayment(payload) {
+    return getApiClient().patch('/api/platform/site/platform-payment', payload).then((r) => r.data);
   },
   createFaq(payload) {
     return getApiClient().post('/api/platform/faq', payload).then((r) => r.data);
@@ -490,15 +544,14 @@ export const platformPlanApi = {
 };
 
 export const FEATURE_KEYS = [
+  'groups',
+  'lectures',
   'quizzes',
   'assignments',
-  'lectures',
   'certificates',
-  'groups',
   'payments',
   'leaderboard',
   'discussions',
-  'liveSessions',
 ];
 
 /** Features that stay hidden until the academy subscribes to them. */

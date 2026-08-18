@@ -4,14 +4,7 @@ import toast from 'react-hot-toast';
 import { tenantApi, uploadApi } from '../../shared/api/platformApi';
 import resolveMediaUrl from '../../shared/utils/mediaUrl';
 
-const PACKAGE_KEYS = [
-  { key: 'lecturesOnly', packageType: 'lectures_only', pricingKey: 'lecturesOnly' },
-  { key: 'examsOnly', packageType: 'exams_only', pricingKey: 'examsOnly' },
-  { key: 'lecturesAndExams', packageType: 'lectures_and_exams', pricingKey: 'lecturesAndExams' },
-];
-
-const emptyLink = () => ({ label: '', url: '' });
-const emptyCard = () => ({ title: '', description: '' });
+const emptyLink = () => ({ label: '', url: '' });const emptyCard = () => ({ title: '', description: '' });
 const emptyReview = () => ({ name: '', comment: '', rating: 5, helpful: 0 });
 const emptyFaq = () => ({ question: '', answer: '' });
 
@@ -57,14 +50,7 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
     },
   });
 
-  const [packages, setPackages] = useState({
-    lecturesOnly: tenant.studentPackages?.lecturesOnly || 0,
-    examsOnly: tenant.studentPackages?.examsOnly || 0,
-    lecturesAndExams: tenant.studentPackages?.lecturesAndExams || 0,
-  });
-
-  const [studentPolicy, setStudentPolicy] = useState({
-    allowSelfJoin: tenant.studentPolicy?.allowSelfJoin !== false,
+  const [studentPolicy, setStudentPolicy] = useState({    allowSelfJoin: tenant.studentPolicy?.allowSelfJoin !== false,
     allowProfileEdit: tenant.studentPolicy?.allowProfileEdit !== false,
     allowPasswordReset: tenant.studentPolicy?.allowPasswordReset !== false,
     requireApprovedPayment: tenant.studentPolicy?.requireApprovedPayment !== false,
@@ -73,13 +59,7 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
 
   const [publicPage, setPublicPage] = useState(() => {
     const page = tenant.publicPage || {};
-    const pricing = page.pricing || {};
-    const withFeaturesText = (tier) => ({
-      ...(tier || {}),
-      featuresText: (tier?.features || []).join('\n'),
-    });
-    return {
-      aboutTitle: page.aboutTitle || '',
+    return {      aboutTitle: page.aboutTitle || '',
       aboutSubtitle: page.aboutSubtitle || '',
       aboutCards: page.aboutCards?.length ? page.aboutCards : [emptyCard(), emptyCard()],
       instructorBio: page.instructorBio || '',
@@ -88,13 +68,7 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
       faq: page.faq?.length ? page.faq : [emptyFaq()],
       footerText: page.footerText || '',
       footerLinks: page.footerLinks?.length ? page.footerLinks : [emptyLink()],
-      pricing: {
-        lecturesOnly: withFeaturesText(pricing.lecturesOnly),
-        examsOnly: withFeaturesText(pricing.examsOnly),
-        lecturesAndExams: withFeaturesText(pricing.lecturesAndExams || { featured: true }),
-      },
-      gallery: page.gallery?.length ? page.gallery : [],
-      paymentInstructions: page.paymentInstructions || '',
+      gallery: page.gallery?.length ? page.gallery : [],      paymentInstructions: page.paymentInstructions || '',
       vodafoneNumber: page.vodafoneNumber || '',
       instapayId: page.instapayId || '',
       bankDetails: page.bankDetails || '',
@@ -104,11 +78,9 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
   const tabs = useMemo(() => ([
     { id: 'branding', label: t('settings.tabs.branding') },
     { id: 'page', label: t('settings.tabs.page') },
-    { id: 'pricing', label: t('settings.tabs.pricing') },
     { id: 'payment', label: t('settings.tabs.payment') },
     { id: 'students', label: t('settings.tabs.students') },
   ]), [t]);
-
   const uploadField = async (file, field) => {
     if (!file) return;
     setUploading(true);
@@ -136,21 +108,7 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
     }
   };
 
-  const savePackages = async () => {
-    setSaving(true);
-    try {
-      const data = await tenantApi.updatePackages(tenant._id || tenant.id, { studentPackages: packages });
-      onSaved?.(data.tenant);
-      toast.success(t('common.success'));
-    } catch (err) {
-      toast.error(err?.response?.data?.message || err?.message || t('common.error'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const saveStudentPolicy = async () => {
-    setSaving(true);
+  const saveStudentPolicy = async () => {    setSaving(true);
     try {
       const data = await tenantApi.updateStudentPolicy(tenant._id || tenant.id, { studentPolicy });
       onSaved?.(data.tenant);
@@ -171,35 +129,7 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
         reviews: publicPage.reviews.filter((r) => r.name || r.comment),
         faq: publicPage.faq.filter((f) => f.question || f.answer),
         footerLinks: publicPage.footerLinks.filter((l) => l.label && l.url),
-        pricing: {
-          lecturesOnly: {
-            ...publicPage.pricing.lecturesOnly,
-            features: (publicPage.pricing.lecturesOnly.featuresText || '')
-              .split('\n')
-              .map((s) => s.trim())
-              .filter(Boolean),
-          },
-          examsOnly: {
-            ...publicPage.pricing.examsOnly,
-            features: (publicPage.pricing.examsOnly.featuresText || '')
-              .split('\n')
-              .map((s) => s.trim())
-              .filter(Boolean),
-          },
-          lecturesAndExams: {
-            ...publicPage.pricing.lecturesAndExams,
-            features: (publicPage.pricing.lecturesAndExams.featuresText || '')
-              .split('\n')
-              .map((s) => s.trim())
-              .filter(Boolean),
-          },
-        },
-      };
-      delete payload.pricing.lecturesOnly.featuresText;
-      delete payload.pricing.examsOnly.featuresText;
-      delete payload.pricing.lecturesAndExams.featuresText;
-
-      const data = await tenantApi.updatePublicPage(tenant._id || tenant.id, { publicPage: payload });
+      };      const data = await tenantApi.updatePublicPage(tenant._id || tenant.id, { publicPage: payload });
       onSaved?.(data.tenant);
       toast.success(t('common.success'));
     } catch (err) {
@@ -464,44 +394,7 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
         </div>
       )}
 
-      {tab === 'pricing' && (
-        <div className="ce-card space-y-5 p-6">
-          <h3 className="text-lg font-extrabold text-[var(--ce-primary)]">{t('settings.tabs.pricing')}</h3>
-          {PACKAGE_KEYS.map(({ key, pricingKey }) => (
-            <div key={key} className="rounded-xl border border-[var(--ce-border)] p-4 space-y-3">
-              <p className="font-bold text-[var(--ce-primary)]">{t(`payments.${key === 'lecturesOnly' ? 'lecturesOnly' : key === 'examsOnly' ? 'examsOnly' : 'fullPackage'}`)}</p>
-              <label className="block">
-                <span className="ce-label">{t('payments.amount')}</span>
-                <input type="number" min="0" className="ce-input" value={packages[key]} onChange={(e) => setPackages({ ...packages, [key]: Number(e.target.value) })} />
-              </label>
-              <label className="block">
-                <span className="ce-label">{t('settings.tierTitle')}</span>
-                <input className="ce-input" value={publicPage.pricing[pricingKey].title || ''} onChange={(e) => setPublicPage({
-                  ...publicPage,
-                  pricing: { ...publicPage.pricing, [pricingKey]: { ...publicPage.pricing[pricingKey], title: e.target.value } },
-                })} />
-              </label>
-              <label className="block">
-                <span className="ce-label">{t('settings.tierFeatures')}</span>
-                <textarea
-                  className="ce-input min-h-[90px]"
-                  value={publicPage.pricing[pricingKey].featuresText || ''}
-                  onChange={(e) => setPublicPage({
-                    ...publicPage,
-                    pricing: { ...publicPage.pricing, [pricingKey]: { ...publicPage.pricing[pricingKey], featuresText: e.target.value } },
-                  })}
-                />
-              </label>
-            </div>
-          ))}
-          <button type="button" className="ce-btn ce-btn-primary" disabled={saving} onClick={async () => { await savePackages(); await savePublicPage(); }}>
-            {t('common.save')}
-          </button>
-        </div>
-      )}
-
-      {tab === 'payment' && (
-        <div className="ce-card space-y-4 p-6">
+      {tab === 'payment' && (        <div className="ce-card space-y-4 p-6">
           <h3 className="text-lg font-extrabold text-[var(--ce-primary)]">{t('settings.tabs.payment')}</h3>
           <label className="block">
             <span className="ce-label">{t('settings.vodafoneNumber')}</span>

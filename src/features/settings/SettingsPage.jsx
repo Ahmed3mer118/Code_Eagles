@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -17,6 +18,7 @@ import {
   User,
 } from 'lucide-react';
 import AuthServices from '../../shared/api/authService';
+import { studentApi } from '../../shared/api/platformApi';
 import { getStoredTenant } from '../../shared/api/tenantContext';
 import AcademySettingsEditor from './AcademySettingsEditor';
 import AcademyUrlCard from '../../shared/ui/AcademyUrlCard';
@@ -30,6 +32,7 @@ import ContentLoader from '../../shared/ui/ContentLoader';
 export default function SettingsPage() {
   const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
+  const [studentPackage, setStudentPackage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -45,6 +48,14 @@ export default function SettingsPage() {
         phone_number: data.user?.phone_number || '',
         gradeLevel: data.user?.gradeLevel || '',
       });
+      if (data.user?.role === 'student') {
+        try {
+          const access = await studentApi.accessStatus();
+          setStudentPackage(access.package || null);
+        } catch {
+          setStudentPackage(null);
+        }
+      }
     } catch (err) {
       toast.error(err?.message || t('common.error'));
     } finally {
@@ -147,6 +158,31 @@ export default function SettingsPage() {
                   label: t('settings.academyName'),
                   value: studentAcademy.name,
                 },
+                isStudent && studentPackage?.planName && {
+                  icon: CreditCard,
+                  label: t('settings.studentPlan'),
+                  value: studentPackage.planName,
+                },
+                isStudent && studentPackage?.packageLabel && {
+                  icon: BadgeCheck,
+                  label: t('settings.studentPackage'),
+                  value: studentPackage.packageLabel,
+                },
+                isStudent && studentAcademy && {
+                  icon: CreditCard,
+                  label: t('settings.manageSubscription'),
+                  value: (
+                    <div className="flex flex-wrap gap-2">
+                      <Link to="/dashboard/student/subscription" className="ce-btn ce-btn-accent text-xs">
+                        {t('payments.updatePlan')}
+                      </Link>
+                      <Link to="/dashboard/student/payments" className="ce-btn ce-btn-ghost text-xs">
+                        {t('payments.submitTitle')}
+                      </Link>
+                    </div>
+                  ),
+                  wide: true,
+                },
                 { icon: Mail, label: t('auth.email'), value: user.email, wide: true },
                 { icon: BadgeCheck, label: t('auth.role'), value: roleLabel },
                 !isStudent && {
@@ -201,6 +237,16 @@ export default function SettingsPage() {
                 icon: ShieldCheck,
                 label: t('settings.status'),
                 value: <StatusBadge status={tenant.status} label={t(`payments.planStatus.${tenant.status}`, tenant.status)} />,
+              },
+              canEditAcademy && {
+                icon: CreditCard,
+                label: t('settings.manageSubscription'),
+                value: (
+                  <Link to="/dashboard/teacher/subscription" className="ce-btn ce-btn-accent text-xs">
+                    {t('platformSub.planNav')}
+                  </Link>
+                ),
+                wide: true,
               },
             ]}
           />

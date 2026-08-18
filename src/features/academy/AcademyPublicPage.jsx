@@ -60,12 +60,13 @@ function AcademyLanding({
 
   const pricingTiers = useMemo(() => {
     if (paymentPlans?.length) {
+      const featuredIndex = Math.min(1, paymentPlans.length - 1);
       return paymentPlans.map((plan, index) => ({
         key: plan._id || String(index),
         label: plan.name,
-        price: plan.price,
+        price: plan.price ?? 0,
         features: plan.description ? plan.description.split('\n').filter(Boolean) : [],
-        featured: index === 1,
+        featured: index === featuredIndex && paymentPlans.length > 1,
       }));
     }
 
@@ -434,7 +435,7 @@ function AcademyLanding({
             title={t('academy.coursesTitle')}
             subtitle={t('academy.coursesSubtitle')}
           />
-          <div className="mb-6 flex flex-wrap gap-2">
+          {/* <div className="mb-6 flex flex-wrap gap-2">
             {['all', 'programming', 'secondary', 'beginner', 'advanced'].map((filter) => (
               <button
                 key={filter}
@@ -449,7 +450,7 @@ function AcademyLanding({
                 {t(`academy.filters.${filter}`)}
               </button>
             ))}
-          </div>
+          </div> */}
           {filteredCourses.length ? (
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredCourses.map((item) => (
@@ -461,6 +462,7 @@ function AcademyLanding({
                     registerLink={registerLink}
                     isApproved={isApproved}
                   />
+                  // <CourseCard key={item._id} course={item} />
                 ) : (
                   <CourseCard key={item._id} course={item} />
                 )
@@ -510,11 +512,11 @@ function AcademyLanding({
         </div>
       </section>
 
-      {pricingTiers.some((tier) => tier.price > 0) && (
+      {pricingTiers.length > 0 && (
         <section id="pricing" className="ce-section">
           <div className="ce-container">
             <SectionHeader title={t('academy.packages')} subtitle={t('academy.pricingSubtitle')} />
-            <PricingTiers tiers={pricingTiers.filter((tier) => tier.price > 0)} slug={slug} />
+            <PricingTiers tiers={pricingTiers} slug={slug} />
           </div>
         </section>
       )}

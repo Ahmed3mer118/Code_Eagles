@@ -5,6 +5,7 @@ import {
   BookOpen,
   ChevronDown,
   ChevronRight,
+  ChevronUp,
   Layers,
   Lock,
   Pencil,
@@ -20,12 +21,13 @@ import FormModal from '../../shared/ui/FormModal';
 import FormField, { getFriendlyError } from '../../shared/ui/FormField';
 import SearchInput from '../../shared/ui/SearchInput';
 import VisibilityToggle from '../../shared/ui/VisibilityToggle';
+import IconButton from '../../shared/ui/IconButton';
 import useTenantFeatures from '../../shared/hooks/useTenantFeatures';
 
 const emptySubject = { name: '', gradeLevel: 'grade_12', description: '' };
 const emptyUnit = { title: '' };
 const emptyLesson = { title: '' };
-const emptyLecture = { title: '', description: '', videoUrl: '', order: 0, isVisible: true };
+const emptyLecture = { title: '', description: '', videoUrl: '', order: 0, isVisible: true, isFree: false };
 
 export default function ContentHubPage() {
   const { t } = useTranslation();
@@ -345,12 +347,17 @@ export default function ContentHubPage() {
                                                 title={lec.isVisible === false ? t('content.showItem') : t('content.hideItem')}
                                               />
                                             </div>
+                                            {lec.isFree && (
+                                              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                                                {t('content.freeBadge')}
+                                              </span>
+                                            )}
                                             {lec.description && <p className="line-clamp-2 text-xs text-[var(--ce-muted)]">{lec.description}</p>}
                                             <div className="mt-auto flex flex-wrap gap-1 pt-2">
-                                              <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => setLectureModal({ values: { ...lec, isVisible: lec.isVisible !== false } })}>{t('content.edit')}</button>
-                                              <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => moveItem('lecture', lectures, i, -1)}>↑</button>
-                                              <button type="button" className="ce-btn ce-btn-ghost text-xs" onClick={() => moveItem('lecture', lectures, i, 1)}>↓</button>
-                                              <button type="button" className="ce-btn ce-btn-ghost text-xs text-red-700" onClick={() => setConfirm({ type: 'lecture', id: lec._id })}>{t('content.delete')}</button>
+                                              <IconButton icon={Pencil} label={t('content.edit')} onClick={() => setLectureModal({ values: { ...lec, isVisible: lec.isVisible !== false, isFree: !!lec.isFree } })} />
+                                              <IconButton icon={ChevronUp} label={t('content.moveUp')} onClick={() => moveItem('lecture', lectures, i, -1)} />
+                                              <IconButton icon={ChevronDown} label={t('content.moveDown')} onClick={() => moveItem('lecture', lectures, i, 1)} />
+                                              <IconButton icon={Trash2} label={t('content.delete')} variant="danger" onClick={() => setConfirm({ type: 'lecture', id: lec._id })} />
                                             </div>
                                           </div>
                                         </li>
@@ -453,6 +460,18 @@ export default function ContentHubPage() {
             <FormField label={t('content.description')}>
               <textarea className="ce-input min-h-[90px]" value={values.description} onChange={(e) => setValues({ ...values, description: e.target.value })} />
             </FormField>
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--ce-border)] bg-[var(--ce-bg)]/40 px-4 py-3">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={!!values.isFree}
+                onChange={(e) => setValues({ ...values, isFree: e.target.checked })}
+              />
+              <span>
+                <span className="block text-sm font-bold text-[var(--ce-primary)]">{t('content.isFreeLecture')}</span>
+                <span className="mt-0.5 block text-xs text-[var(--ce-muted)]">{t('content.isFreeLectureHint')}</span>
+              </span>
+            </label>
           </div>
         )}
       </FormModal>

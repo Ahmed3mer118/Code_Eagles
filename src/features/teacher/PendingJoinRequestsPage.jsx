@@ -89,6 +89,9 @@ export default function PendingJoinRequestsPage() {
                   <div className="mt-2 flex flex-wrap gap-2 text-xs">
                     <StatusBadge status="pending" label={t('student.status.pending')} />
                     <span className="rounded-full bg-[var(--ce-bg)] px-2 py-1">{item.packageLabel}</span>
+                    {item.planName && (
+                      <span className="rounded-full bg-[var(--ce-bg)] px-2 py-1">{item.planName}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -97,6 +100,7 @@ export default function PendingJoinRequestsPage() {
                 <div><dt className="text-[var(--ce-muted)]">{t('auth.phone')}</dt><dd className="font-semibold">{item.student?.phone_number || '—'}</dd></div>
                 <div><dt className="text-[var(--ce-muted)]">{t('requests.parentPhone')}</dt><dd className="font-semibold">{item.student?.parentPhone || '—'}</dd></div>
                 <div><dt className="text-[var(--ce-muted)]">{t('requests.requestDate')}</dt><dd className="font-semibold">{new Date(item.requestDate || item.createdAt).toLocaleDateString()}</dd></div>
+                <div><dt className="text-[var(--ce-muted)]">{t('payments.planName')}</dt><dd className="font-semibold">{item.planName || '—'}</dd></div>
                 <div><dt className="text-[var(--ce-muted)]">{t('requests.paymentStatus')}</dt><dd className="font-semibold">{t(`requests.payment.${item.paymentStatus}`, item.paymentStatus)}</dd></div>
               </dl>
 
@@ -134,6 +138,7 @@ export default function PendingJoinRequestsPage() {
               <p><strong>{t('auth.phone')}:</strong> {detail.student?.phone_number}</p>
               <p><strong>{t('requests.parentPhone')}:</strong> {detail.student?.parentPhone || '—'}</p>
               <p><strong>{t('payments.package')}:</strong> {detail.packageLabel}</p>
+              <p><strong>{t('payments.planName')}:</strong> {detail.planName || '—'}</p>
               <p><strong>{t('requests.paymentStatus')}:</strong> {detail.paymentStatus}</p>
             </div>
             <ReceiptViewer url={detail.receiptImageUrl} />

@@ -6,6 +6,7 @@ const navItems = [
   { to: '/dashboard/super-admin/tenants', labelKey: 'dashboard.tenants', icon: NAV_ICONS.tenants },
   { to: '/dashboard/super-admin/subscriptions', labelKey: 'admin.subscriptions', icon: NAV_ICONS.subscriptions },
   { to: '/dashboard/super-admin/cms', labelKey: 'admin.cmsTitle', icon: NAV_ICONS.cms },
+  { to: '/dashboard/super-admin/activity', labelKey: 'activity.nav', icon: NAV_ICONS.activity },
   { to: '/dashboard/super-admin/settings', labelKey: 'dashboard.settings', icon: NAV_ICONS.settings },
 ];
 

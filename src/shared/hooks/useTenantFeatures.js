@@ -16,6 +16,8 @@ export function filterNavByFeatures(navItems, features) {
 
 export default function useTenantFeatures() {
   const [features, setFeatures] = useState(() => getStoredTenant()?.features || null);
+  const [packageAccess, setPackageAccess] = useState(null);
+  const [studentPackage, setStudentPackage] = useState(null);
   const [loading, setLoading] = useState(!features);
 
   useEffect(() => {
@@ -27,6 +29,8 @@ export default function useTenantFeatures() {
         .then((data) => {
           const next = data.features || null;
           setFeatures(next);
+          setPackageAccess(data.packageAccess || null);
+          setStudentPackage(data.package || null);
           const stored = getStoredTenant();
           if (stored && next) setStoredTenant({ ...stored, features: next });
         })
@@ -39,6 +43,8 @@ export default function useTenantFeatures() {
       .then((data) => {
         const next = data.tenant?.features || null;
         setFeatures(next);
+        setPackageAccess(null);
+        setStudentPackage(null);
         const stored = getStoredTenant();
         if (data.tenant && stored) {
           setStoredTenant({ ...stored, features: next });
@@ -52,5 +58,12 @@ export default function useTenantFeatures() {
 
   const enabledKeys = FEATURE_KEYS.filter((key) => isFeatureEnabled(features, key));
 
-  return { features, loading, enabledKeys, isEnabled: (key) => isFeatureEnabled(features, key) };
+  return {
+    features,
+    packageAccess,
+    studentPackage,
+    loading,
+    enabledKeys,
+    isEnabled: (key) => isFeatureEnabled(features, key),
+  };
 }

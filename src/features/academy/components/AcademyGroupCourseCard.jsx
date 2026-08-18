@@ -105,9 +105,9 @@ export default function AcademyGroupCourseCard({
             <Link to={joinLink(group._id)} className="ce-btn ce-btn-accent flex-1 text-sm">
               {t('student.requestJoin')}
             </Link>
-            <Link to={registerLink(group._id)} className="ce-btn ce-btn-ghost text-sm">
+            {/* <Link to={registerLink(group._id)} className="ce-btn ce-btn-ghost text-sm">
               {t('nav.register')}
-            </Link>
+            </Link> */}
           </div>
         )}
       </div>

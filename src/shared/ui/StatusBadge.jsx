@@ -34,6 +34,9 @@ const STATUS_TONE = {
   failed: 'danger',
   suspended: 'danger',
   expired: 'danger',
+  success: 'success',
+  failure: 'danger',
+  info: 'info',
 };
 
 export default function StatusBadge({ status, label, tone }) {

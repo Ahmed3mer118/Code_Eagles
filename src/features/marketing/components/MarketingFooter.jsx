@@ -56,7 +56,7 @@ export default function MarketingFooter() {
   return (
     <footer className="mt-0 border-t border-white/10 bg-[var(--ce-primary)] text-white">
       <div className="ce-container py-14">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:gap-10">
           <div>
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--ce-accent)] text-lg font-extrabold text-[#1a1200]">

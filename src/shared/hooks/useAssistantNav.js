@@ -10,6 +10,7 @@ const NAV = {
   content: { to: '/dashboard/assistant/content', labelKey: 'dashboard.subjects', icon: NAV_ICONS.subjects, end: false },
   quizzes: { to: '/dashboard/assistant/quizzes', labelKey: 'dashboard.quizzes', icon: NAV_ICONS.quizzes, end: false },
   assignments: { to: '/dashboard/assistant/assignments', labelKey: 'dashboard.assignments', icon: NAV_ICONS.assignments, end: false },
+  activity: { to: '/dashboard/assistant/activity', labelKey: 'activity.nav', icon: NAV_ICONS.activity, end: false },
   settings: { to: '/dashboard/assistant/settings', labelKey: 'dashboard.settings', icon: NAV_ICONS.settings, end: false },
 };
 
@@ -17,15 +18,15 @@ const NAV_BY_PERMISSION = {
   enroll_students: [NAV.requests, NAV.groups],
   manage_groups: [NAV.groups],
   review_payments: [NAV.payments],
-  view_student_reports: [NAV.results],
-  view_limited_reports: [NAV.results],
+  view_student_reports: [NAV.results, NAV.activity],
+  view_limited_reports: [NAV.results, NAV.activity],
   manage_content: [NAV.content],
-  manage_quizzes: [NAV.quizzes],
-  quiz_review: [NAV.quizzes],
-  homework_review: [NAV.assignments],
+  manage_quizzes: [NAV.quizzes, NAV.activity],
+  quiz_review: [NAV.quizzes, NAV.activity],
+  homework_review: [NAV.assignments, NAV.activity],
 };
 
-const BASE = [NAV.settings];
+const BASE = [NAV.activity, NAV.settings];
 
 export function useAssistantNav() {
   const [navItems, setNavItems] = useState(BASE);

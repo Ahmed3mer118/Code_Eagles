@@ -8,7 +8,7 @@ export default function PricingTiers({ tiers = [], slug }) {
   if (!tiers.length) return null;
 
   return (
-    <div className="grid gap-5 lg:grid-cols-3">
+    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {tiers.map((tier) => (
         <article
           key={tier.key}
@@ -19,7 +19,7 @@ export default function PricingTiers({ tiers = [], slug }) {
           )}
           <h3 className="text-xl font-extrabold text-[var(--ce-primary)]">{tier.label}</h3>
           <p className="mt-2 text-3xl font-extrabold text-[var(--ce-accent)]">
-            {tier.price > 0 ? `${tier.price} ${t('academy.currency')}` : t('academy.contactForPrice')}
+            {tier.price > 0 ? `${tier.price} ${t('academy.currency')}` : t('payments.freePlan')}
           </p>
           <ul className="mt-5 flex flex-1 flex-col gap-3">
             {tier.features.map((feature) => (

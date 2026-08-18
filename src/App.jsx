@@ -27,6 +27,8 @@ const SubscriptionsPage = React.lazy(() => import('./features/dashboards/superAd
 const PlatformCmsPage = React.lazy(() => import('./features/dashboards/superAdmin/PlatformCmsPage.jsx'));
 const TeacherOverview = React.lazy(() => import('./features/dashboards/teacher/TeacherOverview.jsx'));
 const TeacherPlatformSubscriptionPage = React.lazy(() => import('./features/teacher/TeacherPlatformSubscriptionPage.jsx'));
+const TeacherSubscriptionPlanPage = React.lazy(() => import('./features/teacher/TeacherSubscriptionPlanPage.jsx'));
+const TeacherPlatformPaymentPage = React.lazy(() => import('./features/teacher/TeacherPlatformPaymentPage.jsx'));
 const SubjectsPage = React.lazy(() => import('./features/content/ContentHubPage.jsx'));
 const GroupsPage = React.lazy(() => import('./features/groups/GroupsPage.jsx'));
 const AssistantsPage = React.lazy(() => import('./features/assistants/AssistantsPage.jsx'));
@@ -36,6 +38,7 @@ const PaymentPlansPage = React.lazy(() => import('./features/payments/PaymentPla
 const PromoCodesPage = React.lazy(() => import('./features/payments/PromoCodesPage.jsx'));
 const PaymentHistoryPage = React.lazy(() => import('./features/payments/PaymentHistoryPage.jsx'));
 const PaymentSubmitPage = React.lazy(() => import('./features/payments/PaymentSubmitPage.jsx'));
+const StudentSubscriptionPage = React.lazy(() => import('./features/student/StudentSubscriptionPage.jsx'));
 const StudentCoursesPage = React.lazy(() => import('./features/student/StudentCoursesPage.jsx'));
 const StudentJoinPage = React.lazy(() => import('./features/student/StudentJoinPage.jsx'));
 const StudentQuizzesPage = React.lazy(() => import('./features/student/StudentQuizzesPage.jsx'));
@@ -56,7 +59,11 @@ const StudentAssignmentsPage = React.lazy(() => import('./features/assignments/S
 const StudentOverviewPage = React.lazy(() => import('./features/student/StudentOverviewPage.jsx'));
 const StudentAcademySelectPage = React.lazy(() => import('./features/student/StudentAcademySelectPage.jsx'));
 const ParentChildrenPage = React.lazy(() => import('./features/parent/ParentChildrenPage.jsx'));
-const ParentNotificationsPage = React.lazy(() => import('./features/parent/ParentNotificationsPage.jsx'));
+const ParentLinkRequestsPage = React.lazy(() => import('./features/parent/ParentLinkRequestsPage.jsx'));
+const ParentPaymentsPage = React.lazy(() => import('./features/parent/ParentPaymentsPage.jsx'));
+const StudentLinkRequestsPage = React.lazy(() => import('./features/student/StudentLinkRequestsPage.jsx'));
+const ActivityCenterPage = React.lazy(() => import('./features/activity/ActivityCenterPage.jsx'));
+const NotificationsPage = React.lazy(() => import('./features/notifications/NotificationsPage.jsx'));
 const AcademyPublicPage = React.lazy(() => import('./features/academy/AcademyPublicPage.jsx'));
 
 const withRole = (roles, element) => <RoleGuard roles={roles}>{element}</RoleGuard>;
@@ -88,6 +95,8 @@ const router = createBrowserRouter([
       { path: 'tenants', element: <TenantsPage /> },
       { path: 'subscriptions', element: <SubscriptionsPage /> },
       { path: 'cms', element: <PlatformCmsPage /> },
+      { path: 'activity', element: <ActivityCenterPage /> },
+      { path: 'notifications', element: <NotificationsPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
@@ -109,9 +118,13 @@ const router = createBrowserRouter([
       { path: 'reports', element: <TeacherReportsPage /> },
       { path: 'payments', element: <PaymentReviewPage /> },
       { path: 'payment-plans', element: <PaymentPlansPage /> },
+      { path: 'subscription', element: <TeacherSubscriptionPlanPage /> },
+      { path: 'platform-payments', element: <TeacherPlatformPaymentPage /> },
       { path: 'promo-codes', element: <PromoCodesPage /> },
       { path: 'payment-history', element: <PaymentHistoryPage /> },
-      { path: 'platform-subscription', element: <TeacherPlatformSubscriptionPage /> },
+      { path: 'platform-subscription', element: <Navigate to="/dashboard/teacher/subscription" replace /> },
+      { path: 'activity', element: <ActivityCenterPage /> },
+      { path: 'notifications', element: <NotificationsPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
@@ -129,6 +142,7 @@ const router = createBrowserRouter([
       { path: 'results', element: <TeacherResultsPage /> },
       { path: 'assignments', element: <TeacherAssignmentsPage /> },
       { path: 'assignments/:id', element: <AssignmentReviewPage /> },
+      { path: 'activity', element: <ActivityCenterPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
@@ -137,8 +151,10 @@ const router = createBrowserRouter([
     element: withRole(['parent'], <ParentDashboard />),
     children: [
       { index: true, element: <ParentChildrenPage /> },
-      { path: 'notifications', element: <ParentNotificationsPage /> },
-      { path: 'payments', element: <PaymentSubmitPage /> },
+      { path: 'notifications', element: <NotificationsPage /> },
+      { path: 'link-requests', element: <ParentLinkRequestsPage /> },
+      { path: 'activity', element: <ActivityCenterPage /> },
+      { path: 'payments', element: <ParentPaymentsPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
@@ -152,12 +168,16 @@ const router = createBrowserRouter([
       { path: 'courses', element: <StudentCoursesPage /> },
       { path: 'assignments', element: <StudentAssignmentsPage /> },
       { path: 'payments', element: <PaymentSubmitPage /> },
+      { path: 'subscription', element: <StudentSubscriptionPage /> },
       { path: 'quizzes', element: <StudentQuizzesPage /> },
       { path: 'quizzes/history', element: <ExamHistoryPage /> },
       { path: 'quizzes/:quizId', element: <ExamPreFlightPage /> },
       { path: 'quizzes/:quizId/attempt/:attemptId', element: <ExamTakingPage /> },
       { path: 'quizzes/:quizId/results/:attemptId', element: <ExamResultsPage /> },
       { path: 'leaderboard', element: <StudentLeaderboardPage /> },
+      { path: 'link-requests', element: <StudentLinkRequestsPage /> },
+      { path: 'activity', element: <ActivityCenterPage /> },
+      { path: 'notifications', element: <NotificationsPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },

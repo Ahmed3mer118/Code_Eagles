@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Users } from 'lucide-react';
-import { groupApi } from '../../shared/api/platformApi';
+import { groupApi, paymentApi, paymentPlanApi } from '../../shared/api/platformApi';
 import { getStoredTenantSlug, setTenantSlug } from '../../shared/api/tenantContext';
 import PageHeader from '../../shared/ui/PageHeader';
 import EmptyState from '../../shared/ui/EmptyState';
@@ -11,7 +11,8 @@ import FormModal from '../../shared/ui/FormModal';
 import FormField, { getFriendlyError } from '../../shared/ui/FormField';
 import SearchInput, { filterByQuery } from '../../shared/ui/SearchInput';
 import StudentAcademyPanel from './components/StudentAcademyPanel';
-import { useStudentAcademy } from './useStudentAcademy';
+import PlanPickerGrid from '../../shared/ui/PlanPickerGrid';
+import { useStudentAcademyContext } from './StudentAcademyContext';
 
 const PACKAGES = [
   { value: 'lectures_only', labelKey: 'payments.lecturesOnly' },
@@ -28,11 +29,12 @@ const statusClass = {
 export default function StudentJoinPage() {
   const { t } = useTranslation();
   const [params] = useSearchParams();
-  const { currentAcademy, academies, hasMultipleAcademies } = useStudentAcademy({ autoRedirect: true });
+  const { currentAcademy, academies } = useStudentAcademyContext();
   const [groups, setGroups] = useState([]);
   const [mine, setMine] = useState([]);
   const [packages, setPackages] = useState({});
   const [paymentPlans, setPaymentPlans] = useState([]);
+  const [paymentRequests, setPaymentRequests] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [tenantMissing, setTenantMissing] = useState(false);
@@ -48,11 +50,25 @@ export default function StudentJoinPage() {
     setLoading(true);
     setTenantMissing(false);
     try {
-      const [g, m] = await Promise.all([groupApi.list(), groupApi.myEnrollments()]);
+      const [g, m, payments] = await Promise.all([
+        groupApi.list(),
+        groupApi.myEnrollments(),
+        paymentApi.listMine().catch(() => ({ paymentRequests: [] })),
+      ]);
       setGroups(g.groups || []);
       setMine(m.enrollments || []);
+      setPaymentRequests(payments.paymentRequests || []);
       setPackages(m.tenant?.studentPackages || g.tenant?.studentPackages || {});
-      setPaymentPlans(m.tenant?.paymentPlans || g.tenant?.paymentPlans || []);
+      let plans = m.tenant?.paymentPlans || g.tenant?.paymentPlans || [];
+      if (!plans.length && academySlug) {
+        try {
+          const publicPlans = await paymentPlanApi.listPublic(academySlug);
+          plans = publicPlans.plans || [];
+        } catch {
+          /* ignore */
+        }
+      }
+      setPaymentPlans(plans);
     } catch (err) {
       const msg = err?.response?.data?.message || err?.message;
       if (err?.response?.status === 400 && /academy|tenant/i.test(msg || '')) {
@@ -75,6 +91,15 @@ export default function StudentJoinPage() {
   }, [preselectedGroup, groups, mine]);
 
   const getEnrollment = (groupId) => mine.find((e) => e.groupId?._id === groupId || e.groupId === groupId);
+
+  const getPaymentForEnrollment = (enrollmentId) => paymentRequests.find(
+    (req) => String(req.enrollmentId?._id || req.enrollmentId) === String(enrollmentId)
+  );
+
+  const isPaymentPending = (enrollmentId) => {
+    const payment = getPaymentForEnrollment(enrollmentId);
+    return payment && ['pending', 'under_review'].includes(payment.status);
+  };
 
   const getPrice = (packageType) => {
     const map = {
@@ -130,13 +155,6 @@ export default function StudentJoinPage() {
             selected
             showEnter={false}
           />
-          {hasMultipleAcademies && (
-            <div className="text-end">
-              <Link to="/dashboard/student/select-academy" className="text-sm font-semibold text-[var(--ce-primary)]">
-                {t('student.switchAcademy')}
-              </Link>
-            </div>
-          )}
         </div>
       )}
 
@@ -157,12 +175,25 @@ export default function StudentJoinPage() {
                   <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClass[en.status] || 'bg-gray-100'}`}>
                     {t(`student.status.${en.status}`, en.status)}
                   </span>
-                  {en.status === 'pending' && en.amountDue > 0 && (
+                  {en.status === 'pending' && isPaymentPending(en._id) && (
+                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">
+                      {t('payments.awaitingApproval')}
+                    </span>
+                  )}
+                  {en.status === 'pending' && !isPaymentPending(en._id) && (
                     <Link
                       to={`/dashboard/student/payments?enrollment=${en._id}`}
                       className="ce-btn ce-btn-accent text-xs"
                     >
-                      {t('payments.payNow')}
+                      {en.amountDue > 0 ? t('payments.payNow') : t('payments.goPayNow')}
+                    </Link>
+                  )}
+                  {en.status === 'active' && (
+                    <Link
+                      to={`/dashboard/student/subscription?enrollment=${en._id}`}
+                      className="ce-btn ce-btn-ghost text-xs"
+                    >
+                      {t('payments.updatePlan')}
                     </Link>
                   )}
                   {en.status === 'cancelled' && en.rejectionReason && (
@@ -233,7 +264,11 @@ export default function StudentJoinPage() {
         initialValues={{ packageType: 'lectures_and_exams', paymentPlanId: '', notes: '', parentPhone: '' }}
         validate={(values) => {
           const errors = {};
-          if (!values.paymentPlanId && !values.packageType) errors.packageType = t('student.errors.packageRequired');
+          if (paymentPlans.length > 0 && !values.paymentPlanId) {
+            errors.packageType = t('student.errors.packageRequired');
+          } else if (!values.paymentPlanId && !values.packageType) {
+            errors.packageType = t('student.errors.packageRequired');
+          }
           return errors;
         }}
         onSubmit={submitJoin}
@@ -246,17 +281,16 @@ export default function StudentJoinPage() {
             </div>
             <FormField label={t('payments.package')} required error={errors.packageType}>
               {paymentPlans.length > 0 ? (
-                <select className="ce-input" value={values.paymentPlanId} onChange={(e) => {
-                  const plan = paymentPlans.find((p) => p._id === e.target.value);
-                  setValues({ ...values, paymentPlanId: e.target.value, packageType: plan?.packageType || values.packageType });
-                }}>
-                  <option value="">{t('payments.selectPlan')}</option>
-                  {paymentPlans.map((plan) => (
-                    <option key={plan._id} value={plan._id}>
-                      {plan.name} — {plan.price} {t('academy.currency')}
-                    </option>
-                  ))}
-                </select>
+                <PlanPickerGrid
+                  plans={paymentPlans}
+                  value={values.paymentPlanId}
+                  layout="stack"
+                  onChange={(planId, plan) => setValues({
+                    ...values,
+                    paymentPlanId: planId,
+                    packageType: plan?.packageType || values.packageType,
+                  })}
+                />
               ) : (
                 <select className="ce-input" value={values.packageType} onChange={(e) => setValues({ ...values, packageType: e.target.value })}>
                   {PACKAGES.map((p) => (

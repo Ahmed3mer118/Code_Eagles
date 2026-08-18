@@ -23,7 +23,7 @@ const emptyNewPlan = {
   periodMonths: 1,
   maxStudents: 300,
   maxAssistants: 2,
-  features: ['groups', 'quizzes', 'assignments', 'payments', 'leaderboard'],
+  features: ['quizzes', 'assignments', 'lectures', 'certificates', 'groups', 'payments', 'leaderboard'],
 };
 
 export default function SubscriptionsPage() {
@@ -324,10 +324,15 @@ export default function SubscriptionsPage() {
                   <div className="border-b border-[var(--ce-border)] bg-[var(--ce-bg)] px-5 py-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <h3 className="font-extrabold text-[var(--ce-primary)]">{item.tenantId?.name}</h3>
+                        <h3 className="font-extrabold text-[var(--ce-primary)]">
+                          {item.academyName || item.tenantId?.name || t('admin.unknownAcademy')}
+                        </h3>
+                        {item.tenantId?.slug && (
+                          <p className="mt-0.5 text-xs text-[var(--ce-muted)]">{item.tenantId.slug}</p>
+                        )}
                         <p className="mt-1 flex items-center gap-1 text-xs text-[var(--ce-muted)]">
                           <Mail className="h-3.5 w-3.5" />
-                          {item.recordedBy?.email || '—'}
+                          {item.tenantId?.ownerId?.email || item.recordedBy?.email || '—'}
                         </p>
                       </div>
                       <StatusBadge status={item.status} label={t(`payments.status.${item.status}`)} />
@@ -355,7 +360,15 @@ export default function SubscriptionsPage() {
                     )}
 
                     {item.receiptImageUrl ? (
-                      <ReceiptViewer url={item.receiptImageUrl} />
+                      <>
+                        <ReceiptViewer url={item.receiptImageUrl} />
+                        {item.receiptUploadedAt && (
+                          <p className="text-xs text-[var(--ce-muted)]">
+                            {t('admin.receiptUploadedAt')}:{' '}
+                            {new Date(item.receiptUploadedAt).toLocaleString(lang === 'en' ? 'en-GB' : 'ar-EG')}
+                          </p>
+                        )}
+                      </>
                     ) : (
                       <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900">{t('admin.noReceiptYet')}</p>
                     )}

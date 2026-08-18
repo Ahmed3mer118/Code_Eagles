@@ -9,7 +9,7 @@ import ToggleSwitch from '../../../shared/ui/ToggleSwitch';
 import FormModal from '../../../shared/ui/FormModal';
 import FormField from '../../../shared/ui/FormField';
 
-const TABS = ['sections', 'faq', 'testimonials', 'footer', 'backup'];
+const TABS = ['sections', 'faq', 'testimonials', 'footer', 'payment', 'backup'];
 const SECTION_LABELS = {
   hero: 'Hero', features: 'Features', statistics: 'Statistics', featured: 'Featured',
   testimonials: 'Testimonials', faq: 'FAQ', cta: 'CTA',
@@ -41,6 +41,12 @@ export default function PlatformCmsPage() {
   const [editTestimonial, setEditTestimonial] = useState(null);
   const [testimonialForm, setTestimonialForm] = useState(emptyTestimonial);
   const [footerForm, setFooterForm] = useState({ text: { ar: '', en: '' }, contactEmail: '', contactPhone: '', socialLinks: [] });
+  const [paymentForm, setPaymentForm] = useState({
+    vodafoneNumber: '',
+    instapayId: '',
+    bankDetails: '',
+    paymentInstructions: '',
+  });
   const [backupForm, setBackupForm] = useState({ frequency: 'weekly', customCron: '' });
   const [runningBackup, setRunningBackup] = useState(false);
 
@@ -59,6 +65,12 @@ export default function PlatformCmsPage() {
       contactEmail: data.site?.footer?.contactEmail || '',
       contactPhone: data.site?.footer?.contactPhone || '',
       socialLinks: data.site?.footer?.socialLinks || [],
+    });
+    setPaymentForm({
+      vodafoneNumber: data.site?.platformPayment?.vodafoneNumber || data.paymentInfo?.vodafoneNumber || '',
+      instapayId: data.site?.platformPayment?.instapayId || data.paymentInfo?.instapayId || '',
+      bankDetails: data.site?.platformPayment?.bankDetails || data.paymentInfo?.bankDetails || '',
+      paymentInstructions: data.site?.platformPayment?.paymentInstructions || data.paymentInfo?.paymentInstructions || '',
     });
     const section = (data.site?.sections || []).find((s) => s.key === sectionKey);
     if (section) setSectionForm(section);
@@ -131,6 +143,14 @@ export default function PlatformCmsPage() {
   const saveFooter = async () => {
     try {
       await platformSiteApi.updateFooter(footerForm);
+      toast.success(t('common.success'));
+      load();
+    } catch (err) { toast.error(err?.message || t('common.error')); }
+  };
+
+  const savePlatformPayment = async () => {
+    try {
+      await platformSiteApi.updatePlatformPayment(paymentForm);
       toast.success(t('common.success'));
       load();
     } catch (err) { toast.error(err?.message || t('common.error')); }
@@ -323,6 +343,32 @@ export default function PlatformCmsPage() {
             <FormField label={t('admin.contactPhone')} helper={t('admin.fieldContactPhoneHint')}><input className="ce-input" value={footerForm.contactPhone} onChange={(e) => setFooterForm({ ...footerForm, contactPhone: e.target.value })} /></FormField>
           </div>
           <button type="button" className="ce-btn ce-btn-primary" onClick={saveFooter}>{t('common.save')}</button>
+        </div>
+      )}
+
+      {tab === 'payment' && (
+        <div className="ce-card space-y-4 p-6">
+          <h3 className="font-bold text-[var(--ce-primary)]">{t('admin.platformPaymentTitle')}</h3>
+          <p className="text-sm text-[var(--ce-muted)]">{t('admin.platformPaymentHint')}</p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField label={t('settings.vodafoneNumber')}>
+              <input className="ce-input" value={paymentForm.vodafoneNumber} onChange={(e) => setPaymentForm({ ...paymentForm, vodafoneNumber: e.target.value })} />
+            </FormField>
+            <FormField label={t('settings.instapayId')}>
+              <input className="ce-input" value={paymentForm.instapayId} onChange={(e) => setPaymentForm({ ...paymentForm, instapayId: e.target.value })} />
+            </FormField>
+            <div className="md:col-span-2">
+              <FormField label={t('settings.bankDetails')}>
+                <textarea className="ce-input min-h-[100px]" value={paymentForm.bankDetails} onChange={(e) => setPaymentForm({ ...paymentForm, bankDetails: e.target.value })} />
+              </FormField>
+            </div>
+            <div className="md:col-span-2">
+              <FormField label={t('settings.paymentInstructions')}>
+                <textarea className="ce-input min-h-[100px]" value={paymentForm.paymentInstructions} onChange={(e) => setPaymentForm({ ...paymentForm, paymentInstructions: e.target.value })} />
+              </FormField>
+            </div>
+          </div>
+          <button type="button" className="ce-btn ce-btn-primary" onClick={savePlatformPayment}>{t('common.save')}</button>
         </div>
       )}
 

@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { BookOpen, ClipboardList, Layers, Plus, Trophy } from 'lucide-react';
+import { BookOpen, ClipboardList, CreditCard, Layers, Plus, RefreshCw, Trophy, UserPlus, Video } from 'lucide-react';
 import { studentApi } from '../../shared/api/platformApi';
 import { clearStoredTenant } from '../../shared/api/tenantContext';
 import StudentWaitingView from './StudentWaitingView';
 import StatusBadge from '../../shared/ui/StatusBadge';
 import ConfirmDialog from '../../shared/ui/ConfirmDialog';
+import IconButton from '../../shared/ui/IconButton';
 import StudentAcademyPanel from './components/StudentAcademyPanel';
-import { useStudentAcademy } from './useStudentAcademy';
+import { useStudentAcademyContext } from './StudentAcademyContext';
 import getApiErrorMessage from '../../shared/utils/apiError';
 
 const statIcons = [Layers, BookOpen, Trophy, ClipboardList];
@@ -17,7 +18,13 @@ const statIcons = [Layers, BookOpen, Trophy, ClipboardList];
 export default function StudentOverviewPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { academies, currentAcademy, loading: academiesLoading, hasMultipleAcademies, reload: reloadAcademies } = useStudentAcademy({ autoRedirect: true });
+  const {
+    academies,
+    currentAcademy,
+    loading: academiesLoading,
+    reload: reloadAcademies,
+    selectAcademy,
+  } = useStudentAcademyContext();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -54,7 +61,7 @@ export default function StudentOverviewPage() {
     return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
   }
 
-  const { groups, subjects, lectures, quizzes, assignments, recentAttempts, progress, pendingEnrollments } = data;
+  const { groups, subjects, lectures, quizzes, assignments, recentAttempts, progress, pendingEnrollments, package: packageInfo } = data;
   const statItems = [
     { label: t('student.myGroups'), value: progress.activeGroups },
     { label: t('student.mySubjects'), value: progress.subjects },
@@ -69,8 +76,23 @@ export default function StudentOverviewPage() {
       toast.success(t('student.leftAcademySuccess'));
       clearStoredTenant();
       setLeaveOpen(false);
-      await reloadAcademies();
-      navigate('/dashboard/student/select-academy', { replace: true });
+
+      const { list } = await reloadAcademies();
+      const remaining = (list || []).filter(
+        (item) => item.activeCount > 0 || item.pendingCount > 0
+      );
+
+      if (remaining.length === 1 && remaining[0]?.academy) {
+        selectAcademy(remaining[0].academy, { navigateTo: '/dashboard/student' });
+        return;
+      }
+
+      if (remaining.length > 1) {
+        navigate('/dashboard/student/select-academy', { replace: true });
+        return;
+      }
+
+      navigate('/dashboard/student/select-academy?explore=1', { replace: true });
     } catch (err) {
       toast.error(err?.response?.data?.message || err?.message || t('common.error'));
     } finally {
@@ -94,13 +116,6 @@ export default function StudentOverviewPage() {
               onLeave={() => setLeaveOpen(true)}
               leaving={leaving}
             />
-            {hasMultipleAcademies && (
-              <div className="text-end">
-                <Link to="/dashboard/student/select-academy" className="text-sm font-semibold text-[var(--ce-primary)]">
-                  {t('student.switchAcademy')}
-                </Link>
-              </div>
-            )}
           </div>
         )}
 
@@ -121,6 +136,28 @@ export default function StudentOverviewPage() {
           })}
         </div>
 
+        {packageInfo && (
+          <div className="ce-card flex flex-wrap items-center justify-between gap-4 p-5">
+            <div>
+              <p className="text-xs font-bold uppercase text-[var(--ce-muted)]">{t('settings.studentPlan')}</p>
+              <p className="mt-1 text-lg font-extrabold text-[var(--ce-primary)]">
+                {packageInfo.planName || packageInfo.packageLabel || t('payments.fullPackage')}
+              </p>
+              {packageInfo.packageLabel && packageInfo.planName && (
+                <p className="mt-1 text-sm text-[var(--ce-muted)]">{packageInfo.packageLabel}</p>
+              )}
+            </div>
+            {groups.length > 0 && (
+              <IconButton
+                icon={RefreshCw}
+                label={t('payments.updatePlan')}
+                variant="accent"
+                to="/dashboard/student/subscription"
+              />
+            )}
+          </div>
+        )}
+
         {pendingEnrollments?.length > 0 && (
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
             <h3 className="font-bold text-amber-900">{t('student.pendingBanner')}</h3>
@@ -128,7 +165,14 @@ export default function StudentOverviewPage() {
               {pendingEnrollments.map((en) => (
                 <li key={en._id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/70 px-4 py-3 text-sm">
                   <span className="font-medium">{en.group?.name} — {en.group?.subjectId?.name}</span>
-                  <Link to={`/dashboard/student/payments?enrollment=${en._id}`} className="ce-btn ce-btn-accent text-xs">{t('payments.payNow')}</Link>
+                  {en.amountDue > 0 && (
+                    <IconButton
+                      icon={CreditCard}
+                      label={t('payments.payNow')}
+                      variant="accent"
+                      to={`/dashboard/student/payments?enrollment=${en._id}`}
+                    />
+                  )}
                 </li>
               ))}
             </ul>
@@ -148,21 +192,27 @@ export default function StudentOverviewPage() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <StatusBadge status="approved" label={t('student.status.active')} />
                   {g.group?.meetingLink && (
-                    <a
+                    <IconButton
+                      icon={Video}
+                      label={t('student.joinLiveSession')}
                       href={g.group.meetingLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="ce-btn ce-btn-ghost text-xs"
-                    >
-                      {t('student.joinLiveSession')}
-                    </a>
+                      className="h-8 w-8"
+                    />
                   )}
+                  <IconButton
+                    icon={RefreshCw}
+                    label={t('payments.updatePlan')}
+                    variant="ghost"
+                    to={`/dashboard/student/subscription?enrollment=${g._id}`}
+                  />
                 </div>
               </div>
             )) : (
               <div className="md:col-span-2 rounded-2xl border border-dashed border-[var(--ce-border)] p-8 text-center">
                 <p className="text-sm text-[var(--ce-muted)]">{t('student.noGroups')}</p>
-                <Link to="/dashboard/student/join" className="ce-btn ce-btn-accent mt-4 text-sm">{t('student.requestJoin')}</Link>
+                <div className="mt-4 flex justify-center">
+                  <IconButton icon={UserPlus} label={t('student.requestJoin')} variant="accent" to="/dashboard/student/join" />
+                </div>
               </div>
             )}
           </div>

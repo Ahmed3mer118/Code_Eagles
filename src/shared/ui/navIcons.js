@@ -1,4 +1,5 @@
 import {
+  Activity,
   BadgeDollarSign,
   Bell,
   BookOpen,
@@ -12,6 +13,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   LayoutTemplate,
+  Link2,
   ReceiptText,
   Settings,
   TicketPercent,
@@ -48,6 +50,8 @@ const NAV_ICONS = {
   selectAcademy: Building2,
   children: Users,
   notifications: Bell,
+  linkRequests: Link2,
+  activity: Activity,
   tenants: Building2,
   subscriptions: CreditCard,
   cms: LayoutTemplate,

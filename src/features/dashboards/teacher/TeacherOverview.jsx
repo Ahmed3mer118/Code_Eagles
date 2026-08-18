@@ -5,7 +5,6 @@ import toast from 'react-hot-toast';
 import {
   AlertCircle,
   BookOpen,
-  CheckCircle2,
   ClipboardCheck,
   Clock,
   GraduationCap,
@@ -44,52 +43,77 @@ export default function TeacherOverview() {
   const academyApproved = subStatus?.academyApproved;
   const hasAccess = subStatus?.hasAccess;
   const pending = subStatus?.pending;
+  const showStatusAlerts = !hasAccess;
+
+  const statusAlerts = [];
+  if (showStatusAlerts && !academyApproved) {
+    statusAlerts.push({
+      key: 'academy-pending',
+      className: 'border-amber-200 bg-amber-50 text-amber-900',
+      icon: Clock,
+      title: t('platformSub.academyPendingTitle'),
+      hint: t('platformSub.academyPendingHint'),
+    });
+  }
+  if (showStatusAlerts && academyApproved && !hasAccess && !pending) {
+    statusAlerts.push({
+      key: 'need-subscription',
+      className: 'border-[var(--ce-accent)]/30 bg-[var(--ce-accent)]/10',
+      icon: AlertCircle,
+      iconClassName: 'text-[var(--ce-accent)]',
+      title: t('platformSub.needSubscriptionTitle'),
+      titleClassName: 'text-[var(--ce-primary)]',
+      hint: t('platformSub.needSubscriptionHint'),
+      hintClassName: 'text-[var(--ce-muted)]',
+      action: (
+        <Link to="/dashboard/teacher/subscription" className="ce-btn ce-btn-accent shrink-0">
+          {t('platformSub.choosePlanCta')}
+        </Link>
+      ),
+    });
+  }
+  if (showStatusAlerts && academyApproved && pending && !hasAccess) {
+    statusAlerts.push({
+      key: 'subscription-pending',
+      className: 'border-blue-200 bg-blue-50 text-blue-900',
+      icon: Clock,
+      title: t('platformSub.pendingTitle'),
+      hint: t('platformSub.pendingHint'),
+      action: (
+        <Link to="/dashboard/teacher/platform-payments" className="ce-btn ce-btn-accent shrink-0">
+          {t('platformSub.paymentNav')}
+        </Link>
+      ),
+    });
+  }
 
   return (
     <div className="space-y-6">
-      {!academyApproved && (
-        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900">
-          <Clock className="mt-0.5 h-5 w-5 shrink-0" />
-          <div>
-            <p className="font-bold">{t('platformSub.academyPendingTitle')}</p>
-            <p className="mt-1 text-sm">{t('platformSub.academyPendingHint')}</p>
+      <div className={`grid gap-4 ${statusAlerts.length > 0 ? 'lg:grid-cols-2' : ''}`}>
+        {statusAlerts.length > 0 && (
+          <div className={`grid gap-4 ${statusAlerts.length > 1 ? 'sm:grid-cols-2 lg:grid-cols-1' : ''}`}>
+            {statusAlerts.map((alert) => {
+              const Icon = alert.icon;
+              return (
+                <div
+                  key={alert.key}
+                  className={`flex flex-wrap items-start justify-between gap-4 rounded-2xl border p-5 ${alert.className}`}
+                >
+                  <div className="flex min-w-0 items-start gap-3">
+                    <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${alert.iconClassName || ''}`} />
+                    <div>
+                      <p className={`font-bold ${alert.titleClassName || ''}`}>{alert.title}</p>
+                      {alert.hint && <p className={`mt-1 text-sm ${alert.hintClassName || ''}`}>{alert.hint}</p>}
+                    </div>
+                  </div>
+                  {alert.action}
+                </div>
+              );
+            })}
           </div>
-        </div>
-      )}
-
-      {academyApproved && !hasAccess && !pending && (
-        <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-[var(--ce-accent)]/30 bg-[var(--ce-accent)]/10 p-5">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--ce-accent)]" />
-            <div>
-              <p className="font-bold text-[var(--ce-primary)]">{t('platformSub.needSubscriptionTitle')}</p>
-              <p className="mt-1 text-sm text-[var(--ce-muted)]">{t('platformSub.needSubscriptionHint')}</p>
-            </div>
-          </div>
-          <Link to="/dashboard/teacher/platform-subscription" className="ce-btn ce-btn-accent">
-            {t('platformSub.choosePlanCta')}
-          </Link>
-        </div>
-      )}
-
-      {academyApproved && pending && !hasAccess && (
-        <div className="flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-5 text-blue-900">
-          <Clock className="mt-0.5 h-5 w-5 shrink-0" />
-          <div>
-            <p className="font-bold">{t('platformSub.pendingTitle')}</p>
-            <p className="mt-1 text-sm">{t('platformSub.pendingHint')}</p>
-          </div>
-        </div>
-      )}
-
-      {hasAccess && (
-        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
-          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
-          <p className="text-sm font-semibold">{t('platformSub.dashboardUnlocked')}</p>
-        </div>
-      )}
-
-      <AcademyUrlCard slug={tenantSlug} />
+        )}
+        <AcademyUrlCard slug={tenantSlug} />
+      </div>
       <StatCards
         items={[
           { label: t('dashboard.students'), value: stats?.students, icon: GraduationCap, tone: 'accent' },

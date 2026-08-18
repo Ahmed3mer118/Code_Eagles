@@ -84,7 +84,6 @@ function validateQuiz(values, t) {
   if (!values.title?.trim()) errors.title = t('quizzes.errors.titleRequired');
   if (!values.subjectId) errors.subject = t('quizzes.errors.subjectRequired');
   if (!values.moduleId) errors.module = t('quizzes.errors.moduleRequired');
-  if (!values.lessonId) errors.lesson = t('quizzes.errors.lessonRequired');
   if (!values.durationMinutes || values.durationMinutes < 1) errors.duration = t('quizzes.errors.durationRequired');
   values.questions?.forEach((q, i) => {
     if (!q.text?.trim()) errors[`q${i}`] = t('quizzes.errors.questionRequired', { n: i + 1 });
@@ -100,7 +99,7 @@ function QuizFormFields({ values, setValues, errors, subjects, groups, t }) {
   const [lessons, setLessons] = useState([]);
 
   useEffect(() => {
-    if (!values.subjectId) {
+    if (!values.subjectId || !/^[a-f0-9]{24}$/i.test(values.subjectId)) {
       setModules([]);
       setLessons([]);
       return undefined;
@@ -180,14 +179,14 @@ function QuizFormFields({ values, setValues, errors, subjects, groups, t }) {
             {modules.map((m) => <option key={m._id} value={m._id}>{m.title}</option>)}
           </select>
         </FormField>
-        <FormField label={t('content.lessonName')} required error={errors.lesson}>
+        <FormField label={t('content.lessonName')} helper={t('quizzes.lessonOptionalHint')} error={errors.lesson}>
           <select
             className="ce-input"
             value={values.lessonId}
             disabled={!values.moduleId || !lessons.length}
             onChange={(e) => setValues({ ...values, lessonId: e.target.value })}
           >
-            <option value="">{t('quizzes.selectLesson')}</option>
+            <option value="">{t('quizzes.unitExamNoLesson')}</option>
             {lessons.map((l) => <option key={l._id} value={l._id}>{l.title}</option>)}
           </select>
         </FormField>

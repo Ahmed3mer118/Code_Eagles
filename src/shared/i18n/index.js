@@ -10,6 +10,8 @@ const applyDocumentDirection = (lng) => {
   document.documentElement.lang = lang;
   document.documentElement.dir = dir;
   document.body.dir = dir;
+  document.body.classList.toggle('font-arabic', lang === 'ar');
+  document.body.classList.toggle('font-latin', lang === 'en');
 };
 
 i18n

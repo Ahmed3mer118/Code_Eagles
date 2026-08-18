@@ -3,7 +3,9 @@ import NAV_ICONS from '../../../shared/ui/navIcons';
 
 const navItems = [
   { to: '/dashboard/parent', labelKey: 'dashboard.children', icon: NAV_ICONS.children, end: true },
+  { to: '/dashboard/parent/link-requests', labelKey: 'linkRequest.nav', icon: NAV_ICONS.linkRequests },
   { to: '/dashboard/parent/notifications', labelKey: 'parent.notificationsNav', icon: NAV_ICONS.notifications },
+  { to: '/dashboard/parent/activity', labelKey: 'activity.nav', icon: NAV_ICONS.activity },
   { to: '/dashboard/parent/payments', labelKey: 'dashboard.payments', icon: NAV_ICONS.payments },
   { to: '/dashboard/parent/settings', labelKey: 'dashboard.settings', icon: NAV_ICONS.settings },
 ];

@@ -20,24 +20,38 @@ export default function MarketingNavbar() {
   const auth = new AuthServices();
   const token = auth.getToken();
   const role = auth.getRole();
+  const dashboardPath = auth.getDashboardPath?.(role) || '/dashboard/student';
 
   const goDashboard = () => {
-    navigate(auth.getDashboardPath?.(role) || '/dashboard/student');
+    navigate(dashboardPath);
   };
+
+  const bottomNavItems = token
+    ? [
+        { label: t('nav.home'), href: '/' },
+        { label: t('nav.academies'), href: '/#academies' },
+        { label: t('nav.dashboard'), href: dashboardPath, route: true },
+      ]
+    : [
+        { label: t('nav.home'), href: '/' },
+        { label: t('nav.academies'), href: '/#academies' },
+        { label: t('nav.contact'), href: '/contact', route: true },
+        { label: t('nav.login'), href: '/auth/login', route: true },
+      ];
 
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-[var(--ce-border)] bg-[var(--ce-surface)]/85 backdrop-blur-xl">
         <div className="ce-container flex items-center justify-between gap-4 py-3">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-accent)] text-sm font-extrabold text-white shadow-lg">
+          <Link to="/" className="flex min-w-0 items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-accent)] text-sm font-extrabold text-white shadow-lg">
               CE
             </div>
-            <div className="hidden sm:block">
-              <div className="text-lg font-extrabold tracking-tight text-[var(--ce-primary)]">
+            <div className="hidden min-w-0 sm:block">
+              <div className="truncate text-lg font-extrabold tracking-tight text-[var(--ce-primary)]">
                 {t('brand.name')}
               </div>
-              <div className="text-xs text-[var(--ce-muted)]">{t('brand.tagline')}</div>
+              <div className="truncate text-xs text-[var(--ce-muted)]">{t('brand.tagline')}</div>
             </div>
           </Link>
 
@@ -76,7 +90,7 @@ export default function MarketingNavbar() {
               type="button"
               className="ce-icon-btn lg:hidden"
               onClick={() => setOpen(true)}
-              aria-label="Menu"
+              aria-label={t('dashboard.openMenu')}
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -86,7 +100,7 @@ export default function MarketingNavbar() {
 
       {open && (
         <div className="fixed inset-0 z-[60] lg:hidden">
-          <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} aria-label="Close" />
+          <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} aria-label={t('common.cancel')} />
           <aside className="absolute end-0 top-0 flex h-full w-[min(100%,320px)] flex-col bg-[var(--ce-surface)] p-5 shadow-2xl">
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-[var(--ce-primary)]">{t('brand.name')}</span>
@@ -128,13 +142,8 @@ export default function MarketingNavbar() {
       )}
 
       <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-[var(--ce-border)] bg-[var(--ce-surface)]/95 backdrop-blur lg:hidden">
-        <div className="grid grid-cols-4 gap-1 px-2 py-2">
-          {[
-            { label: t('nav.home'), href: '/' },
-            { label: t('nav.academies'), href: '/#academies' },
-            { label: t('nav.contact'), href: '/contact', route: true },
-            { label: t('nav.login'), href: '/auth/login', route: true },
-          ].map((item) =>
+        <div className={`grid gap-1 px-2 py-2 ${bottomNavItems.length === 3 ? 'grid-cols-3' : 'grid-cols-4'}`}>
+          {bottomNavItems.map((item) =>
             item.route ? (
               <Link key={item.label} to={item.href} className="rounded-xl px-2 py-2 text-center text-[11px] font-bold text-[var(--ce-muted)]">
                 {item.label}

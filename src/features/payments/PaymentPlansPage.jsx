@@ -71,7 +71,7 @@ export default function PaymentPlansPage() {
       ) : plans.length === 0 ? (
         <div className="ce-card p-8 text-center text-[var(--ce-muted)]">{t('payments.noPlans')}</div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {plans.map((plan) => (
             <article key={plan._id} className="ce-card p-5">
               <div className="flex items-start justify-between gap-3">

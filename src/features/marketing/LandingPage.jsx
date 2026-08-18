@@ -52,30 +52,38 @@ const WHY_FEATURES = [
 ];
 
 function HeroIllustration() {
+  const { t } = useTranslation();
+  const cards = [
+    { icon: BookOpen, labelKey: 'landing.hero.cardCourses', progress: 92 },
+    { icon: BarChart3, labelKey: 'landing.hero.cardExams', progress: 78 },
+    { icon: Video, labelKey: 'landing.hero.cardLive', progress: 65 },
+    { icon: Award, labelKey: 'landing.hero.cardCerts', progress: 100 },
+  ];
+
   return (
     <div className="relative mx-auto w-full max-w-lg">
       <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[var(--ce-accent)]/20 to-[var(--ce-primary)]/10 blur-2xl" />
       <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-primary-soft)] p-6 shadow-2xl">
-        <div className="grid grid-cols-2 gap-3">
-          {['HTML', 'CSS', 'JS', 'React'].map((label) => (
-            <div key={label} className="rounded-2xl bg-white/10 p-4 backdrop-blur">
-              <Code2 className="h-6 w-6 text-[var(--ce-accent-soft)]" />
-              <p className="mt-3 text-sm font-bold text-white">{label}</p>
-              <div className="mt-2 h-2 rounded-full bg-white/20">
-                <div className="h-2 w-3/4 rounded-full bg-[var(--ce-accent)]" />
+        <div className="flex flex-col gap-3">
+          {cards.map(({ icon: Icon, labelKey, progress }) => (
+            <div key={labelKey} className="flex items-center gap-4 rounded-2xl bg-white/10 p-4 backdrop-blur">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                <Icon className="h-5 w-5 text-[var(--ce-accent-soft)]" />
               </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-white">{t(labelKey)}</p>
+                {/* <div className="mt-2 h-2 rounded-full bg-white/20">
+                  <div
+                    className="h-2 rounded-full bg-gradient-to-r from-[var(--ce-accent)] to-[var(--ce-accent-soft)]"
+                    // style={{ width: `${progress}%` }}
+                  />
+                </div> */}
+              </div>
+              {/* <span className="text-sm font-extrabold text-[var(--ce-accent-soft)]">{progress}%</span> */}
             </div>
           ))}
         </div>
-        <div className="mt-4 rounded-2xl bg-white/10 p-4 backdrop-blur">
-          <div className="flex items-center justify-between text-white">
-            <span className="text-sm font-semibold">Learning progress</span>
-            <span className="text-sm font-extrabold text-[var(--ce-accent-soft)]">87%</span>
-          </div>
-          <div className="mt-3 h-3 rounded-full bg-white/15">
-            <div className="h-3 w-[87%] rounded-full bg-gradient-to-r from-[var(--ce-accent)] to-[var(--ce-accent-soft)]" />
-          </div>
-        </div>
+     
       </div>
     </div>
   );
@@ -199,46 +207,53 @@ export default function LandingPage() {
       </Helmet>
 
       {show('hero') && (
-      <section className="relative overflow-hidden pb-10 pt-8 sm:pt-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--ce-primary)] via-[var(--ce-primary-soft)] to-[#0a1628]" />
+      <section className="relative overflow-hidden pb-12 pt-6 sm:pt-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--ce-primary)] via-[#0f2844] to-[#071018]" />
+        <div
+          className="absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+            backgroundSize: '28px 28px',
+          }}
+        />
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute start-0 top-0 h-72 w-72 rounded-full bg-[var(--ce-accent)] blur-[120px]" />
-          <div className="absolute bottom-0 end-0 h-72 w-72 rounded-full bg-blue-500 blur-[120px]" />
+          <div className="absolute start-[-10%] top-[-5%] h-80 w-80 rounded-full bg-[var(--ce-accent)] blur-[130px]" />
+          <div className="absolute bottom-[-10%] end-[-5%] h-72 w-72 rounded-full bg-sky-500 blur-[120px]" />
         </div>
 
-        <div className="ce-container relative z-10 py-8 text-white">
-          <div className="ce-hero-grid">
+        <div className="ce-container relative z-10 py-6 text-white sm:py-10">
+          <div className="ce-hero-grid items-center">
             <div>
-              <span className="ce-eyebrow ce-fade-up !bg-white/10 !text-[var(--ce-accent-soft)]">
+              <span className="ce-eyebrow ce-fade-up !border !border-white/15 !bg-white/10 !text-[var(--ce-accent-soft)]">
                 {t('brand.name')}
               </span>
-              <h1 className="ce-fade-up mt-4 max-w-3xl text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+              <h1 className="ce-fade-up mt-5 max-w-3xl text-4xl font-extrabold leading-[1.15] sm:text-5xl lg:text-[3.4rem]">
                 {sectionText(sections, 'hero', 'title', lang, t('landing.headline'))}
               </h1>
-              <p className="ce-fade-up-delay mt-5 max-w-2xl text-lg text-white/85 sm:text-xl">
+              <p className="ce-fade-up-delay mt-5 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
                 {sectionText(sections, 'hero', 'subtitle', lang, t('landing.subheadline'))}
               </p>
 
               <div className="ce-fade-up-delay mt-8 flex flex-wrap gap-3">
-                <Link to="/auth/register?role=student" className="ce-btn ce-btn-accent">
+                <Link to="/auth/register?role=student" className="ce-btn ce-btn-accent shadow-lg shadow-[var(--ce-accent)]/25">
                   {t('landing.ctaStartLearning')}
                 </Link>
-                <a href="#academies" className="ce-btn border border-white/30 bg-white/10 text-white backdrop-blur">
+                <a href="#academies" className="ce-btn border border-white/25 bg-white/10 text-white backdrop-blur hover:bg-white/15">
                   {t('landing.ctaExploreAcademies')}
                 </a>
               </div>
 
-              <div className="ce-fade-up-delay mt-8">
+              <div className="ce-fade-up-delay mt-8 max-w-xl">
                 <HeroSearchBar value={search} onChange={setSearch} onSubmit={handleSearch} />
               </div>
 
-              <div className="mt-8 grid grid-cols-3 gap-3">
+              <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
                 {heroMetrics.map((metric) => (
-                  <div key={metric.label} className="rounded-2xl bg-white/10 p-3 backdrop-blur">
-                    <p className="text-xl font-extrabold sm:text-2xl">
+                  <div key={metric.label} className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-md">
+                    <p className="text-2xl font-extrabold tracking-tight sm:text-3xl">
                       {metric.value.toLocaleString()}{metric.suffix}
                     </p>
-                    <p className="text-xs text-white/75">{metric.label}</p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/70">{metric.label}</p>
                   </div>
                 ))}
               </div>

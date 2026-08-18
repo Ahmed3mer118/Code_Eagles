@@ -6,14 +6,15 @@ import {
   CheckCircle2,
   CreditCard,
   FileUp,
+  Layers,
   Receipt,
   Upload,
-  Wallet,
 } from 'lucide-react';
 import { groupApi, paymentApi, promoApi, uploadApi } from '../../shared/api/platformApi';
 import PageHeader from '../../shared/ui/PageHeader';
 import resolveMediaUrl from '../../shared/utils/mediaUrl';
 import getApiErrorMessage from '../../shared/utils/apiError';
+import PaymentInstructionsPanel from './components/PaymentInstructionsPanel';
 
 const PACKAGES = [
   { value: 'lectures_only', labelKey: 'payments.lecturesOnly' },
@@ -73,11 +74,6 @@ export default function PaymentSubmitPage() {
     })();
   }, []);
 
-  const pendingEnrollments = useMemo(
-    () => enrollments.filter((en) => en.status === 'pending'),
-    [enrollments]
-  );
-
   const paymentByEnrollment = useMemo(() => {
     const map = {};
     paymentRequests.forEach((req) => {
@@ -87,18 +83,33 @@ export default function PaymentSubmitPage() {
     return map;
   }, [paymentRequests]);
 
+  const payableEnrollments = useMemo(
+    () => enrollments.filter((en) => {
+      if (!['pending', 'active'].includes(en.status)) return false;
+      const payment = paymentByEnrollment[en._id];
+      if (payment && ['pending', 'under_review'].includes(payment.status)) return false;
+      return true;
+    }),
+    [enrollments, paymentByEnrollment]
+  );
+
   const selectedPayment = paymentByEnrollment[form.enrollmentId];
-  const paymentLocked = ['pending', 'under_review', 'approved'].includes(selectedPayment?.status);
+  const paymentLocked = ['pending', 'under_review'].includes(selectedPayment?.status);
 
   const selectedEnrollment = useMemo(
-    () => pendingEnrollments.find((en) => en._id === form.enrollmentId),
-    [pendingEnrollments, form.enrollmentId]
+    () => payableEnrollments.find((en) => en._id === form.enrollmentId),
+    [payableEnrollments, form.enrollmentId]
   );
 
   const finalAmount = promoPreview?.finalAmount ?? form.amount;
   const isFreePayment = finalAmount <= 0;
   const paymentInfo = tenantInfo?.paymentInfo || {};
   const hasPaymentInfo = paymentInfo.vodafoneNumber || paymentInfo.instapayId || paymentInfo.bankDetails || paymentInfo.paymentInstructions;
+
+  const planLabel = selectedEnrollment
+    ? (selectedEnrollment.planName
+      || t(PACKAGES.find((p) => p.value === selectedEnrollment.packageType)?.labelKey || 'payments.fullPackage'))
+    : '';
 
   useEffect(() => {
     setPromoPreview(null);
@@ -107,20 +118,19 @@ export default function PaymentSubmitPage() {
   }, [form.enrollmentId]);
 
   useEffect(() => {
-    if (selectedEnrollment) {
-      setForm((prev) => ({
-        ...prev,
-        packageType: selectedEnrollment.packageType,
-        amount: selectedEnrollment.amountDue || 0,
-      }));
-    }
+    if (!selectedEnrollment) return;
+    setForm((prev) => ({
+      ...prev,
+      packageType: selectedEnrollment.packageType,
+      amount: selectedEnrollment.amountDue ?? 0,
+    }));
   }, [selectedEnrollment]);
 
   useEffect(() => {
-    if (!form.enrollmentId && pendingEnrollments.length === 1) {
-      setForm((prev) => ({ ...prev, enrollmentId: pendingEnrollments[0]._id }));
+    if (!form.enrollmentId && payableEnrollments.length === 1) {
+      setForm((prev) => ({ ...prev, enrollmentId: payableEnrollments[0]._id }));
     }
-  }, [form.enrollmentId, pendingEnrollments]);
+  }, [form.enrollmentId, payableEnrollments]);
 
   useEffect(() => {
     if (!promoPreview?.validUntil) return undefined;
@@ -148,6 +158,7 @@ export default function PaymentSubmitPage() {
           code,
           amount: form.amount,
           groupId: selectedEnrollment?.groupId?._id || selectedEnrollment?.groupId,
+          paymentPlanId: selectedEnrollment?.paymentPlanId?._id || selectedEnrollment?.paymentPlanId,
         });
         setPromoPreview(data);
         setPromoError('');
@@ -196,14 +207,10 @@ export default function PaymentSubmitPage() {
       toast.error(promoError || t('promo.invalid'));
       return;
     }
-    if (promoPreview?.validUntil && new Date(promoPreview.validUntil).getTime() <= Date.now()) {
-      setPromoPreview(null);
-      toast.error(t('promo.holdExpired'));
-      return;
-    }
     setSubmitting(true);
     try {
-      const data = await paymentApi.create({
+      const planId = selectedEnrollment?.paymentPlanId?._id || selectedEnrollment?.paymentPlanId;
+      const payload = {
         enrollmentId: form.enrollmentId,
         packageType: form.packageType,
         amount: form.amount,
@@ -211,7 +218,10 @@ export default function PaymentSubmitPage() {
         method: form.method,
         notes: form.notes,
         promoCode: promoPreview?.promoCode || undefined,
-      });
+      };
+      if (planId) payload.paymentPlanId = planId;
+
+      const data = await paymentApi.create(payload);
       setSubmittedRequest(data.paymentRequest || null);
       toast.success(data.message || t('payments.submitSuccess'));
       await loadEnrollments();
@@ -226,7 +236,6 @@ export default function PaymentSubmitPage() {
       setReceiptPreview('');
       setPromoCode('');
       setPromoPreview(null);
-      setPromoError('');
     } catch (err) {
       toast.error(getApiErrorMessage(err));
     } finally {
@@ -237,127 +246,90 @@ export default function PaymentSubmitPage() {
   if (loading) return <p className="text-[var(--ce-muted)]">{t('common.loading')}</p>;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <PageHeader title={t('payments.submitTitle')} subtitle={t('payments.submitHint')} />
+    <div className="mx-auto max-w-2xl space-y-6">
+      <PageHeader title={t('payments.submitTitle')} subtitle={t('payments.paymentOnlyHint')} />
+
+      <div className="flex flex-wrap gap-2">
+        <Link to="/dashboard/student/subscription" className="ce-btn ce-btn-ghost text-sm">
+          <Layers className="h-4 w-4" />
+          {t('dashboard.subscription')}
+        </Link>
+        <Link to="/dashboard/student/payments" className="ce-btn ce-btn-primary text-sm">
+          <CreditCard className="h-4 w-4" />
+          {t('dashboard.payments')}
+        </Link>
+      </div>
 
       {submittedRequest && (
         <div className="ce-card border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-7 w-7 shrink-0 text-emerald-600" />
-            <div className="min-w-0 flex-1">
+            <div>
               <h3 className="text-lg font-extrabold text-emerald-900">{t('payments.submitSuccess')}</h3>
               <p className="mt-1 text-sm text-emerald-800">{t('payments.submitSuccessDetail')}</p>
-              <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                <span className="font-bold text-emerald-900">
-                  {t('payments.amount')}: {submittedRequest.amount} {t('academy.currency')}
-                </span>
-                <span className="text-emerald-800">
-                  {t('common.status')}: {t(`payments.status.${submittedRequest.status}`, submittedRequest.status)}
-                </span>
-              </div>
             </div>
           </div>
         </div>
       )}
 
-      {pendingEnrollments.length === 0 ? (
+      {payableEnrollments.length === 0 ? (
         <div className="ce-card p-10 text-center">
           <Receipt className="mx-auto h-12 w-12 text-[var(--ce-muted)]/40" />
-          <p className="mt-4 text-[var(--ce-muted)]">{t('payments.noPendingEnrollment')}</p>
-          <Link to="/dashboard/student/join" className="ce-btn ce-btn-accent mt-5 inline-flex">
-            {t('student.joinGroup')}
+          <p className="mt-4 text-[var(--ce-muted)]">{t('payments.noPayableEnrollment')}</p>
+          <Link to="/dashboard/student/subscription" className="ce-btn ce-btn-accent mt-5 inline-flex">
+            {t('dashboard.subscription')}
           </Link>
         </div>
       ) : (
-        <form onSubmit={onSubmit} className="grid gap-6 lg:grid-cols-5">
-          <div className="space-y-4 lg:col-span-2">
-            <section className="ce-card overflow-hidden">
-              <div className="flex items-center gap-2 border-b border-[var(--ce-border)] bg-[var(--ce-bg)]/60 px-5 py-3">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ce-primary)] text-xs font-bold text-white">1</span>
-                <h3 className="font-extrabold text-[var(--ce-primary)]">{t('payments.stepEnrollment')}</h3>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <section className="ce-card overflow-hidden">
+            <div className="flex items-center gap-2 border-b border-[var(--ce-border)] bg-[var(--ce-bg)]/60 px-5 py-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ce-primary)] text-xs font-bold text-white">1</span>
+              <h3 className="font-extrabold text-[var(--ce-primary)]">{t('payments.stepEnrollment')}</h3>
+            </div>
+            <div className="space-y-4 p-5">
+              <div>
+                <label className="ce-label">{t('payments.enrollment')}</label>
+                <select
+                  className="ce-input"
+                  value={form.enrollmentId}
+                  onChange={(e) => setForm({ ...form, enrollmentId: e.target.value })}
+                  required
+                >
+                  <option value="">{t('payments.selectEnrollment')}</option>
+                  {payableEnrollments.map((en) => (
+                    <option key={en._id} value={en._id}>
+                      {en.groupId?.name} — {en.groupId?.subjectId?.name}
+                      {en.planName ? ` (${en.planName})` : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="space-y-4 p-5">
-                <div>
-                  <label className="ce-label">{t('payments.enrollment')}</label>
-                  <select
-                    className="ce-input"
-                    value={form.enrollmentId}
-                    onChange={(e) => setForm({ ...form, enrollmentId: e.target.value })}
-                    required
+
+              {selectedEnrollment && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 text-sm">
+                  <p className="text-xs font-bold uppercase text-emerald-800">{t('payments.selectedPlanReadonly')}</p>
+                  <p className="mt-1 font-extrabold text-[var(--ce-primary)]">{planLabel}</p>
+                  <p className="mt-1 text-xs text-[var(--ce-muted)]">{selectedEnrollment.groupId?.name}</p>
+                  <p className="mt-3 text-2xl font-extrabold text-emerald-700">
+                    {form.amount} {t('academy.currency')}
+                  </p>
+                  <Link
+                    to={`/dashboard/student/subscription?enrollment=${selectedEnrollment._id}`}
+                    className="mt-3 inline-flex text-xs font-bold text-[var(--ce-primary)] underline"
                   >
-                    <option value="">{t('payments.selectEnrollment')}</option>
-                    {pendingEnrollments.map((en) => (
-                      <option key={en._id} value={en._id}>
-                        {en.groupId?.name} — {en.groupId?.subjectId?.name}
-                      </option>
-                    ))}
-                  </select>
+                    {t('payments.changePlanLink')}
+                  </Link>
                 </div>
+              )}
+            </div>
+          </section>
 
-                {selectedEnrollment && (
-                  <div className="rounded-xl bg-[var(--ce-bg)] p-4 text-sm">
-                    <p className="text-xs font-bold uppercase text-[var(--ce-muted)]">{t('payments.package')}</p>
-                    <p className="mt-1 font-semibold text-[var(--ce-primary)]">
-                      {t(PACKAGES.find((p) => p.value === selectedEnrollment.packageType)?.labelKey || 'payments.fullPackage')}
-                    </p>
-                    <p className="mt-3 text-xs font-bold uppercase text-[var(--ce-muted)]">{t('payments.amount')}</p>
-                    <p className="mt-1 text-2xl font-extrabold text-[var(--ce-accent)]">
-                      {form.amount} {t('academy.currency')}
-                    </p>
-                    {promoPreview && (
-                      <div className="mt-3 space-y-1 border-t border-[var(--ce-border)] pt-3">
-                        <p className="text-[var(--ce-muted)]">{t('promo.discount')}: -{promoPreview.discountAmount} {t('academy.currency')}</p>
-                        <p className="font-extrabold text-emerald-700">{t('promo.finalAmount')}: {promoPreview.finalAmount} {t('academy.currency')}</p>
-                      </div>
-                    )}
-                    {isFreePayment && (
-                      <p className="mt-3 font-semibold text-emerald-700">{t('payments.freeNoReceipt')}</p>
-                    )}
-                  </div>
-                )}
+          {selectedEnrollment && hasPaymentInfo && (
+            <PaymentInstructionsPanel paymentInfo={paymentInfo} step={2} />
+          )}
 
-                {selectedEnrollment && paymentLocked && (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                    {t('payments.pendingLocked', {
-                      status: t(`payments.status.${selectedPayment.status}`, selectedPayment.status),
-                    })}
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {hasPaymentInfo && (
-              <section className="ce-card overflow-hidden">
-                <div className="flex items-center gap-2 border-b border-[var(--ce-border)] bg-[var(--ce-bg)]/60 px-5 py-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ce-primary)] text-xs font-bold text-white">2</span>
-                  <Wallet className="h-4 w-4 text-[var(--ce-primary)]" />
-                  <h3 className="font-extrabold text-[var(--ce-primary)]">{t('payments.instructions')}</h3>
-                </div>
-                <div className="space-y-3 p-5 text-sm">
-                  {paymentInfo.vodafoneNumber && (
-                    <div className="rounded-xl bg-[var(--ce-bg)] px-4 py-3">
-                      <p className="text-xs font-bold text-[var(--ce-muted)]">{t('payments.vodafone')}</p>
-                      <p className="mt-1 font-extrabold text-[var(--ce-primary)]">{paymentInfo.vodafoneNumber}</p>
-                    </div>
-                  )}
-                  {paymentInfo.instapayId && (
-                    <div className="rounded-xl bg-[var(--ce-bg)] px-4 py-3">
-                      <p className="text-xs font-bold text-[var(--ce-muted)]">{t('payments.instapay')}</p>
-                      <p className="mt-1 font-extrabold text-[var(--ce-primary)]">{paymentInfo.instapayId}</p>
-                    </div>
-                  )}
-                  {paymentInfo.bankDetails && (
-                    <div className="rounded-xl bg-[var(--ce-bg)] px-4 py-3 whitespace-pre-wrap">{paymentInfo.bankDetails}</div>
-                  )}
-                  {paymentInfo.paymentInstructions && (
-                    <p className="text-[var(--ce-muted)] whitespace-pre-wrap">{paymentInfo.paymentInstructions}</p>
-                  )}
-                </div>
-              </section>
-            )}
-          </div>
-
-          <section className="ce-card overflow-hidden lg:col-span-3 lg:self-start">
+          <section className="ce-card overflow-hidden">
             <div className="flex items-center gap-2 border-b border-[var(--ce-border)] bg-[var(--ce-bg)]/60 px-5 py-3">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ce-accent)] text-xs font-bold text-white">
                 {hasPaymentInfo ? '3' : '2'}
@@ -365,9 +337,8 @@ export default function PaymentSubmitPage() {
               <FileUp className="h-4 w-4 text-[var(--ce-primary)]" />
               <h3 className="font-extrabold text-[var(--ce-primary)]">{t('payments.stepUpload')}</h3>
             </div>
-
             <div className="space-y-4 p-5">
-              {selectedEnrollment && form.amount > 0 && !paymentLocked && (
+              {selectedEnrollment && form.amount > 0 && (
                 <div>
                   <label className="ce-label">{t('promo.code')}</label>
                   <input
@@ -392,7 +363,7 @@ export default function PaymentSubmitPage() {
                   className="ce-input"
                   value={form.method}
                   onChange={(e) => setForm({ ...form, method: e.target.value })}
-                  disabled={paymentLocked || !selectedEnrollment}
+                  disabled={!selectedEnrollment}
                 >
                   {METHODS.map((m) => (
                     <option key={m.value} value={m.value}>{t(m.labelKey)}</option>
@@ -404,20 +375,19 @@ export default function PaymentSubmitPage() {
                 <div>
                   <label className="ce-label">{t('payments.receiptUpload')}</label>
                   <label className={`mt-2 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-8 transition ${
-                    paymentLocked || !selectedEnrollment
+                    !selectedEnrollment
                       ? 'border-[var(--ce-border)] bg-[var(--ce-bg)]/50 opacity-60'
                       : 'border-[var(--ce-accent)]/40 bg-[var(--ce-accent)]/5 hover:border-[var(--ce-accent)]'
                   }`}>
                     <Upload className="h-8 w-8 text-[var(--ce-accent)]" />
                     <span className="mt-2 text-sm font-semibold text-[var(--ce-primary)]">{t('payments.uploadTap')}</span>
-                    <span className="mt-1 text-xs text-[var(--ce-muted)]">{t('payments.uploadFormats')}</span>
                     <input
                       type="file"
                       accept="image/*"
                       capture="environment"
                       className="hidden"
                       onChange={(e) => onFileChange(e.target.files?.[0])}
-                      disabled={uploading || paymentLocked || !selectedEnrollment}
+                      disabled={uploading || !selectedEnrollment}
                     />
                   </label>
                   {uploading && <p className="mt-2 text-sm text-[var(--ce-muted)]">{t('payments.uploading')}</p>}
@@ -437,7 +407,7 @@ export default function PaymentSubmitPage() {
                   className="ce-input min-h-[90px]"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  disabled={paymentLocked || !selectedEnrollment}
+                  disabled={!selectedEnrollment}
                   placeholder={t('payments.notesPlaceholder')}
                 />
               </div>
@@ -445,13 +415,7 @@ export default function PaymentSubmitPage() {
               <button
                 type="submit"
                 className="ce-btn ce-btn-primary w-full"
-                disabled={
-                  submitting
-                  || uploading
-                  || paymentLocked
-                  || !selectedEnrollment
-                  || (!isFreePayment && !form.receiptImageUrl)
-                }
+                disabled={submitting || uploading || !selectedEnrollment || (!isFreePayment && !form.receiptImageUrl)}
               >
                 <CreditCard className="h-4 w-4" />
                 {submitting ? t('common.loading') : t('payments.submit')}

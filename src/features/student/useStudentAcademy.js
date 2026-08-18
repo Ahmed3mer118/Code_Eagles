@@ -77,7 +77,12 @@ export function useStudentAcademy({ autoRedirect = false } = {}) {
 
     if (nextBrowseMode) {
       const publicData = await tenantApi.listPublic({ limit: 100 });
-      list = (publicData.academies || []).map(mapCatalogAcademy);
+      const catalog = (publicData.academies || []).map(mapCatalogAcademy);
+      const seen = new Set(list.map((item) => item.academy?.slug).filter(Boolean));
+      catalog.forEach((item) => {
+        if (!seen.has(item.academy?.slug)) list.push(item);
+      });
+      if (!list.length) list = catalog;
     }
 
     setAcademies(list);

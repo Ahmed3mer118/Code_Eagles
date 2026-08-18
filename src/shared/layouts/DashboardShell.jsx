@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Menu, X } from 'lucide-react';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
+import NotificationBell from '../ui/NotificationBell';
 import TeacherGlobalSearch from '../ui/TeacherGlobalSearch';
 import ContentLoader from '../ui/ContentLoader';
 import AuthServices from '../api/authService';
@@ -14,7 +15,7 @@ const SidebarNav = memo(function SidebarNav({ navItems, onNavigate }) {
   const { t } = useTranslation();
 
   return (
-    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 pb-4">
+    <nav className="ce-sidebar-nav flex flex-1 flex-col gap-1 overflow-y-auto px-3 pb-4">
       {navItems.map((item) => {
         const Icon = item.icon;
         return (
@@ -43,6 +44,8 @@ export default function DashboardShell({
   navItems = [],
   showTeacherSearch = false,
   brandMode = 'academy',
+  headerExtra = null,
+  sidebarExtra = null,
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -129,6 +132,15 @@ export default function DashboardShell({
 
   const displayName = brand.name || (brandMode === 'platform' ? t('brand.name') : t('brand.academy'));
 
+  const role = auth.getRole();
+  const notificationsPath = {
+    super_admin: '/dashboard/super-admin/notifications',
+    teacher: '/dashboard/teacher/notifications',
+    assistant: '/dashboard/assistant/notifications',
+    student: '/dashboard/student/notifications',
+    parent: '/dashboard/parent/notifications',
+  }[role] || '/dashboard/student/notifications';
+
   const logout = async () => {
     try {
       await auth.logout();
@@ -167,6 +179,7 @@ export default function DashboardShell({
             <X className="h-5 w-5" />
           </button>
         </div>
+        {sidebarExtra}
         <SidebarNav navItems={navItems} onNavigate={closeNav} />
         <div className="mt-auto border-t border-white/10 px-5 py-4 text-center text-xs text-white/50">
           {t('dashboard.createdBy')}
@@ -191,7 +204,9 @@ export default function DashboardShell({
             </p>
           </div>
           {showTeacherSearch && <TeacherGlobalSearch />}
+          {headerExtra}
           <div className="flex items-center gap-2">
+            <NotificationBell notificationsPath={notificationsPath} />
             <LanguageSwitcher />
             <button type="button" className="ce-btn ce-btn-ghost text-sm" onClick={logout}>
               {t('nav.logout')}

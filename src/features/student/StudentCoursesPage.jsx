@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
   BookOpen,
   ChevronDown,
   ClipboardList,
+  CreditCard,
+  Eye,
   Layers,
   PlayCircle,
   Trophy,
+  UserPlus,
   Video,
 } from 'lucide-react';
 import { contentApi } from '../../shared/api/platformApi';
@@ -16,10 +18,12 @@ import PageHeader from '../../shared/ui/PageHeader';
 import SearchInput, { filterByQuery } from '../../shared/ui/SearchInput';
 import StatusBadge from '../../shared/ui/StatusBadge';
 import LecturePlayerModal from '../../shared/ui/LecturePlayerModal';
+import IconButton from '../../shared/ui/IconButton';
 import resolveMediaUrl from '../../shared/utils/mediaUrl';
 import getApiErrorMessage from '../../shared/utils/apiError';
 import StudentWaitingView from './StudentWaitingView';
 import ListPagination from '../../shared/ui/ListPagination';
+import useTenantFeatures from '../../shared/hooks/useTenantFeatures';
 
 const SUBJECTS_PER_PAGE = 5;
 
@@ -41,19 +45,24 @@ function WatchButton({ lecture, t, onWatch }) {
     );
   }
   return (
-    <button
-      type="button"
-      className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--ce-primary)] px-3 py-1.5 text-xs font-bold text-white hover:opacity-90"
+    <IconButton
+      icon={PlayCircle}
+      label={t('student.watch')}
+      variant="primary"
       onClick={() => onWatch(lecture)}
-    >
-      <PlayCircle className="h-3.5 w-3.5" />
-      {t('student.watch')}
-    </button>
+    />
   );
 }
 
+const TAB_CONFIG = [
+  { key: 'lectures', icon: Video, packageKey: 'lectures' },
+  { key: 'assignments', icon: ClipboardList, packageKey: 'assignments' },
+  { key: 'quizzes', icon: Trophy, packageKey: 'exams' },
+];
+
 export default function StudentCoursesPage() {
   const { t } = useTranslation();
+  const { packageAccess } = useTenantFeatures();
   const [data, setData] = useState(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -90,6 +99,15 @@ export default function StudentCoursesPage() {
   const pending = data.pendingEnrollments || [];
   const activeEnrollments = data.enrollments || [];
 
+  const visibleTabs = TAB_CONFIG.filter((tab) => {
+    if (tab.packageKey === 'lectures') {
+      return packageAccess?.canLectures !== false || packageAccess?.canFreeLectures !== false;
+    }
+    if (tab.packageKey === 'exams') return packageAccess?.canExams !== false;
+    if (tab.packageKey === 'assignments') return packageAccess?.canAssignments !== false;
+    return true;
+  });
+
   const setTab = (subjectId, tab) => {
     setSubjectTab((prev) => ({ ...prev, [subjectId]: tab }));
   };
@@ -121,12 +139,12 @@ export default function StudentCoursesPage() {
                   <div className="flex items-center gap-2">
                     <StatusBadge status="pending" label={t('student.status.pending')} />
                     {en.amountDue > 0 && (
-                      <Link
+                      <IconButton
+                        icon={CreditCard}
+                        label={t('payments.payNow')}
+                        variant="accent"
                         to={`/dashboard/student/payments?enrollment=${en._id}`}
-                        className="ce-btn ce-btn-accent text-xs"
-                      >
-                        {t('payments.payNow')}
-                      </Link>
+                      />
                     )}
                   </div>
                 </li>
@@ -166,14 +184,22 @@ export default function StudentCoursesPage() {
                   ? t('student.contentLocked')
                   : t('student.noCourses')}
             </p>
-            <Link to="/dashboard/student/join" className="ce-btn ce-btn-accent mt-5 inline-flex">
-              {t('student.joinGroup')}
-            </Link>
+            <div className="mt-5 flex justify-center">
+              <IconButton
+                icon={UserPlus}
+                label={t('student.joinGroup')}
+                variant="accent"
+                to="/dashboard/student/join"
+              />
+            </div>
           </div>
         ) : (
           subjects.map((subject) => {
             const { modules, lectures } = flattenSubject(subject);
-            const tab = subjectTab[subject._id] || 'lectures';
+            const defaultTab = visibleTabs[0]?.key || 'lectures';
+            const tab = visibleTabs.some((item) => item.key === subjectTab[subject._id])
+              ? subjectTab[subject._id]
+              : defaultTab;
             const isOpen = expanded === subject._id;
 
             return (
@@ -201,21 +227,20 @@ export default function StudentCoursesPage() {
                 {isOpen && (
                   <div className="border-t border-[var(--ce-border)] bg-[var(--ce-bg)]/30 px-5 py-5">
                     <div className="mb-4 flex flex-wrap gap-2">
-                      {['lectures', 'assignments', 'quizzes'].map((key) => (
+                      {visibleTabs.map(({ key, icon: TabIcon }) => (
                         <button
                           key={key}
                           type="button"
-                          className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition ${
+                          className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition ${
                             tab === key
                               ? 'bg-[var(--ce-primary)] text-white shadow-sm'
                               : 'bg-white text-[var(--ce-primary)] ring-1 ring-[var(--ce-border)]'
                           }`}
                           onClick={() => setTab(subject._id, key)}
+                          title={t(`student.tab.${key}`)}
+                          aria-label={t(`student.tab.${key}`)}
                         >
-                          {key === 'lectures' && <Video className="h-4 w-4" />}
-                          {key === 'assignments' && <ClipboardList className="h-4 w-4" />}
-                          {key === 'quizzes' && <Trophy className="h-4 w-4" />}
-                          {t(`student.tab.${key}`)}
+                          <TabIcon className="h-4 w-4" aria-hidden="true" />
                         </button>
                       ))}
                     </div>
@@ -276,7 +301,14 @@ export default function StudentCoursesPage() {
                                               className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white px-3 py-2.5 shadow-sm"
                                             >
                                               <div className="min-w-0">
-                                                <p className="text-sm font-semibold">{lecture.title}</p>
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                  <p className="text-sm font-semibold">{lecture.title}</p>
+                                                  {lecture.isFree && (
+                                                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                                                      {t('student.freeLecture')}
+                                                    </span>
+                                                  )}
+                                                </div>
                                                 {lecture.description && (
                                                   <p className="mt-0.5 line-clamp-2 text-xs text-[var(--ce-muted)]">
                                                     {lecture.description}
@@ -322,9 +354,12 @@ export default function StudentCoursesPage() {
                                     </p>
                                   )}
                                 </div>
-                                <Link to="/dashboard/student/assignments" className="ce-btn ce-btn-accent text-sm">
-                                  {t('student.viewAssignment')}
-                                </Link>
+                                <IconButton
+                                  icon={Eye}
+                                  label={t('student.viewAssignment')}
+                                  variant="accent"
+                                  to="/dashboard/student/assignments"
+                                />
                               </li>
                             ))}
                           </ul>
@@ -346,9 +381,12 @@ export default function StudentCoursesPage() {
                                 className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--ce-border)] bg-white p-4"
                               >
                                 <p className="font-bold text-[var(--ce-primary)]">{q.title}</p>
-                                <Link to={`/dashboard/student/quizzes/${q._id}`} className="ce-btn ce-btn-accent text-sm">
-                                  {t('student.startQuiz')}
-                                </Link>
+                                <IconButton
+                                  icon={PlayCircle}
+                                  label={t('student.startQuiz')}
+                                  variant="accent"
+                                  to={`/dashboard/student/quizzes/${q._id}`}
+                                />
                               </li>
                             ))}
                           </ul>
