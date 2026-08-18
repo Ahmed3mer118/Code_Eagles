@@ -8,7 +8,7 @@ export default function ReviewCard({ review }) {
     <article className="ce-card p-5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ce-primary)] text-sm font-bold text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ce-brand)] text-sm font-bold text-white">
             {review.name?.charAt(0)}
           </div>
           <div>

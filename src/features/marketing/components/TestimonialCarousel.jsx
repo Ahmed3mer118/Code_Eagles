@@ -26,7 +26,7 @@ export default function TestimonialCarousel({ items = [] }) {
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-accent)] text-lg font-extrabold text-white">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[var(--ce-brand)] to-[var(--ce-accent)] text-lg font-extrabold text-white">
               {item.name?.charAt(0)}
             </div>
             <div>

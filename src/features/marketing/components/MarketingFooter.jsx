@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Facebook, Instagram, Mail, Send, Youtube } from 'lucide-react';
 import { readPlatformSiteCache, DEFAULT_PLATFORM_SITE } from '../../../shared/utils/platformSiteCache';
+import PlatformLogo from '../../../shared/ui/PlatformLogo';
 
 const ICON_MAP = { facebook: Facebook, instagram: Instagram, youtube: Youtube, mail: Mail, email: Mail };
 
@@ -54,14 +55,12 @@ export default function MarketingFooter() {
   ];
 
   return (
-    <footer className="mt-0 border-t border-white/10 bg-[var(--ce-primary)] text-white">
+    <footer className="mt-0 border-t border-white/10 bg-[var(--ce-brand)] text-white">
       <div className="ce-container py-14">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:gap-10">
           <div>
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--ce-accent)] text-lg font-extrabold text-[#1a1200]">
-                CE
-              </div>
+              <PlatformLogo className="h-11 w-11" imgClassName="rounded-2xl object-contain bg-white/10 p-1" />
               <div>
                 <div className="text-xl font-extrabold">{t('brand.name')}</div>
                 <p className="text-sm text-white/70">{t('brand.tagline')}</p>

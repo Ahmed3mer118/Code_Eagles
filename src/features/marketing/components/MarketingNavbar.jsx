@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import LanguageSwitcher from '../../../shared/ui/LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
+import PlatformLogo from '../../../shared/ui/PlatformLogo';
 import AuthServices from '../../../shared/api/authService';
 
 const navLinks = [
@@ -44,9 +45,7 @@ export default function MarketingNavbar() {
       <header className="sticky top-0 z-50 border-b border-[var(--ce-border)] bg-[var(--ce-surface)]/85 backdrop-blur-xl">
         <div className="ce-container flex items-center justify-between gap-4 py-3">
           <Link to="/" className="flex min-w-0 items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-accent)] text-sm font-extrabold text-white shadow-lg">
-              CE
-            </div>
+            <PlatformLogo className="h-11 w-11" />
             <div className="hidden min-w-0 sm:block">
               <div className="truncate text-lg font-extrabold tracking-tight text-[var(--ce-primary)]">
                 {t('brand.name')}

@@ -5,6 +5,10 @@
 @tailwind utilities;
 
 :root {
+  --ce-brand: #0b1f33;
+  --ce-brand-soft: #14324f;
+  --ce-brand-mid: #0f2844;
+  --ce-brand-deep: #071018;
   --ce-primary: #0b1f33;
   --ce-primary-soft: #14324f;
   --ce-accent: #e8a317;
@@ -93,7 +97,7 @@ a {
 }
 
 .ce-btn-primary {
-  background: linear-gradient(135deg, var(--ce-primary), var(--ce-primary-soft));
+  background: linear-gradient(135deg, var(--ce-brand), var(--ce-brand-soft));
   color: #fff;
   box-shadow: 0 8px 24px rgba(11, 31, 51, 0.25);
 }
@@ -122,10 +126,29 @@ a {
   border: 1px solid var(--ce-border);
   border-radius: 12px;
   padding: 0.8rem 1rem;
-  background: #fff;
+  background: var(--ce-surface);
   color: var(--ce-text);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ce-input::placeholder {
+  color: var(--ce-muted);
+}
+
+.ce-input-on-dark {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.ce-input-on-dark::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.ce-input-on-dark:focus {
+  border-color: var(--ce-accent-soft);
+  box-shadow: 0 0 0 3px rgba(232, 163, 23, 0.25);
 }
 
 .ce-input:focus {
@@ -282,7 +305,11 @@ a {
 }
 
 html.dark {
-  --ce-primary: #e8eef5;
+  --ce-brand: #0b1f33;
+  --ce-brand-soft: #14324f;
+  --ce-brand-mid: #0f2844;
+  --ce-brand-deep: #071018;
+  --ce-primary: #f1f5f9;
   --ce-primary-soft: #cbd5e1;
   --ce-accent: #f6c85a;
   --ce-accent-soft: #ffe08a;
@@ -299,6 +326,25 @@ html.dark body {
     radial-gradient(1200px 600px at 10% -10%, rgba(232, 163, 23, 0.08), transparent 55%),
     radial-gradient(900px 500px at 100% 0%, rgba(255, 255, 255, 0.04), transparent 50%),
     var(--ce-bg);
+}
+
+html.dark .ce-card-hover:hover {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .ce-gradient-border {
+  background:
+    linear-gradient(var(--ce-surface), var(--ce-surface)) padding-box,
+    linear-gradient(135deg, rgba(232, 163, 23, 0.45), rgba(255, 255, 255, 0.08)) border-box;
+}
+
+.ce-hero-shell {
+  background: linear-gradient(to bottom right, var(--ce-brand), var(--ce-brand-mid), var(--ce-brand-deep));
+}
+
+.ce-brand-panel {
+  background: linear-gradient(to bottom right, var(--ce-brand), var(--ce-brand-soft));
+  color: #fff;
 }
 
 .ce-section {

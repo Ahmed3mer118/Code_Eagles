@@ -1,16 +1,18 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Clock, PlayCircle, Star, Users } from 'lucide-react';
+import resolveMediaUrl from '../../../shared/utils/mediaUrl';
 
 export default function CourseCard({ course }) {
   const { t } = useTranslation();
+  const coverImage = resolveMediaUrl(course.coverImage);
 
   return (
     <article className="ce-card ce-card-hover group flex h-full flex-col overflow-hidden">
       <div className="relative aspect-[16/10] overflow-hidden bg-[var(--ce-bg)]">
-        {course.coverImage ? (
+        {coverImage ? (
           <img
-            src={course.coverImage}
+            src={coverImage}
             alt=""
             loading="lazy"
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"

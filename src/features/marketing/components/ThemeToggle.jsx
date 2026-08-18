@@ -1,7 +1,9 @@
 import { Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ThemeToggle() {
+  const { t } = useTranslation();
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function ThemeToggle() {
       type="button"
       onClick={toggle}
       className="ce-icon-btn"
-      aria-label={dark ? 'Light mode' : 'Dark mode'}
+      aria-label={dark ? t('settings.theme.light', 'Light mode') : t('settings.theme.dark', 'Dark mode')}
     >
       {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </button>

@@ -75,6 +75,8 @@ const router = createBrowserRouter([
     element: <MarketingLayout />,
     children: [
       { index: true, element: <LandingPage /> },
+      { path: 'academies', element: <LandingPage /> },
+      { path: 'courses', element: <LandingPage /> },
       { path: 'contact', element: <ContactPage /> },
     ],
   },

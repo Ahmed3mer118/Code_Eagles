@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import toast, { Toaster } from 'react-hot-toast';
 import { contactApi } from '../../shared/api/contactApi';
 
@@ -23,6 +24,17 @@ export default function ContactPage() {
   };
 
   return (
+    <>
+      <Helmet>
+        <title>{t('nav.contact')} — {t('brand.name')}</title>
+        <meta name="description" content={t('brand.tagline')} />
+        <link rel="canonical" href="https://www.code-eagles.com/contact" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.code-eagles.com/contact" />
+        <meta property="og:title" content={`${t('nav.contact')} — ${t('brand.name')}`} />
+        <meta property="og:description" content={t('brand.tagline')} />
+        <meta property="og:image" content="https://www.code-eagles.com/images/LOGO.png" />
+      </Helmet>
     <div className="ce-container py-12">
       <Toaster position="top-center" />
       <div className="mx-auto max-w-2xl">
@@ -46,5 +58,6 @@ export default function ContactPage() {
         </form>
       </div>
     </div>
+    </>
   );
 }

@@ -6,6 +6,8 @@ import LanguageSwitcher from '../ui/LanguageSwitcher';
 import resolveMediaUrl from '../utils/mediaUrl';
 import ThemeToggle from '../../features/marketing/components/ThemeToggle';
 import AuthServices from '../api/authService';
+import useThemeMode from '../hooks/useThemeMode';
+import { buildAcademyThemeStyle } from '../utils/academyTheme';
 
 const sectionLinks = [
   { key: 'about', href: '#about' },
@@ -18,20 +20,14 @@ export default function AcademyLayout({ tenant, children }) {
   const { t } = useTranslation();
   const { slug } = useParams();
   const [open, setOpen] = useState(false);
+  const isDark = useThemeMode();
   const auth = new AuthServices();
   const token = auth.getToken();
   const role = auth.getRole();
   const page = tenant?.publicPage || {};
   const footerLinks = (page.footerLinks || []).filter((link) => link.label && link.url);
 
-  const theme = tenant?.theme || {};
-  const style = {
-    '--ce-primary': theme.primary || '#0B1F33',
-    '--ce-accent': theme.accent || '#E8A317',
-    '--ce-bg': theme.background || '#F5F7FA',
-    '--ce-surface': theme.surface || '#FFFFFF',
-    '--ce-text': theme.text || '#0F172A',
-  };
+  const style = buildAcademyThemeStyle(tenant, isDark);
 
   const dashboardPath = auth.getDashboardPath?.(role) || '/dashboard/student';
 
@@ -65,14 +61,14 @@ export default function AcademyLayout({ tenant, children }) {
       ];
 
   return (
-    <div className="min-h-screen pb-mobile-nav" style={style}>
+    <div className="min-h-screen bg-[var(--ce-bg)] pb-mobile-nav text-[var(--ce-text)]" style={style}>
       <header className="sticky top-0 z-50 border-b border-[var(--ce-border)] bg-[var(--ce-surface)]/85 backdrop-blur-xl">
         <div className="ce-container flex items-center justify-between gap-4 py-3">
           <Link to={`/academy/${slug}`} className="flex min-w-0 items-center gap-3">
             {tenant?.logoUrl ? (
               <img src={resolveMediaUrl(tenant.logoUrl)} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
             ) : (
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--ce-primary)] text-sm font-extrabold text-white">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--ce-brand)] text-sm font-extrabold text-white">
                 {tenant?.name?.charAt(0)}
               </div>
             )}
@@ -129,7 +125,7 @@ export default function AcademyLayout({ tenant, children }) {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <nav className="mt-8 flex flex-col gap-4 text-base font-semibold">
+            <nav className="mt-8 flex flex-col gap-4 text-base font-semibold text-[var(--ce-text)]">
               {sectionLinks.map((link) => (
                 <a key={link.key} href={link.href} onClick={() => setOpen(false)}>
                   {t(`academy.nav.${link.key}`)}
@@ -158,7 +154,7 @@ export default function AcademyLayout({ tenant, children }) {
 
       {children}
 
-      <footer className="border-t border-[var(--ce-border)] bg-[var(--ce-primary)] text-white">
+      <footer className="border-t border-[var(--ce-border)] bg-[var(--ce-brand)] text-white">
         <div className="ce-container flex flex-col gap-6 py-10 md:flex-row md:items-start md:justify-between">
           <div className="max-w-md">
             <div className="text-xl font-extrabold">{tenant?.name}</div>

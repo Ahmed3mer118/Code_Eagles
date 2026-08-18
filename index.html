@@ -3,19 +3,60 @@
 
 <head>
   <meta charset="UTF-8" />
+  <script>
+    (function () {
+      var stored = localStorage.getItem('ce-theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var dark = stored ? stored === 'dark' : prefersDark;
+      if (dark) document.documentElement.classList.add('dark');
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Code Eagles</title>
-  <meta name="title" content="Code Eagles" />
+
+  <title>Code Eagles </title>
+  <meta name="title" content="Code Eagles " />
   <meta name="description"
-  content="Code Eagles — منصة تعليمية SaaS متعددة المستأجرين للمدرسين والطلاب وأولياء الأمور. ثانوية، برمجة، وجامعة." />
+    content="Code Eagles — منصة SaaS تعليمية متعددة الأكاديميات. محاضرات مسجلة، اختبارات، متابعة تقدم، وإدارة كاملة للمدرسين والطلاب وأولياء الأمور في البرمجة والثانوية العامة." />
   <meta name="keywords"
-  content="codeeagles, منصة تعليمية, أكاديمية, ثانوية عامة, كورسات برمجة, SaaS, multi-tenant, LMS" />
-  <meta property="og:title" content="Code Eagles" />
+    content="code eagles, codeeagles, منصة تعليمية, أكاديمية أونلاين, كورسات برمجة, ثانوية عامة, LMS, تعليم إلكتروني, SaaS, multi-tenant" />
+  <meta name="author" content="Code Eagles" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow" />
+  <meta name="theme-color" content="#0B1F33" />
+  <meta name="application-name" content="Code Eagles" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <link rel="canonical" href="https://www.code-eagles.com/" />
+  <link rel="alternate" hreflang="ar" href="https://www.code-eagles.com/" />
+  <link rel="alternate" hreflang="en" href="https://www.code-eagles.com/" />
+  <link rel="alternate" hreflang="x-default" href="https://www.code-eagles.com/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Code Eagles" />
+  <meta property="og:url" content="https://www.code-eagles.com/" />
+  <meta property="og:title" content="Code Eagles | Educational Platform for Academies" />
   <meta property="og:description"
-  content="Multi-tenant SaaS educational platform for academies, teachers, students, and parents." />
+    content="Multi-tenant SaaS educational platform — recorded lectures, quizzes, progress tracking for teachers, students, and parents." />
+  <meta property="og:image" content="https://www.code-eagles.com/images/LOGO.png" />
+  <meta property="og:image:alt" content="Code Eagles Logo" />
+  <meta property="og:locale" content="ar_EG" />
+  <meta property="og:locale:alternate" content="en_US" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Code Eagles | Educational Platform for Academies" />
+  <meta name="twitter:description"
+    content="Multi-tenant SaaS platform for academies — lectures, quizzes, and progress tracking." />
+  <meta name="twitter:image" content="https://www.code-eagles.com/images/LOGO.png" />
+
   <meta name="google-site-verification" content="YY_-vbdLfpTD-owIUnOW2dnaSd6kFLxem1bUkURTxmY" />
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="https://www.code-eagles.com/sitemap.xml" />
+
   <link rel="icon" type="image/png" href="/images/LOGO.png" />
+  <link rel="apple-touch-icon" href="/images/LOGO.png" />
   <link rel="preload" as="image" href="/images/bg.webp" type="image/webp" />
+  <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-J31FHSLN6G"></script>
   <script defer>
     window.dataLayer = window.dataLayer || [];
@@ -45,12 +86,42 @@
   <script defer type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Code Eagles",
-      "url": "https://www.code-eagles.com",
-      "logo": "https://www.code-eagles.com/images/LOGO.png",
-      "sameAs": ["https://www.linkedin.com/company/code-eagles-software"],
-      "description": "Multi-tenant SaaS educational platform for academies, teachers, students, and parents."
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://www.code-eagles.com/#organization",
+          "name": "Code Eagles",
+          "url": "https://www.code-eagles.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.code-eagles.com/images/LOGO.png"
+          },
+          "sameAs": ["https://www.linkedin.com/company/code-eagles-software"],
+          "description": "Multi-tenant SaaS educational platform for academies, teachers, students, and parents."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://www.code-eagles.com/#website",
+          "url": "https://www.code-eagles.com",
+          "name": "Code Eagles",
+          "publisher": { "@id": "https://www.code-eagles.com/#organization" },
+          "inLanguage": ["ar", "en"],
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://www.code-eagles.com/academies?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://www.code-eagles.com/#webpage",
+          "url": "https://www.code-eagles.com/",
+          "name": "Code Eagles | Educational Platform for Academies",
+          "isPartOf": { "@id": "https://www.code-eagles.com/#website" },
+          "about": { "@id": "https://www.code-eagles.com/#organization" },
+          "description": "Multi-tenant SaaS educational platform for academies — programming and secondary education."
+        }
+      ]
     }
   </script>
 </head>

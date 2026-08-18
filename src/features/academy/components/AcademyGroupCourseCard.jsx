@@ -33,9 +33,9 @@ export default function AcademyGroupCourseCard({
 
   return (
     <article className="ce-card ce-card-hover flex h-full flex-col overflow-hidden">
-      <div className="border-b border-[var(--ce-border)] bg-gradient-to-br from-[var(--ce-primary)]/5 to-[var(--ce-accent)]/10 p-5">
+      <div className="border-b border-[var(--ce-border)] bg-gradient-to-br from-[var(--ce-brand)]/10 to-[var(--ce-accent)]/10 p-5">
         <div className="flex items-start gap-3">
-          <div className="rounded-2xl bg-[var(--ce-primary)]/10 p-3 text-[var(--ce-primary)]">
+          <div className="rounded-2xl bg-[var(--ce-brand)]/15 p-3 text-[var(--ce-primary)]">
             <Calendar className="h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">

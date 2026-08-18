@@ -1,7 +1,8 @@
 User-agent: *
-User-agent : GPTbot
-Disallow: /dashboard/
-Disallow: /instructor/
+User-agent: GPTBot
+Disallow: /dashboard
+Disallow: /dashboard/teacher
+Disallow: /auth/
 
 Allow: /
 

@@ -26,7 +26,7 @@ const SidebarNav = memo(function SidebarNav({ navItems, onNavigate }) {
             onClick={onNavigate}
             className={({ isActive }) =>
               `flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                isActive ? 'bg-white text-[var(--ce-primary)] shadow-sm' : 'text-white/80 hover:bg-white/10'
+                isActive ? 'bg-white text-[var(--ce-brand)] shadow-sm' : 'text-white/80 hover:bg-white/10'
               }`
             }
           >
@@ -157,7 +157,7 @@ export default function DashboardShell({
       )}
 
       <aside
-        className={`ce-sidebar flex min-h-0 flex-col bg-[var(--ce-primary)] text-white ${navOpen ? 'is-open' : ''}`}
+        className={`ce-sidebar flex min-h-0 flex-col bg-[var(--ce-brand)] text-white ${navOpen ? 'is-open' : ''}`}
         aria-label={t(titleKey)}
       >
         <div className="flex items-center gap-3 px-5 py-5">

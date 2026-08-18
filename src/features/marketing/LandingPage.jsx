@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import {
@@ -27,6 +27,7 @@ import CategoryCard from './components/CategoryCard';
 import TestimonialCarousel from './components/TestimonialCarousel';
 import AnimatedCounter from './components/AnimatedCounter';
 import FaqAccordion from './components/FaqAccordion';
+import PlatformLogo from '../../shared/ui/PlatformLogo';
 
 const CATEGORY_DEFS = [
   { key: 'programming', icon: Code2, desc: 'Full-stack and software engineering paths' },
@@ -63,7 +64,7 @@ function HeroIllustration() {
   return (
     <div className="relative mx-auto w-full max-w-lg">
       <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[var(--ce-accent)]/20 to-[var(--ce-primary)]/10 blur-2xl" />
-      <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-primary-soft)] p-6 shadow-2xl">
+      <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[var(--ce-brand)] to-[var(--ce-brand-soft)] p-6 shadow-2xl">
         <div className="flex flex-col gap-3">
           {cards.map(({ icon: Icon, labelKey, progress }) => (
             <div key={labelKey} className="flex items-center gap-4 rounded-2xl bg-white/10 p-4 backdrop-blur">
@@ -93,6 +94,7 @@ export default function LandingPage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language?.startsWith('en') ? 'en' : 'ar';
   const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('programming');
   const [academies, setAcademies] = useState([]);
@@ -133,6 +135,17 @@ export default function LandingPage() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    const scrollTargets = {
+      '/courses': 'courses',
+      '/academies': 'academies',
+    };
+    const sectionId = scrollTargets[location.pathname];
+    if (!sectionId) return;
+    const target = document.getElementById(sectionId) || document.getElementById('academies');
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [location.pathname, loading]);
 
   const heroMetrics = useMemo(
     () => [
@@ -191,11 +204,21 @@ export default function LandingPage() {
     document.getElementById('academies')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const pageUrl = location.pathname === '/'
+    ? 'https://www.code-eagles.com/'
+    : `https://www.code-eagles.com${location.pathname}`;
+
   return (
     <>
       <Helmet>
         <title>{t('brand.name')} — {t('brand.tagline')}</title>
         <meta name="description" content={t('landing.subheadline')} />
+        <link rel="canonical" href={pageUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:title" content={`${t('brand.name')} — ${t('brand.tagline')}`} />
+        <meta property="og:description" content={t('landing.subheadline')} />
+        <meta property="og:image" content="https://www.code-eagles.com/images/LOGO.png" />
         <script type="application/ld+json">
           {JSON.stringify({
             '@context': 'https://schema.org',
@@ -207,8 +230,7 @@ export default function LandingPage() {
       </Helmet>
 
       {show('hero') && (
-      <section className="relative overflow-hidden pb-12 pt-6 sm:pt-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--ce-primary)] via-[#0f2844] to-[#071018]" />
+      <section className="ce-hero-shell relative overflow-hidden pb-12 pt-6 sm:pt-10">
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{
@@ -224,9 +246,12 @@ export default function LandingPage() {
         <div className="ce-container relative z-10 py-6 text-white sm:py-10">
           <div className="ce-hero-grid items-center">
             <div>
-              <span className="ce-eyebrow ce-fade-up !border !border-white/15 !bg-white/10 !text-[var(--ce-accent-soft)]">
-                {t('brand.name')}
-              </span>
+              <div className="ce-fade-up flex items-center gap-3">
+                <PlatformLogo className="h-14 w-14" imgClassName="rounded-2xl object-contain bg-white/10 p-1.5 shadow-lg" />
+                <span className="ce-eyebrow !border !border-white/15 !bg-white/10 !text-[var(--ce-accent-soft)]">
+                  {t('brand.name')}
+                </span>
+              </div>
               <h1 className="ce-fade-up mt-5 max-w-3xl text-4xl font-extrabold leading-[1.15] sm:text-5xl lg:text-[3.4rem]">
                 {sectionText(sections, 'hero', 'title', lang, t('landing.headline'))}
               </h1>
@@ -429,15 +454,15 @@ export default function LandingPage() {
       {show('cta') && (
       <section id="teacher-cta" className="ce-section">
         <div className="ce-container">
-          <div className="ce-gradient-border overflow-hidden rounded-[2rem] bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-primary-soft)] p-8 text-white sm:p-12">
+          <div className="ce-brand-panel ce-gradient-border overflow-hidden rounded-[2rem] p-8 sm:p-12">
             <div className="max-w-2xl">
-              <span className="ce-eyebrow  !text-[var(--ce-accent-soft)]">
+              <span className="ce-eyebrow !border-white/20 !bg-white/10 !text-[var(--ce-accent-soft)]">
                 {t('landing.teacherEyebrow')}
               </span>
-              <h2 className="mt-4 text-yellow-500 text-3xl font-extrabold sm:text-4xl">
+              <h2 className="mt-4 text-3xl font-extrabold text-white sm:text-4xl">
                 {t('landing.teacherHeadline')}
               </h2>
-              <p className="mt-4 text-black/80">{t('landing.teacherDesc')}</p>
+              <p className="mt-4 text-white/80">{t('landing.teacherDesc')}</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link to="/auth/register?role=teacher" className="ce-btn ce-btn-accent">
                   {t('landing.createAcademy')}

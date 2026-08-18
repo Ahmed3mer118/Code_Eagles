@@ -1,16 +1,19 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, BadgeCheck, BookOpen, Star, Users } from 'lucide-react';
+import resolveMediaUrl from '../../../shared/utils/mediaUrl';
 
 export default function AcademyCard({ academy }) {
   const { t } = useTranslation();
+  const coverUrl = resolveMediaUrl(academy.coverUrl);
+  const logoUrl = resolveMediaUrl(academy.logoUrl);
 
   return (
     <article className="ce-card ce-card-hover group flex h-full flex-col overflow-hidden">
-      <div className="relative h-36 overflow-hidden bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-primary-soft)]">
-        {academy.coverUrl ? (
+      <div className="relative h-36 overflow-hidden bg-gradient-to-br from-[var(--ce-brand)] to-[var(--ce-brand-soft)]">
+        {coverUrl ? (
           <img
-            src={academy.coverUrl}
+            src={coverUrl}
             alt=""
             loading="lazy"
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
@@ -21,9 +24,9 @@ export default function AcademyCard({ academy }) {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        {academy.logoUrl ? (
+        {logoUrl ? (
           <img
-            src={academy.logoUrl}
+            src={logoUrl}
             alt=""
             loading="lazy"
             className="absolute bottom-3 start-3 h-12 w-12 rounded-xl border-2 border-white object-cover shadow-lg"

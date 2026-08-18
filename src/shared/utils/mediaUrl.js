@@ -1,6 +1,8 @@
 /**
  * Resolve upload/media URLs so images load from the API host in dev and production.
  */
+import { getApiBase } from '../config/apiBase';
+
 export function resolveMediaUrl(url) {
   if (!url || typeof url !== 'string') return '';
 
@@ -9,14 +11,14 @@ export function resolveMediaUrl(url) {
 
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
 
-  const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+  const apiBase = getApiBase();
 
   if (trimmed.startsWith('/')) {
-    return apiBase ? `${apiBase}${trimmed}` : trimmed;
+    return `${apiBase}${trimmed}`;
   }
 
   if (trimmed.startsWith('uploads/')) {
-    return apiBase ? `${apiBase}/${trimmed}` : `/${trimmed}`;
+    return `${apiBase}/${trimmed}`;
   }
 
   return trimmed;

@@ -249,6 +249,12 @@ function AcademyLanding({
       <Helmet>
         <title>{tenant.name} — {t('brand.name')}</title>
         <meta name="description" content={tenant.description || tenant.name} />
+        <link rel="canonical" href={`https://www.code-eagles.com/academy/${tenant.slug}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`https://www.code-eagles.com/academy/${tenant.slug}`} />
+        <meta property="og:title" content={`${tenant.name} — ${t('brand.name')}`} />
+        <meta property="og:description" content={tenant.description || tenant.name} />
+        <meta property="og:image" content={tenant.logoUrl ? resolveMediaUrl(tenant.logoUrl) : 'https://www.code-eagles.com/images/LOGO.png'} />
         <script type="application/ld+json">
           {JSON.stringify({
             '@context': 'https://schema.org',
@@ -270,10 +276,10 @@ function AcademyLanding({
         {tenant.coverUrl ? (
           <div className="absolute inset-0">
             <img src={resolveMediaUrl(tenant.coverUrl)} alt="" className="h-full w-full object-cover" loading="eager" />
-            <div className="absolute inset-0 bg-[var(--ce-primary)]/85" />
+            <div className="absolute inset-0 bg-[var(--ce-brand)]/85" />
           </div>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-primary-soft)]" />
+          <div className="absolute inset-0 ce-hero-shell bg-gradient-to-br from-[var(--ce-brand)] to-[var(--ce-brand-soft)]" />
         )}
 
         <div className="ce-container relative z-10 py-16 text-white md:py-24">
@@ -362,7 +368,7 @@ function AcademyLanding({
         <div className="ce-container">
           <div className="ce-card overflow-hidden">
             <div className="grid lg:grid-cols-[280px_1fr]">
-              <div className="bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-primary-soft)] p-8 text-white">
+              <div className="bg-gradient-to-br from-[var(--ce-brand)] to-[var(--ce-brand-soft)] p-8 text-white">
                 <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-white/15 text-4xl font-extrabold">
                   {ownerName?.charAt(0) || 'T'}
                 </div>
@@ -530,7 +536,7 @@ function AcademyLanding({
 
       <section className="ce-section">
         <div className="ce-container">
-          <div className="ce-gradient-border overflow-hidden rounded-[2rem] bg-gradient-to-br from-[var(--ce-primary)] to-[var(--ce-primary-soft)] p-8 text-white sm:p-12">
+          <div className="ce-brand-panel ce-gradient-border overflow-hidden rounded-[2rem] p-8 sm:p-12">
             <h2 className="text-3xl font-extrabold sm:text-4xl">
               {t('academy.finalCta', { name: ownerName || tenant.name })}
             </h2>
