@@ -1,20 +1,20 @@
-import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { CheckCircle2, Clock, CreditCard, Upload } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
 import { subscriptionApi, uploadApi } from '../../shared/api/platformApi';
+import { formatPlanPeriod } from '../../shared/utils/subscriptionDays';
 import resolveMediaUrl from '../../shared/utils/mediaUrl';
 import PageHeader from '../../shared/ui/PageHeader';
 import StatusBadge from '../../shared/ui/StatusBadge';
 import ContentLoader from '../../shared/ui/ContentLoader';
-import PaymentInstructionsPanel from '../payments/components/PaymentInstructionsPanel';
-
-const METHODS = [
-  { value: 'vodafone_cash', labelKey: 'payments.methods.vodafone' },
-  { value: 'instapay', labelKey: 'payments.methods.instapay' },
-  { value: 'bank_transfer', labelKey: 'payments.methods.bank' },
-];
+import PlatformSubscriptionPaymentFlow, {
+  AwaitingApprovalBanner,
+  PeriodModeSelector,
+  SelectedPlanSummary,
+  SubscriptionNavTabs,
+} from './components/PlatformSubscriptionPaymentFlow';
 
 export default function TeacherPlatformPaymentPage() {
   const { t, i18n } = useTranslation();
@@ -24,11 +24,13 @@ export default function TeacherPlatformPaymentPage() {
   const [uploading, setUploading] = useState(false);
   const [data, setData] = useState(null);
   const [receiptPreview, setReceiptPreview] = useState('');
+  const [periodMode, setPeriodMode] = useState('reset');
   const [form, setForm] = useState({ method: 'vodafone_cash', receiptImageUrl: '', notes: '' });
 
   const load = async () => {
     const res = await subscriptionApi.mine();
     setData(res);
+    if (res.pending?.periodMode) setPeriodMode(res.pending.periodMode);
   };
 
   useEffect(() => {
@@ -46,7 +48,9 @@ export default function TeacherPlatformPaymentPage() {
   const pending = data?.pending;
   const pendingPlan = pending ? data?.plans?.find((p) => p.key === pending.plan) : null;
   const paymentInfo = data?.paymentInfo || {};
-  const hasPaymentInfo = paymentInfo.vodafoneNumber || paymentInfo.instapayId || paymentInfo.bankDetails || paymentInfo.paymentInstructions;
+  const showPeriodMode = !!data?.active && pending && pending.requestType !== 'new';
+  const amountDue = pending?.amountDue ?? pending?.amount ?? 0;
+  const requiresPayment = amountDue > 0;
 
   const onUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -71,7 +75,7 @@ export default function TeacherPlatformPaymentPage() {
       toast.error(t('platformSub.noPendingPlan'));
       return;
     }
-    if (!form.receiptImageUrl) {
+    if (requiresPayment && !form.receiptImageUrl) {
       toast.error(t('platformSub.receiptRequired'));
       return;
     }
@@ -79,8 +83,9 @@ export default function TeacherPlatformPaymentPage() {
     try {
       await subscriptionApi.updateMine({
         plan: pending.plan,
-        amount: pending.amount,
-        periodMonths: pending.periodMonths,
+        periodUnit: pending.periodUnit ?? pendingPlan?.periodUnit,
+        periodValue: pending.periodValue ?? pendingPlan?.periodValue ?? pendingPlan?.periodMonths,
+        periodMode: showPeriodMode ? periodMode : 'reset',
         method: form.method,
         receiptImageUrl: form.receiptImageUrl,
         notes: form.notes,
@@ -98,22 +103,30 @@ export default function TeacherPlatformPaymentPage() {
 
   if (loading) return <ContentLoader />;
 
+  const planSummary = pendingPlan || pending ? (
+    <SelectedPlanSummary
+      plan={pendingPlan || { key: pending.plan, price: amountDue, name: { [lang]: pending.plan } }}
+      lang={lang}
+      t={t}
+      amountDue={amountDue}
+      requestType={pending?.requestType}
+      previousPlan={pending?.previousPlan}
+    />
+  ) : null;
+
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader title={t('platformSub.paymentNav')} subtitle={t('platformSub.paymentPageHint')} />
 
-      <div className="flex flex-wrap gap-2">
-        <Link to="/dashboard/teacher/subscription" className="ce-btn ce-btn-ghost text-sm">{t('platformSub.planNav')}</Link>
-        <Link to="/dashboard/teacher/platform-payments" className="ce-btn ce-btn-primary text-sm">
-          <CreditCard className="h-4 w-4" />
-          {t('platformSub.paymentNav')}
-        </Link>
-      </div>
+      <SubscriptionNavTabs t={t} active="payment" />
 
-      {data?.hasAccess && (
+      {data?.hasAccess && !pending && (
         <div className="ce-card border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-900">
           <CheckCircle2 className="mb-2 h-6 w-6" />
-          {t('platformSub.activeTitle')}
+          <p>{t('platformSub.activeTitle')}</p>
+          <Link to="/dashboard/teacher/subscription" className="ce-btn ce-btn-accent mt-4 inline-flex text-xs">
+            {t('platformSub.changePlanTitle')}
+          </Link>
         </div>
       )}
 
@@ -126,64 +139,81 @@ export default function TeacherPlatformPaymentPage() {
         </div>
       )}
 
+      {pending && pending.requestType === 'admin_change' && (
+        <div className="ce-card border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          {t('platformSub.adminPlanChangeNotice')}
+        </div>
+      )}
+
       {pending && !pending.receiptImageUrl && (
-        <form onSubmit={onSubmit} className="space-y-4">
+        <>
           <div className="ce-card flex items-start gap-3 border-blue-200 bg-blue-50 p-5">
             <Clock className="h-5 w-5 shrink-0 text-blue-700" />
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="font-extrabold text-blue-900">{t('platformSub.pendingTitle')}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-2 flex flex-wrap items-center gap-2">
                 <StatusBadge status="pending" label={pendingPlan?.name?.[lang] || pending.plan} />
-                <span className="font-bold">{pending.amount} {t('payments.currency')}</span>
+                <span className="font-bold">
+                  {amountDue} {t('payments.currency')}
+                </span>
               </div>
-              <Link to="/dashboard/teacher/subscription" className="mt-3 inline-flex text-xs font-bold text-[var(--ce-primary)] underline">
+              {pending.previousPlan && pending.previousPlan !== pending.plan && (
+                <p className="mt-2 text-xs text-blue-800">
+                  {pending.previousPlan} → {pending.plan}
+                  {(amountDue > 0 && (pending.requestType === 'upgrade' || pending.requestType === 'admin_change')) && (
+                    <span> · {t('platformSub.upgradeDifference')}</span>
+                  )}
+                </p>
+              )}
+              {pendingPlan && (
+                <p className="mt-1 text-xs text-blue-800">{formatPlanPeriod(pendingPlan, t)}</p>
+              )}
+              <Link
+                to="/dashboard/teacher/subscription"
+                className="mt-3 inline-flex text-xs font-bold text-[var(--ce-primary)] underline"
+              >
                 {t('payments.changePlanLink')}
               </Link>
             </div>
           </div>
 
-          {hasPaymentInfo && <PaymentInstructionsPanel paymentInfo={paymentInfo} step={1} />}
-
-          <section className="ce-card p-5 space-y-4">
-            <div>
-              <label className="ce-label">{t('payments.method')}</label>
-              <select className="ce-input" value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>
-                {METHODS.map((m) => (
-                  <option key={m.value} value={m.value}>{t(m.labelKey)}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="ce-label">{t('payments.receiptUpload')}</label>
-              <label className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[var(--ce-accent)]/40 bg-[var(--ce-accent)]/5 px-4 py-8">
-                <Upload className="h-8 w-8 text-[var(--ce-accent)]" />
-                <span className="mt-2 text-sm font-semibold">{t('payments.uploadTap')}</span>
-                <input type="file" accept="image/*" capture="environment" className="hidden" onChange={onUpload} disabled={uploading} />
-              </label>
-              {receiptPreview && (
-                <img src={receiptPreview} alt="" className="mt-4 max-h-56 w-full rounded-2xl border object-contain" />
-              )}
-            </div>
-            <textarea
-              className="ce-input min-h-[80px]"
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder={t('payments.notesPlaceholder')}
-            />
-            <button type="submit" className="ce-btn ce-btn-primary w-full" disabled={submitting || !form.receiptImageUrl}>
-              {submitting ? t('common.loading') : t('platformSub.submitReceipt')}
-            </button>
-          </section>
-        </form>
+          <PlatformSubscriptionPaymentFlow
+            t={t}
+            paymentInfo={paymentInfo}
+            onSubmit={onSubmit}
+            form={form}
+            setForm={setForm}
+            receiptPreview={receiptPreview}
+            onUpload={onUpload}
+            uploading={uploading}
+            submitting={submitting}
+            planSummary={planSummary}
+            requireReceipt={requiresPayment}
+            submitLabel={requiresPayment ? t('platformSub.submitReceipt') : t('platformSub.submitRequest')}
+            instructionsStep={1}
+            uploadStep={showPeriodMode ? 3 : 2}
+            periodModeBlock={
+              showPeriodMode ? (
+                <PeriodModeSelector
+                  periodMode={periodMode}
+                  setPeriodMode={setPeriodMode}
+                  t={t}
+                  step={2}
+                />
+              ) : null
+            }
+            freePlanNote={
+              !requiresPayment ? (
+                <p className="rounded-xl bg-[var(--ce-bg)] p-3 text-sm text-[var(--ce-muted)]">
+                  {t('platformSub.freePlanChange')}
+                </p>
+              ) : null
+            }
+          />
+        </>
       )}
 
-      {pending?.receiptImageUrl && (
-        <div className="ce-card border-amber-200 bg-amber-50 p-5 text-center">
-          <CheckCircle2 className="mx-auto h-10 w-10 text-amber-600" />
-          <p className="mt-3 font-extrabold text-amber-900">{t('payments.awaitingApproval')}</p>
-          <p className="mt-2 text-sm text-amber-800">{t('payments.awaitingApprovalHint')}</p>
-        </div>
-      )}
+      {pending?.receiptImageUrl && <AwaitingApprovalBanner t={t} />}
     </div>
   );
 }

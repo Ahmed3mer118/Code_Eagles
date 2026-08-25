@@ -13,7 +13,7 @@ import {
   UsersRound,
   WalletCards,
 } from 'lucide-react';
-import { tenantApi, FEATURE_KEYS } from '../../../shared/api/platformApi';
+import { tenantApi, platformPlanApi, FEATURE_KEYS } from '../../../shared/api/platformApi';
 import { isFeatureEnabled } from '../../../shared/hooks/useTenantFeatures';
 import { formatSubscriptionExpiry } from '../../../shared/utils/subscriptionDays';
 import SearchInput from '../../../shared/ui/SearchInput';
@@ -82,6 +82,7 @@ const emptyCreateForm = {
 export default function TenantsPage() {
   const { t } = useTranslation();
   const [tenants, setTenants] = useState([]);
+  const [plans, setPlans] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -90,6 +91,15 @@ export default function TenantsPage() {
   const [editingDetail, setEditingDetail] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+
+  const loadPlans = async () => {
+    try {
+      const data = await platformPlanApi.listAdmin();
+      setPlans(data.plans || []);
+    } catch {
+      setPlans([]);
+    }
+  };
 
   const load = async (q = search) => {
     setLoading(true);
@@ -105,6 +115,7 @@ export default function TenantsPage() {
 
   useEffect(() => {
     load();
+    loadPlans();
   }, []);
 
   useEffect(() => {
@@ -173,6 +184,18 @@ export default function TenantsPage() {
     }
   };
 
+  const toggleListedOnPlatform = async (listed) => {
+    if (!detail?.tenant) return;
+    try {
+      const res = await tenantApi.updateBranding(detail.tenant._id, { listedOnPlatform: listed });
+      setDetail({ ...detail, tenant: res.tenant });
+      toast.success(t('common.success'));
+      load();
+    } catch (err) {
+      toast.error(err?.message || t('common.error'));
+    }
+  };
+
   const toggleFeature = async (key, value) => {
     if (!detail?.tenant) return;
     const features = { ...(detail.tenant.features || {}), [key]: value };
@@ -215,7 +238,9 @@ export default function TenantsPage() {
             </FormField>
             <FormField label={t('settings.plan')} helper={t('admin.fieldPlanHint')}>
               <select className="ce-input" value={values.plan} onChange={(e) => setValues({ ...values, plan: e.target.value })}>
-                {PLANS.map((p) => <option key={p} value={p}>{p}</option>)}
+                {(plans.length ? plans : PLANS.map((p) => ({ key: p, name: { ar: p, en: p } }))).map((p) => (
+                  <option key={p.key} value={p.key}>{p.name?.ar || p.key}</option>
+                ))}
               </select>
             </FormField>
           </div>
@@ -318,8 +343,18 @@ export default function TenantsPage() {
                 {formatSubscriptionExpiry(detail.activeSubscription?.expiresAt, t)}
               </p>
               {detail.activeSubscription?.plan && (
-                <p className="mt-1 text-sm text-[var(--ce-muted)]">{detail.activeSubscription.plan} · {detail.activeSubscription.amount} {t('payments.currency')}</p>
+                <p className="mt-1 text-sm text-[var(--ce-muted)]">
+                  {detail.activeSubscription.plan} · {detail.activeSubscription.amount} {t('payments.currency')}
+                </p>
               )}
+              <div className="mt-4 border-t border-[var(--ce-border)] pt-4">
+                <ToggleSwitch
+                  label={t('settings.listedOnPlatform')}
+                  checked={detail.tenant?.listedOnPlatform !== false}
+                  onChange={toggleListedOnPlatform}
+                />
+                <p className="mt-2 text-xs text-[var(--ce-muted)]">{t('settings.listedOnPlatformHint')}</p>
+              </div>
             </div>
 
             <div className="rounded-2xl border border-[var(--ce-border)] p-4">

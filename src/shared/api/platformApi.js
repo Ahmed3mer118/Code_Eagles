@@ -549,13 +549,14 @@ export const FEATURE_KEYS = [
   'quizzes',
   'assignments',
   'certificates',
+  'assistants',
   'payments',
   'leaderboard',
   'discussions',
 ];
 
 /** Features that stay hidden until the academy subscribes to them. */
-export const OPT_IN_FEATURES = ['lectures'];
+export const OPT_IN_FEATURES = ['lectures', 'assistants'];
 
 export const ASSISTANT_PERMISSIONS = [
   'record_attendance',

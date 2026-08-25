@@ -11,7 +11,7 @@ const allNavItems = [
   { to: '/dashboard/teacher/students', labelKey: 'students.title', icon: NAV_ICONS.students },
   { to: '/dashboard/teacher/quizzes', labelKey: 'dashboard.quizzes', icon: NAV_ICONS.quizzes, featureKey: 'quizzes' },
   { to: '/dashboard/teacher/assignments', labelKey: 'dashboard.assignments', icon: NAV_ICONS.assignments, featureKey: 'assignments' },
-  { to: '/dashboard/teacher/assistants', labelKey: 'dashboard.assistants', icon: NAV_ICONS.assistants },
+  { to: '/dashboard/teacher/assistants', labelKey: 'dashboard.assistants', icon: NAV_ICONS.assistants, featureKey: 'assistants' },
   { to: '/dashboard/teacher/results', labelKey: 'dashboard.reports', icon: NAV_ICONS.results },
   { to: '/dashboard/teacher/reports', labelKey: 'reports.title', icon: NAV_ICONS.reports },
   { to: '/dashboard/teacher/payments', labelKey: 'payments.pendingTitle', icon: NAV_ICONS.payments, featureKey: 'payments' },

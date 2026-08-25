@@ -10,3 +10,17 @@ export function formatSubscriptionExpiry(expiresAt, t) {
   if (days === 0) return t('admin.subscriptionExpiresToday');
   return t('admin.subscriptionDaysLeft', { days });
 }
+
+export function normalizePlanPeriod(plan = {}) {
+  const periodUnit = plan.periodUnit === 'days' ? 'days' : 'months';
+  const periodValue = Math.max(1, Number(plan.periodValue ?? plan.periodMonths ?? 1) || 1);
+  return { periodUnit, periodValue };
+}
+
+export function formatPlanPeriod(plan = {}, t) {
+  const { periodUnit, periodValue } = normalizePlanPeriod(plan);
+  if (periodUnit === 'days') {
+    return t('platformSub.periodDays', { count: periodValue });
+  }
+  return t('platformSub.periodMonths', { count: periodValue });
+}

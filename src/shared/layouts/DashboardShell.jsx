@@ -8,7 +8,7 @@ import TeacherGlobalSearch from '../ui/TeacherGlobalSearch';
 import ContentLoader from '../ui/ContentLoader';
 import AuthServices from '../api/authService';
 import { getStoredTenant, setStoredTenant } from '../api/tenantContext';
-import resolveMediaUrl from '../utils/mediaUrl';
+import resolveBrandLogo from '../utils/mediaUrl';
 
 /** Memoized so page navigation never re-renders the navigation column. */
 const SidebarNav = memo(function SidebarNav({ navItems, onNavigate }) {
@@ -32,6 +32,11 @@ const SidebarNav = memo(function SidebarNav({ navItems, onNavigate }) {
           >
             {Icon && <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />}
             <span className="truncate">{t(item.labelKey)}</span>
+            {item.badge > 0 && (
+              <span className="ms-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--ce-accent)] px-1.5 text-[10px] font-bold text-[var(--ce-primary)]">
+                {item.badge > 99 ? '99+' : item.badge}
+              </span>
+            )}
           </NavLink>
         );
       })}
@@ -162,9 +167,13 @@ export default function DashboardShell({
       >
         <div className="flex items-center gap-3 px-5 py-5">
           <img
-            src={resolveMediaUrl(brand.logoUrl) || '/images/LOGO.png'}
-            alt=""
+            src={resolveBrandLogo(brand.logoUrl)}
+            alt="logo"
             className="h-9 w-9 shrink-0 rounded-lg bg-white/10 object-contain p-1"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = '/images/LOGO.png';
+            }}
           />
           <div className="min-w-0 flex-1">
             <div className="truncate font-extrabold">{displayName}</div>

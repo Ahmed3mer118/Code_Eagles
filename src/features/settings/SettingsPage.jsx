@@ -183,13 +183,13 @@ export default function SettingsPage() {
                   ),
                   wide: true,
                 },
-                { icon: Mail, label: t('auth.email'), value: user.email, wide: true },
-                { icon: BadgeCheck, label: t('auth.role'), value: roleLabel },
-                !isStudent && {
+                isStudent && {
                   icon: Trophy,
                   label: t('dashboard.xpLevel'),
                   value: `${user.xp ?? 0} / ${user.level ?? 1}`,
                 },
+                { icon: Mail, label: t('auth.email'), value: user.email, wide: true },
+                { icon: BadgeCheck, label: t('auth.role'), value: roleLabel },
               ]}
             />
           ) : (

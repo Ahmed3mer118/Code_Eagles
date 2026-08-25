@@ -71,25 +71,41 @@ export default function PaymentPlansPage() {
       ) : plans.length === 0 ? (
         <div className="ce-card p-8 text-center text-[var(--ce-muted)]">{t('payments.noPlans')}</div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {plans.map((plan) => (
-            <article key={plan._id} className="ce-card p-5">
+            <article key={plan._id} className="ce-card flex h-full flex-col p-5">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-extrabold text-[var(--ce-primary)]">{plan.name}</h3>
-                  <p className="mt-1 text-2xl font-extrabold text-[var(--ce-accent)]">{plan.price} {t('academy.currency')}</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate font-extrabold text-[var(--ce-primary)]">{plan.name}</h3>
+                  <p className="mt-1 text-2xl font-extrabold text-[var(--ce-accent)]">
+                    {plan.price} {t('academy.currency')}
+                  </p>
                 </div>
-                <StatusBadge status={plan.status === 'active' ? 'approved' : 'pending'} label={t(`payments.planStatus.${plan.status}`)} />
+                <StatusBadge
+                  status={plan.status === 'active' ? 'approved' : 'pending'}
+                  label={t(`payments.planStatus.${plan.status}`)}
+                />
               </div>
-              {plan.description && <p className="mt-3 text-sm text-[var(--ce-muted)]">{plan.description}</p>}
-              <p className="mt-2 text-xs font-semibold uppercase text-[var(--ce-muted)]">
+
+              {plan.description ? (
+                <p className="mt-3 line-clamp-3 flex-1 text-sm text-[var(--ce-muted)]">{plan.description}</p>
+              ) : (
+                <div className="flex-1" />
+              )}
+
+              <p className="mt-3 text-xs font-semibold uppercase text-[var(--ce-muted)]">
                 {t(`payments.planTypes.${plan.planType || 'standard'}`)}
                 {plan.planType === 'trial' && plan.trialDays ? ` · ${plan.trialDays} ${t('payments.trialDays')}` : ''}
               </p>
-              <div className="mt-4 flex gap-2">
-                <button type="button" className="ce-btn ce-btn-ghost text-sm" onClick={() => setModal({ plan })}>{t('content.edit')}</button>
+
+              <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--ce-border)] pt-4">
+                <button type="button" className="ce-btn ce-btn-ghost flex-1 text-sm sm:flex-none" onClick={() => setModal({ plan })}>
+                  {t('content.edit')}
+                </button>
                 {plan.status === 'active' && (
-                  <button type="button" className="ce-btn ce-btn-ghost text-sm" onClick={() => deactivate(plan._id)}>{t('payments.deactivate')}</button>
+                  <button type="button" className="ce-btn ce-btn-ghost flex-1 text-sm sm:flex-none" onClick={() => deactivate(plan._id)}>
+                    {t('payments.deactivate')}
+                  </button>
                 )}
               </div>
             </article>

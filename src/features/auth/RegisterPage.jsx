@@ -3,7 +3,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast, { Toaster } from 'react-hot-toast';
 import AuthServices from '../../shared/api/authService';
-import { platformPlanApi } from '../../shared/api/platformApi';
+import { platformPlanApi, FEATURE_KEYS } from '../../shared/api/platformApi';
+import { formatPlanPeriod } from '../../shared/utils/subscriptionDays';
 import { resolveReturnTo } from '../../shared/guards/RoleGuard';
 import { buildQueryString, getCleanParam } from '../../shared/utils/queryParams';
 import getApiErrorMessage from '../../shared/utils/apiError';
@@ -153,8 +154,23 @@ export default function RegisterPage() {
                   <span>
                     <span className="block font-bold text-[var(--ce-primary)]">{plan.name?.[lang] || plan.key}</span>
                     <span className="text-sm text-[var(--ce-muted)]">
-                      {plan.price} {t('payments.currency')} · {plan.description?.[lang]}
+                      {plan.price} {t('payments.currency')} · {plan.description?.[lang]} · {formatPlanPeriod(plan, t)}
                     </span>
+                    {(plan.features || []).length > 0 && (
+                      <span className="mt-2 flex flex-wrap gap-1.5">
+                        {[...(plan.features || [])]
+                          .filter((feature) => FEATURE_KEYS.includes(feature))
+                          .sort((a, b) => FEATURE_KEYS.indexOf(a) - FEATURE_KEYS.indexOf(b))
+                          .map((feature) => (
+                            <span
+                              key={feature}
+                              className="rounded-full bg-[var(--ce-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--ce-primary)]"
+                            >
+                              {t(`features.${feature}`, feature)}
+                            </span>
+                          ))}
+                      </span>
+                    )}
                   </span>
                 </label>
               ))}

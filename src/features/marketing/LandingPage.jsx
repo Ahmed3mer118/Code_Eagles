@@ -150,7 +150,6 @@ export default function LandingPage() {
   const heroMetrics = useMemo(
     () => [
       { value: stats?.students || 0, suffix: '+', label: t('landing.metrics.students') },
-      { value: stats?.courses || 0, suffix: '+', label: t('landing.metrics.courses') },
       { value: stats?.teachers || 0, suffix: '+', label: t('landing.metrics.teachers') },
     ],
     [stats, t]
@@ -211,7 +210,7 @@ export default function LandingPage() {
   return (
     <>
       <Helmet>
-        <title>{t('brand.name')} — {t('brand.tagline')}</title>
+        <title>{t('brand.name')} </title>
         <meta name="description" content={t('landing.subheadline')} />
         <link rel="canonical" href={pageUrl} />
         <meta property="og:type" content="website" />
@@ -255,9 +254,9 @@ export default function LandingPage() {
               <h1 className="ce-fade-up mt-5 max-w-3xl text-4xl font-extrabold leading-[1.15] sm:text-5xl lg:text-[3.4rem]">
                 {sectionText(sections, 'hero', 'title', lang, t('landing.headline'))}
               </h1>
-              <p className="ce-fade-up-delay mt-5 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
+              {/* <p className="ce-fade-up-delay mt-5 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
                 {sectionText(sections, 'hero', 'subtitle', lang, t('landing.subheadline'))}
-              </p>
+              </p> */}
 
               <div className="ce-fade-up-delay mt-8 flex flex-wrap gap-3">
                 <Link to="/auth/register?role=student" className="ce-btn ce-btn-accent shadow-lg shadow-[var(--ce-accent)]/25">
@@ -454,9 +453,9 @@ export default function LandingPage() {
       {show('cta') && (
       <section id="teacher-cta" className="ce-section">
         <div className="ce-container">
-          <div className="ce-brand-panel ce-gradient-border overflow-hidden rounded-[2rem] p-8 sm:p-12">
+          <div className="ce-brand-cta-panel overflow-hidden rounded-[2rem] p-8 sm:p-12">
             <div className="max-w-2xl">
-              <span className="ce-eyebrow !border-white/20 !bg-white/10 !text-[var(--ce-accent-soft)]">
+              <span className="ce-eyebrow">
                 {t('landing.teacherEyebrow')}
               </span>
               <h2 className="mt-4 text-3xl font-extrabold text-white sm:text-4xl">
@@ -486,11 +485,7 @@ export default function LandingPage() {
       </section>
       )}
 
-      <div className="ce-sticky-cta lg:hidden">
-        <Link to="/auth/register?role=student" className="ce-btn ce-btn-accent w-full shadow-xl">
-          {t('landing.ctaStartLearning')}
-        </Link>
-      </div>
+     
     </>
   );
 }

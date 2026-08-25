@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { tenantApi, uploadApi } from '../../shared/api/platformApi';
 import resolveMediaUrl from '../../shared/utils/mediaUrl';
+import ToggleSwitch from '../../shared/ui/ToggleSwitch';
 
 const emptyLink = () => ({ label: '', url: '' });const emptyCard = () => ({ title: '', description: '' });
 const emptyReview = () => ({ name: '', comment: '', rating: 5, helpful: 0 });
@@ -43,6 +44,7 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
     coverUrl: tenant.coverUrl || '',
     contactWhatsapp: tenant.contactWhatsapp || '',
     contactFacebook: tenant.contactFacebook || '',
+    listedOnPlatform: tenant.listedOnPlatform !== false,
     theme: {
       primary: tenant.theme?.primary || '#0B1F33',
       accent: tenant.theme?.accent || '#E8A317',
@@ -167,6 +169,16 @@ export default function AcademySettingsEditor({ tenant, onSaved }) {
             <span className="ce-label">{t('settings.description')}</span>
             <textarea className="ce-input min-h-[100px]" value={branding.description} onChange={(e) => setBranding({ ...branding, description: e.target.value })} />
           </label>
+
+          <div className="rounded-xl border border-[var(--ce-border)] bg-[var(--ce-bg)] p-4">
+            <ToggleSwitch
+              label={t('settings.listedOnPlatform')}
+              checked={branding.listedOnPlatform}
+              onChange={(v) => setBranding({ ...branding, listedOnPlatform: v })}
+            />
+            <p className="mt-2 text-xs text-[var(--ce-muted)]">{t('settings.listedOnPlatformHint')}</p>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
               <span className="ce-label">{t('settings.logo')}</span>

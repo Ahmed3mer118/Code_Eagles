@@ -16,6 +16,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { subscriptionApi, uploadApi, FEATURE_KEYS } from '../../shared/api/platformApi';
+import { formatPlanPeriod } from '../../shared/utils/subscriptionDays';
 import resolveMediaUrl from '../../shared/utils/mediaUrl';
 import PageHeader from '../../shared/ui/PageHeader';
 import StatusBadge from '../../shared/ui/StatusBadge';
@@ -72,7 +73,7 @@ function PlanCard({ plan, lang, selected, onSelect, t }) {
       </div>
 
       <p className="mt-1 text-xs text-[var(--ce-muted)]">
-        {t('platformSub.perMonth', { months: plan.periodMonths })}
+        {formatPlanPeriod(plan, t)}
       </p>
 
       {plan.description?.[lang] && (

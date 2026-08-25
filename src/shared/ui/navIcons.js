@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   LayoutTemplate,
   Link2,
+  Mail,
   ReceiptText,
   Settings,
   TicketPercent,
@@ -54,6 +55,7 @@ const NAV_ICONS = {
   activity: Activity,
   tenants: Building2,
   subscriptions: CreditCard,
+  contact: Mail,
   cms: LayoutTemplate,
 };
 

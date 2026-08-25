@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bell } from 'lucide-react';
 import { notificationApi, parentApi } from '../api/platformApi';
@@ -14,6 +14,7 @@ function pickLocalized(value, lang) {
 export default function NotificationBell({ notificationsPath = '/dashboard/student/notifications' }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language?.startsWith('en') ? 'en' : 'ar';
+  const navigate = useNavigate();
   const auth = new AuthServices();
   const role = auth.getRole();
 
@@ -66,6 +67,14 @@ export default function NotificationBell({ notificationsPath = '/dashboard/stude
     }
   };
 
+  const openNotification = async (item) => {
+    if (!item.read) await markRead(item._id);
+    setOpen(false);
+    if (item.data?.url) {
+      navigate(item.data.url);
+    }
+  };
+
   return (
     <div className="relative" ref={panelRef}>
       <button
@@ -97,7 +106,7 @@ export default function NotificationBell({ notificationsPath = '/dashboard/stude
                 <button
                   key={item._id}
                   type="button"
-                  onClick={() => markRead(item._id)}
+                  onClick={() => openNotification(item)}
                   className={`block w-full border-b px-4 py-3 text-start transition hover:bg-[var(--ce-bg)] ${!item.read ? 'bg-amber-50/50' : ''}`}
                 >
                   <p className="text-sm font-semibold text-[var(--ce-primary)]">{pickLocalized(item.title, lang)}</p>

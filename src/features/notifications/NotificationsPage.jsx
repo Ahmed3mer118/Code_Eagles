@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Bell } from 'lucide-react';
@@ -18,6 +19,7 @@ function pickLocalized(value, lang) {
 export default function NotificationsPage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language?.startsWith('en') ? 'en' : 'ar';
+  const navigate = useNavigate();
   const role = new AuthServices().getRole();
 
   const [notifications, setNotifications] = useState([]);
@@ -54,6 +56,11 @@ export default function NotificationsPage() {
     }
   };
 
+  const openNotification = async (item) => {
+    if (!item.read) await markRead(item._id);
+    if (item.data?.url) navigate(item.data.url);
+  };
+
   const markAllRead = async () => {
     try {
       if (role !== 'parent') await notificationApi.markAllRead();
@@ -85,7 +92,11 @@ export default function NotificationsPage() {
           {notifications.map((item) => (
             <article
               key={item._id}
-              className={`rounded-2xl border bg-white p-4 shadow-sm ${!item.read ? 'ring-1 ring-[var(--ce-accent)]' : ''}`}
+              role={item.data?.url ? 'button' : undefined}
+              tabIndex={item.data?.url ? 0 : undefined}
+              onClick={item.data?.url ? () => openNotification(item) : undefined}
+              onKeyDown={item.data?.url ? (e) => { if (e.key === 'Enter') openNotification(item); } : undefined}
+              className={`rounded-2xl border bg-white p-4 shadow-sm ${!item.read ? 'ring-1 ring-[var(--ce-accent)]' : ''} ${item.data?.url ? 'cursor-pointer transition hover:border-[var(--ce-primary)]/30' : ''}`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -98,7 +109,7 @@ export default function NotificationsPage() {
                 {!item.read && (
                   <button
                     type="button"
-                    onClick={() => markRead(item._id)}
+                    onClick={(e) => { e.stopPropagation(); markRead(item._id); }}
                     className="shrink-0 text-xs font-semibold text-[var(--ce-accent)]"
                   >
                     {t('notifications.markRead')}

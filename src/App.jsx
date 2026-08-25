@@ -24,6 +24,8 @@ const StudentDashboard = React.lazy(() => import('./features/dashboards/student/
 const SuperAdminOverview = React.lazy(() => import('./features/dashboards/superAdmin/SuperAdminOverview.jsx'));
 const TenantsPage = React.lazy(() => import('./features/dashboards/superAdmin/TenantsPage.jsx'));
 const SubscriptionsPage = React.lazy(() => import('./features/dashboards/superAdmin/SubscriptionsPage.jsx'));
+const SubscriptionRequestsPage = React.lazy(() => import('./features/dashboards/superAdmin/SubscriptionRequestsPage.jsx'));
+const ContactMessagesPage = React.lazy(() => import('./features/dashboards/superAdmin/ContactMessagesPage.jsx'));
 const PlatformCmsPage = React.lazy(() => import('./features/dashboards/superAdmin/PlatformCmsPage.jsx'));
 const TeacherOverview = React.lazy(() => import('./features/dashboards/teacher/TeacherOverview.jsx'));
 const TeacherPlatformSubscriptionPage = React.lazy(() => import('./features/teacher/TeacherPlatformSubscriptionPage.jsx'));
@@ -95,6 +97,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <SuperAdminOverview /> },
       { path: 'tenants', element: <TenantsPage /> },
+      { path: 'subscription-requests', element: <SubscriptionRequestsPage /> },
+      { path: 'contact-messages', element: <ContactMessagesPage /> },
       { path: 'subscriptions', element: <SubscriptionsPage /> },
       { path: 'cms', element: <PlatformCmsPage /> },
       { path: 'activity', element: <ActivityCenterPage /> },
