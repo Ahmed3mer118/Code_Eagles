@@ -1,14 +1,55 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { jwtDecode } from "jwt-decode";
 import getApiErrorMessage from "../utils/apiError";
+import { getApiUrl } from "../config/apiBase";
 
+// ============================================================
+// Types
+// ============================================================
+
+/**
+ * ✅ الباك بيبعت في الـ JWT:
+ *   - sub (user id)
+ *   - email
+ *   - platformRole (مش role)
+ *   - jti
+ */
 type DecodedToken = {
-  userId?: string;
-  role?: string;
+  sub?: string;
+  userId?: string;      // للتوافق مع tokens قديمة
+  email?: string;
+  platformRole?: string; // ✅ ده اللي الباك بيبعته
+  role?: string;         // للتوافق مع tokens قديمة
   tenantId?: string | null;
   exp?: number;
   name?: string;
 };
+
+export type SignupAccountType = "teacher" | "student" | "parent";
+export type SignupPreferredLanguage = "ar" | "en";
+export type GradeLevel = "grade_10" | "grade_11" | "grade_12";
+
+export interface RegisterPayload {
+  accountType: SignupAccountType;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  confirmPassword: string;
+  preferredLanguage?: SignupPreferredLanguage;
+  // teacher only
+  academyName?: string;
+  requestedPlanId?: string;
+  // student only
+  gradeLevel?: GradeLevel;
+  parentContact?: string;
+  // parent only
+  childContact?: string;
+}
+
+// ============================================================
+// Constants
+// ============================================================
 
 const ROLE_DASHBOARD: Record<string, string> = {
   super_admin: "/dashboard/super-admin",
@@ -16,17 +57,26 @@ const ROLE_DASHBOARD: Record<string, string> = {
   assistant: "/dashboard/assistant",
   parent: "/dashboard/parent",
   student: "/dashboard/student",
-  admin: "/dashboard/super-admin",
-  instructor: "/dashboard/teacher",
-  user: "/dashboard/student",
 };
 
 const TOKEN_KEY = "token";
-const REFRESH_ENDPOINT = "/api/auth/refresh";
-/** Endpoints that answer 401 for wrong credentials, not for an expired session. */
-const NO_REFRESH_ENDPOINTS = [REFRESH_ENDPOINT, "/api/auth/login", "/api/auth/register", "/api/auth/verify-email"];
+const REFRESH_TOKEN_KEY = "refreshToken";
 
-const normalizeRole = (role?: string | null) => {
+const REFRESH_ENDPOINT = "/auth/refresh";
+const NO_REFRESH_ENDPOINTS = [
+  REFRESH_ENDPOINT,
+  "/auth/login",
+  "/auth/register",
+  "/auth/verify-email",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+];
+
+// ============================================================
+// Helpers
+// ============================================================
+
+const normalizeRole = (role?: string | null): string | null => {
   if (!role) return null;
   if (role === "admin") return "super_admin";
   if (role === "instructor") return "teacher";
@@ -34,7 +84,7 @@ const normalizeRole = (role?: string | null) => {
   return role;
 };
 
-const readToken = () => {
+const readToken = (): string => {
   try {
     return localStorage.getItem(TOKEN_KEY) || "";
   } catch {
@@ -42,13 +92,20 @@ const readToken = () => {
   }
 };
 
-/**
- * One axios instance for the whole app: every `new AuthServices()` shares the same
- * token, the same tenant header and the same refresh cycle, so parallel requests
- * can never race each other into a false "session expired".
- */
+const readRefreshToken = (): string => {
+  try {
+    return localStorage.getItem(REFRESH_TOKEN_KEY) || "";
+  } catch {
+    return "";
+  }
+};
+
+// ============================================================
+// Axios instance
+// ============================================================
+
 const apiClient: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
+  baseURL: getApiUrl(),
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });
@@ -58,7 +115,11 @@ let mePromise: Promise<unknown> | null = null;
 let sessionExpiredNotified = false;
 
 const clearSession = (notifySessionExpired = false) => {
-  if (notifySessionExpired && !sessionExpiredNotified && typeof window !== "undefined") {
+  if (
+    notifySessionExpired &&
+    !sessionExpiredNotified &&
+    typeof window !== "undefined"
+  ) {
     sessionExpiredNotified = true;
     import("react-hot-toast").then(({ default: toast }) => {
       toast.error(getApiErrorMessage({ response: { status: 401 } }));
@@ -68,11 +129,16 @@ const clearSession = (notifySessionExpired = false) => {
     }, 4000);
   }
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem("tokenExpiration");
   localStorage.removeItem("ce_user_name");
   localStorage.removeItem("ce_tenant");
   sessionStorage.removeItem("ce_tenant_slug");
 };
+
+// ============================================================
+// Request interceptor
+// ============================================================
 
 apiClient.interceptors.request.use((config) => {
   const token = readToken();
@@ -90,20 +156,31 @@ apiClient.interceptors.request.use((config) => {
       config.headers["X-Tenant-Slug"] = slug;
     }
   } catch {
-    /* tenant header is optional */
+    /* optional */
   }
 
   return config;
 });
 
-/** Concurrent 401s wait on a single refresh call instead of triggering one each. */
+// ============================================================
+// Refresh token
+// ============================================================
+
 const refreshAccessToken = (): Promise<string | null> => {
   if (!refreshPromise) {
+    const refreshToken = readRefreshToken();
     refreshPromise = apiClient
-      .post(REFRESH_ENDPOINT, {}, { withCredentials: true })
+      .post(
+        REFRESH_ENDPOINT,
+        refreshToken ? { refreshToken } : {},
+        { withCredentials: true }
+      )
       .then((response) => {
-        const token = response.data?.accessToken || null;
+        const token =
+          response.data?.accessToken || response.data?.token || null;
+        const newRefresh = response.data?.refreshToken || null;
         if (token) localStorage.setItem(TOKEN_KEY, token);
+        if (newRefresh) localStorage.setItem(REFRESH_TOKEN_KEY, newRefresh);
         return token;
       })
       .catch(() => null)
@@ -114,10 +191,16 @@ const refreshAccessToken = (): Promise<string | null> => {
   return refreshPromise;
 };
 
+// ============================================================
+// Response interceptor — auto refresh on 401
+// ============================================================
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined;
+    const originalRequest = error.config as
+      | (AxiosRequestConfig & { _retry?: boolean })
+      | undefined;
     const url = originalRequest?.url || "";
     const isRetryable =
       error.response?.status === 401 &&
@@ -141,62 +224,95 @@ apiClient.interceptors.response.use(
   }
 );
 
+// ============================================================
+// AuthServices
+// ============================================================
+
 class AuthServices {
   private axiosInstance: AxiosInstance = apiClient;
 
-  async register(userData: Record<string, unknown> | string) {
-    const response = await this.axiosInstance.post(`/api/auth/register`, userData);
+  // ------------------------------------------------------------
+  // EMAIL / PASSWORD AUTH
+  // ------------------------------------------------------------
+
+  async register(payload: RegisterPayload) {
+    const response = await this.axiosInstance.post(`/auth/register`, payload);
     return response.data;
   }
 
-  async verifyEmail(email: string, code: string) {
-    const response = await this.axiosInstance.post(`/api/auth/verify-email`, { email, code });
-    if (response.data.accessToken) {
-      this.setToken(response.data.accessToken);
-      if (response.data.user?.name) localStorage.setItem("ce_user_name", response.data.user.name);
-      this.storeTenant(response.data.tenant);
-    }
+  /**
+   * ✅ الباك بيرجع { message: 'Email verified successfully' } بس
+   * (مفيش tokens — المستخدم لازم يسجل دخول بعد كده)
+   */
+  async verifyEmail(token: string) {
+    const response = await this.axiosInstance.post(`/auth/verify-email`, {
+      token,
+    });
+    return response.data;
+  }
+
+  async resendVerification(email: string) {
+    const response = await this.axiosInstance.post(
+      `/auth/resend-verification`,
+      { email }
+    );
     return response.data;
   }
 
   async login(email: string, password: string) {
     const response = await this.axiosInstance.post(
-      `/api/auth/login`,
+      `/auth/login`,
       { email, password },
       { withCredentials: true }
     );
-    if (response.data.accessToken) this.setToken(response.data.accessToken);
-    if (response.data.user?.name) localStorage.setItem("ce_user_name", response.data.user.name);
-    if (response.data.user?.preferredLanguage) localStorage.setItem("ce_lang", response.data.user.preferredLanguage);
-    this.storeTenant(response.data.tenant);
-    return response.data;
-  }
 
-  /** A signed-in account must never inherit the academy left behind by a previous session. */
-  private storeTenant(tenant?: { slug?: string | null } | null) {
-    if (tenant) {
-      localStorage.setItem("ce_tenant", JSON.stringify(tenant));
-      if (tenant.slug) sessionStorage.setItem("ce_tenant_slug", tenant.slug);
-      else sessionStorage.removeItem("ce_tenant_slug");
-      return;
+    if (response.data?.accessToken) {
+      this.setToken(response.data.accessToken);
+      if (response.data.refreshToken) {
+        localStorage.setItem(REFRESH_TOKEN_KEY, response.data.refreshToken);
+      }
     }
-    localStorage.removeItem("ce_tenant");
-    sessionStorage.removeItem("ce_tenant_slug");
+
+    // ✅ الباك بيبعت user: { id, email, name, platformRole, preferredLanguage }
+    if (response.data.user?.name) {
+      localStorage.setItem("ce_user_name", response.data.user.name);
+    }
+    if (response.data.user?.preferredLanguage) {
+      localStorage.setItem("ce_lang", response.data.user.preferredLanguage);
+    }
+    this.storeTenant(response.data.tenant);
+
+    return response.data;
   }
 
   async forgotPassword(email: string) {
-    const response = await this.axiosInstance.post(`/api/auth/forgot-password`, { email });
+    const response = await this.axiosInstance.post(`/auth/forgot-password`, {
+      email,
+    });
     return response.data;
   }
 
-  async resetPassword(email: string, newPassword: string, resetCode: string) {
-    const response = await this.axiosInstance.post(`/api/auth/reset-password`, { email, newPassword, resetCode });
+  async resetPassword(
+    token: string,
+    password: string,
+    confirmPassword: string
+  ) {
+    const response = await this.axiosInstance.post(`/auth/reset-password`, {
+      token,
+      password,
+      confirmPassword,
+    });
     return response.data;
   }
 
   async logout() {
     try {
-      const response = await this.axiosInstance.post(`/api/auth/logout`, {}, { withCredentials: true });
+      const refreshToken = readRefreshToken();
+      const response = await this.axiosInstance.post(
+        `/auth/logout`,
+        refreshToken ? { refreshToken } : {},
+        { withCredentials: true }
+      );
       this.handleLogout();
       return response.data;
     } catch (error) {
@@ -205,14 +321,86 @@ class AuthServices {
     }
   }
 
+  async logoutAll() {
+    try {
+      const response = await this.axiosInstance.post(`/auth/logout-all`, {});
+      this.handleLogout();
+      return response.data;
+    } catch (error) {
+      this.handleLogout();
+      throw error;
+    }
+  }
+
+  // ------------------------------------------------------------
+  // GOOGLE OAUTH
+  // ------------------------------------------------------------
+
   /**
-   * The shell, the feature flags hook and the landing page all need the profile on
-   * mount; sharing the in-flight request turns three round trips into one.
+   * ✅ URL بيتوجه المستخدم ليه عشان يبدأ Google OAuth flow
+   *
+   * ⚠️ في dev، getApiUrl() بترجع "" (relative)
+   *     → عشان نستفيد من proxy بتاع Vite ونتفادى CORS
+   * ⚠️ في prod، بترجع absolute URL
+   *
+   * ملاحظة: مبنستخدش new URL() عشان الـ relative URLs
+   *         بتكسرها. بنبني الـ query يدويًا.
    */
+  getGoogleAuthUrl(returnTo?: string): string {
+    const base = getApiUrl();
+    const path = `${base}/auth/google`;
+
+    if (!returnTo) return path;
+
+    const sep = path.includes("?") ? "&" : "?";
+    return `${path}${sep}state=${encodeURIComponent(returnTo)}`;
+  }
+
+  /**
+   * ✅ بيعالج callback الـ Google
+   * الفرونت بيستدعى الدالة دي في صفحة /auth/google/callback
+   * بعد ما الباك يرجّع accessToken في الـ query params
+   */
+  handleGoogleCallback(params: URLSearchParams) {
+    const accessToken = params.get("accessToken");
+    const refreshToken = params.get("refreshToken");
+    const name = params.get("name");
+    const role = params.get("role");
+
+    if (!accessToken) {
+      throw new Error("Missing accessToken from Google callback");
+    }
+
+    this.setToken(accessToken);
+    if (refreshToken) this.setRefreshToken(refreshToken);
+    if (name) localStorage.setItem("ce_user_name", name);
+
+    return { accessToken, refreshToken, name, role };
+  }
+
+  async oauthLink(provider: string, code: string) {
+    const response = await this.axiosInstance.post(
+      `/auth/oauth/${provider}/link`,
+      { code }
+    );
+    return response.data;
+  }
+
+  async oauthUnlink(provider: string) {
+    const response = await this.axiosInstance.delete(
+      `/auth/oauth/${provider}/unlink`
+    );
+    return response.data;
+  }
+
+  // ------------------------------------------------------------
+  // PROFILE
+  // ------------------------------------------------------------
+
   async me() {
     if (!mePromise) {
       mePromise = this.axiosInstance
-        .get(`/api/auth/me`)
+        .get(`/auth/me`)
         .then((response) => response.data)
         .finally(() => {
           mePromise = null;
@@ -221,23 +409,50 @@ class AuthServices {
     return mePromise;
   }
 
+  async updateProfile(payload: {
+    name?: string;
+    phoneNumber?: string;
+    gradeLevel?: string;
+  }) {
+    const response = await this.axiosInstance.patch("/auth/profile", payload);
+    return response.data;
+  }
+
+  // ------------------------------------------------------------
+  // TOKEN / SESSION HELPERS
+  // ------------------------------------------------------------
+
   setToken(token: string) {
     localStorage.setItem(TOKEN_KEY, token);
+  }
+
+  setRefreshToken(token: string) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, token);
   }
 
   getToken(): string {
     return readToken();
   }
 
+  getRefreshToken(): string {
+    return readRefreshToken();
+  }
+
   decoded(token: string): DecodedToken {
     return jwtDecode(token);
   }
 
+  /**
+   * ✅ الباك بيبعت platformRole مش role
+   * فبندور على الاتنين للتوافق
+   */
   getRole(): string | null {
     const token = this.getToken();
     if (!token) return null;
     try {
-      return normalizeRole(this.decoded(token)?.role || null);
+      const d = this.decoded(token);
+      const raw = d?.platformRole || d?.role || null;
+      return normalizeRole(raw);
     } catch {
       return null;
     }
@@ -250,6 +465,18 @@ class AuthServices {
 
   getUserName(): string {
     return localStorage.getItem("ce_user_name") || "User";
+  }
+
+  /** ✅ الباك بيستخدم sub للـ user id */
+  getUserId(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const d = this.decoded(token);
+      return d?.sub || d?.userId || null;
+    } catch {
+      return null;
+    }
   }
 
   getTenantId(): string | null {
@@ -278,17 +505,27 @@ class AuthServices {
     return refreshAccessToken();
   }
 
-  async updateProfile(payload: { name?: string; phone_number?: string; gradeLevel?: string }) {
-    const response = await this.axiosInstance.patch("/api/auth/profile", payload);
-    return response.data;
-  }
-
   handleLogout(notifySessionExpired = false) {
     clearSession(notifySessionExpired);
   }
 
   getAxiosInstance(): AxiosInstance {
     return this.axiosInstance;
+  }
+
+  // ------------------------------------------------------------
+  // PRIVATE
+  // ------------------------------------------------------------
+
+  private storeTenant(tenant?: { slug?: string | null } | null) {
+    if (tenant) {
+      localStorage.setItem("ce_tenant", JSON.stringify(tenant));
+      if (tenant.slug) sessionStorage.setItem("ce_tenant_slug", tenant.slug);
+      else sessionStorage.removeItem("ce_tenant_slug");
+      return;
+    }
+    localStorage.removeItem("ce_tenant");
+    sessionStorage.removeItem("ce_tenant_slug");
   }
 }
 

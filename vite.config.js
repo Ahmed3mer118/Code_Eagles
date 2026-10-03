@@ -4,6 +4,7 @@ import path from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const API_ORIGIN = env.VITE_API_URL || 'http://localhost:3000';
 
   return {
     plugins: [react()],
@@ -13,21 +14,14 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      historyApiFallback: true,
+      port: 5173,
       proxy: {
-        '/sitemap.xml': {
-          target: env.VITE_API_URL || 'http://localhost:8000',
-          changeOrigin: true,
-        },
-        '/uploads': {
-          target: env.VITE_API_URL || 'http://localhost:8000',
-          changeOrigin: true,
-        },
+        '/api': { target: API_ORIGIN, changeOrigin: true },
+        '/uploads': { target: API_ORIGIN, changeOrigin: true },
+        '/sitemap.xml': { target: API_ORIGIN, changeOrigin: true },
       },
     },
-    build: {
-      outDir: 'dist',
-    },
+    build: { outDir: 'dist' },
     publicDir: 'public',
   };
 });

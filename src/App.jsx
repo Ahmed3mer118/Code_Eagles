@@ -7,30 +7,55 @@ import LoadingScreen from './shared/ui/LoadingScreen.jsx';
 import RoleGuard from './shared/guards/RoleGuard.jsx';
 import MarketingLayout from './shared/layouts/MarketingLayout.jsx';
 
+// ============================================================
+// Marketing / Public
+// ============================================================
 const LandingPage = React.lazy(() => import('./features/marketing/LandingPage.jsx'));
 const ContactPage = React.lazy(() => import('./features/contact/ContactPage.jsx'));
+const AcademyPublicPage = React.lazy(() => import('./features/academy/AcademyPublicPage.jsx'));
+
+// ============================================================
+// Auth
+// ============================================================
 const LoginPage = React.lazy(() => import('./features/auth/LoginPage.jsx'));
 const RegisterPage = React.lazy(() => import('./features/auth/RegisterPage.jsx'));
 const VerifyEmailPage = React.lazy(() => import('./features/auth/VerifyEmailPage.jsx'));
 const ForgotPasswordPage = React.lazy(() => import('./features/auth/ForgotPasswordPage.jsx'));
-const NotFoundPage = React.lazy(() => import('./shared/pages/NotFoundPage.jsx'));
+const GoogleCallbackPage = React.lazy(() => import('./features/auth/GoogleCallbackPage.jsx'));
 
+// ============================================================
+// Dashboards
+// ============================================================
 const SuperAdminDashboard = React.lazy(() => import('./features/dashboards/superAdmin/SuperAdminDashboard.jsx'));
 const TeacherDashboard = React.lazy(() => import('./features/dashboards/teacher/TeacherDashboard.jsx'));
 const AssistantDashboard = React.lazy(() => import('./features/dashboards/assistant/AssistantDashboard.jsx'));
 const ParentDashboard = React.lazy(() => import('./features/dashboards/parent/ParentDashboard.jsx'));
 const StudentDashboard = React.lazy(() => import('./features/dashboards/student/StudentDashboard.jsx'));
 
+// ============================================================
+// SuperAdmin pages
+// ============================================================
 const SuperAdminOverview = React.lazy(() => import('./features/dashboards/superAdmin/SuperAdminOverview.jsx'));
 const TenantsPage = React.lazy(() => import('./features/dashboards/superAdmin/TenantsPage.jsx'));
 const SubscriptionsPage = React.lazy(() => import('./features/dashboards/superAdmin/SubscriptionsPage.jsx'));
 const SubscriptionRequestsPage = React.lazy(() => import('./features/dashboards/superAdmin/SubscriptionRequestsPage.jsx'));
 const ContactMessagesPage = React.lazy(() => import('./features/dashboards/superAdmin/ContactMessagesPage.jsx'));
 const PlatformCmsPage = React.lazy(() => import('./features/dashboards/superAdmin/PlatformCmsPage.jsx'));
+
+// ============================================================
+// Teacher pages
+// ============================================================
 const TeacherOverview = React.lazy(() => import('./features/dashboards/teacher/TeacherOverview.jsx'));
-const TeacherPlatformSubscriptionPage = React.lazy(() => import('./features/teacher/TeacherPlatformSubscriptionPage.jsx'));
 const TeacherSubscriptionPlanPage = React.lazy(() => import('./features/teacher/TeacherSubscriptionPlanPage.jsx'));
 const TeacherPlatformPaymentPage = React.lazy(() => import('./features/teacher/TeacherPlatformPaymentPage.jsx'));
+const PendingJoinRequestsPage = React.lazy(() => import('./features/teacher/PendingJoinRequestsPage.jsx'));
+const TeacherResultsPage = React.lazy(() => import('./features/teacher/TeacherResultsPage.jsx'));
+const TeacherReportsPage = React.lazy(() => import('./features/teacher/TeacherReportsPage.jsx'));
+const TeacherStudentsPage = React.lazy(() => import('./features/teacher/TeacherStudentsPage.jsx'));
+
+// ============================================================
+// Shared feature pages
+// ============================================================
 const SubjectsPage = React.lazy(() => import('./features/content/ContentHubPage.jsx'));
 const GroupsPage = React.lazy(() => import('./features/groups/GroupsPage.jsx'));
 const AssistantsPage = React.lazy(() => import('./features/assistants/AssistantsPage.jsx'));
@@ -40,38 +65,57 @@ const PaymentPlansPage = React.lazy(() => import('./features/payments/PaymentPla
 const PromoCodesPage = React.lazy(() => import('./features/payments/PromoCodesPage.jsx'));
 const PaymentHistoryPage = React.lazy(() => import('./features/payments/PaymentHistoryPage.jsx'));
 const PaymentSubmitPage = React.lazy(() => import('./features/payments/PaymentSubmitPage.jsx'));
+
+// ============================================================
+// Student pages
+// ============================================================
 const StudentSubscriptionPage = React.lazy(() => import('./features/student/StudentSubscriptionPage.jsx'));
 const StudentCoursesPage = React.lazy(() => import('./features/student/StudentCoursesPage.jsx'));
 const StudentJoinPage = React.lazy(() => import('./features/student/StudentJoinPage.jsx'));
 const StudentQuizzesPage = React.lazy(() => import('./features/student/StudentQuizzesPage.jsx'));
+const StudentLeaderboardPage = React.lazy(() => import('./features/student/StudentLeaderboardPage.jsx'));
+const StudentOverviewPage = React.lazy(() => import('./features/student/StudentOverviewPage.jsx'));
+const StudentAcademySelectPage = React.lazy(() => import('./features/student/StudentAcademySelectPage.jsx'));
+const StudentLinkRequestsPage = React.lazy(() => import('./features/student/StudentLinkRequestsPage.jsx'));
+
+// ============================================================
+// Exams
+// ============================================================
 const ExamPreFlightPage = React.lazy(() => import('./features/exams/pages/ExamPreFlightPage.jsx'));
 const ExamTakingPage = React.lazy(() => import('./features/exams/pages/ExamTakingPage.jsx'));
 const ExamResultsPage = React.lazy(() => import('./features/exams/pages/ExamResultsPage.jsx'));
 const ExamHistoryPage = React.lazy(() => import('./features/exams/pages/ExamHistoryPage.jsx'));
 const AttemptReviewPage = React.lazy(() => import('./features/exams/pages/AttemptReviewPage.jsx'));
-const PendingJoinRequestsPage = React.lazy(() => import('./features/teacher/PendingJoinRequestsPage.jsx'));
-const TeacherResultsPage = React.lazy(() => import('./features/teacher/TeacherResultsPage.jsx'));
-const TeacherReportsPage = React.lazy(() => import('./features/teacher/TeacherReportsPage.jsx'));
-const TeacherStudentsPage = React.lazy(() => import('./features/teacher/TeacherStudentsPage.jsx'));
-const StudentLeaderboardPage = React.lazy(() => import('./features/student/StudentLeaderboardPage.jsx'));
-const SettingsPage = React.lazy(() => import('./features/settings/SettingsPage.jsx'));
+
+// ============================================================
+// Assignments
+// ============================================================
 const TeacherAssignmentsPage = React.lazy(() => import('./features/assignments/TeacherAssignmentsPage.jsx'));
 const AssignmentReviewPage = React.lazy(() => import('./features/assignments/AssignmentReviewPage.jsx'));
 const StudentAssignmentsPage = React.lazy(() => import('./features/assignments/StudentAssignmentsPage.jsx'));
-const StudentOverviewPage = React.lazy(() => import('./features/student/StudentOverviewPage.jsx'));
-const StudentAcademySelectPage = React.lazy(() => import('./features/student/StudentAcademySelectPage.jsx'));
+
+// ============================================================
+// Parent pages
+// ============================================================
 const ParentChildrenPage = React.lazy(() => import('./features/parent/ParentChildrenPage.jsx'));
 const ParentLinkRequestsPage = React.lazy(() => import('./features/parent/ParentLinkRequestsPage.jsx'));
 const ParentPaymentsPage = React.lazy(() => import('./features/parent/ParentPaymentsPage.jsx'));
-const StudentLinkRequestsPage = React.lazy(() => import('./features/student/StudentLinkRequestsPage.jsx'));
+
+// ============================================================
+// Misc
+// ============================================================
+const SettingsPage = React.lazy(() => import('./features/settings/SettingsPage.jsx'));
 const ActivityCenterPage = React.lazy(() => import('./features/activity/ActivityCenterPage.jsx'));
 const NotificationsPage = React.lazy(() => import('./features/notifications/NotificationsPage.jsx'));
-const AcademyPublicPage = React.lazy(() => import('./features/academy/AcademyPublicPage.jsx'));
+const NotFoundPage = React.lazy(() => import('./shared/pages/NotFoundPage.jsx'));
 
 const withRole = (roles, element) => <RoleGuard roles={roles}>{element}</RoleGuard>;
 
 /** Built once at module level: rebuilding it on every render would remount every page. */
 const router = createBrowserRouter([
+  // ============================================================
+  // Public / Marketing
+  // ============================================================
   {
     path: '/',
     element: <MarketingLayout />,
@@ -82,6 +126,10 @@ const router = createBrowserRouter([
       { path: 'contact', element: <ContactPage /> },
     ],
   },
+
+  // ============================================================
+  // Auth
+  // ============================================================
   {
     path: '/auth',
     children: [
@@ -89,8 +137,13 @@ const router = createBrowserRouter([
       { path: 'register', element: <RegisterPage /> },
       { path: 'verif-email', element: <VerifyEmailPage /> },
       { path: 'forget-password', element: <ForgotPasswordPage /> },
+      { path: 'google/callback', element: <GoogleCallbackPage /> },
     ],
   },
+
+  // ============================================================
+  // Super Admin
+  // ============================================================
   {
     path: '/dashboard/super-admin',
     element: withRole(['super_admin'], <SuperAdminDashboard />),
@@ -106,6 +159,10 @@ const router = createBrowserRouter([
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
+
+  // ============================================================
+  // Teacher
+  // ============================================================
   {
     path: '/dashboard/teacher',
     element: withRole(['teacher'], <TeacherDashboard />),
@@ -134,6 +191,10 @@ const router = createBrowserRouter([
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
+
+  // ============================================================
+  // Assistant
+  // ============================================================
   {
     path: '/dashboard/assistant',
     element: withRole(['assistant'], <AssistantDashboard />),
@@ -152,6 +213,10 @@ const router = createBrowserRouter([
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
+
+  // ============================================================
+  // Parent
+  // ============================================================
   {
     path: '/dashboard/parent',
     element: withRole(['parent'], <ParentDashboard />),
@@ -164,6 +229,10 @@ const router = createBrowserRouter([
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
+
+  // ============================================================
+  // Student
+  // ============================================================
   {
     path: '/dashboard/student',
     element: withRole(['student'], <StudentDashboard />),
@@ -187,13 +256,25 @@ const router = createBrowserRouter([
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
+
+  // ============================================================
+  // Academy public page
+  // ============================================================
   {
     path: '/academy/:slug',
     element: <AcademyPublicPage />,
   },
+
+  // ============================================================
+  // Redirects
+  // ============================================================
   { path: '/dashboard', element: <Navigate to="/dashboard/super-admin" replace /> },
   { path: '/instructor', element: <Navigate to="/dashboard/teacher" replace /> },
   { path: '/my-courses', element: <Navigate to="/dashboard/student/courses" replace /> },
+
+  // ============================================================
+  // 404
+  // ============================================================
   { path: '*', element: <NotFoundPage /> },
 ]);
 

@@ -1,7 +1,15 @@
-const PRODUCTION_API = 'https://api-codeeagles-cpq8.vercel.app';
+const PRODUCTION_API = 'http://localhost:3000';
 
-/** API origin used for uploads and authenticated requests. */
+const API_PREFIX = 'api';
+const API_VERSION = 'v1';
+
+/**
+ * API origin (بدون prefix).
+ * في dev → '' (relative) عشان يعدي على proxy بتاع Vite ونتفادى CORS.
+ */
 export function getApiBase() {
+  if (import.meta.env.DEV) return '';
+
   const fromEnv = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
   if (fromEnv) return fromEnv;
 
@@ -12,7 +20,13 @@ export function getApiBase() {
     }
   }
 
-  return 'http://localhost:8000';
+  return PRODUCTION_API;
 }
 
+/** Base URL كامل مع الـ version prefix — للـ axios */
+export function getApiUrl() {
+  return `${getApiBase()}/${API_PREFIX}/${API_VERSION}`;
+}
+
+export { API_PREFIX, API_VERSION };
 export default getApiBase;
