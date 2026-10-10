@@ -1,9 +1,0 @@
-User-agent: *
-User-agent: GPTBot
-Disallow: /dashboard
-Disallow: /dashboard/teacher
-Disallow: /auth/
-
-Allow: /
-
-Sitemap: https://www.code-eagles.com/sitemap.xml

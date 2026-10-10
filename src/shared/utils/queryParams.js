@@ -1,24 +1,18 @@
-const PLACEHOLDERS = new Set(['undefined', 'null']);
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_PREFIX = import.meta.env.VITE_API_PREFIX || 'api';
+const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1';
 
-/** Query values injected from missing state (`undefined`, `null`, …) must be treated as absent. */
-export function cleanParamValue(value) {
-  const trimmed = String(value ?? '').trim();
-  if (!trimmed || PLACEHOLDERS.has(trimmed.toLowerCase())) return '';
-  return trimmed;
-}
+export const API_BASE = `${API_BASE_URL}/${API_PREFIX}/${API_VERSION}`;
+export const API_ORIGIN = API_BASE_URL;
 
-/** Reads a query param and drops placeholder values. */
-export function getCleanParam(params, key) {
-  if (!params?.get) return '';
-  return cleanParamValue(params.get(key));
-}
+export const STORAGE_KEYS = {
+  ACCESS_TOKEN: 'ce_access_token',
+  REFRESH_TOKEN: 'ce_refresh_token',
+  TENANT_ID: 'ce_tenant_id',
+  USER: 'ce_user',
+};
 
-/** Builds a query string from an object, skipping empty and placeholder values. */
-export function buildQueryString(values = {}) {
-  const params = new URLSearchParams();
-  Object.entries(values).forEach(([key, value]) => {
-    const clean = cleanParamValue(value);
-    if (clean) params.set(key, clean);
-  });
-  return params.toString();
-}
+export const GOOGLE_OAUTH_URL =
+  import.meta.env.VITE_GOOGLE_OAUTH_URL || `${API_BASE}/auth/google`;
+
+export default API_BASE;

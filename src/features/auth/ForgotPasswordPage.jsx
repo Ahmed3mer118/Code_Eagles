@@ -1,86 +1,111 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import toast, { Toaster } from 'react-hot-toast';
-import AuthServices from '../../shared/api/authService';
-import getApiErrorMessage from '../../shared/utils/apiError';
+import { Link, useSearchParams } from 'react-router-dom';
+import authService from '../../shared/api/authService';
+import { extractApiError } from '../../shared/utils/apiError';
+import { useI18n } from '../../shared/i18n';
+import AuthLayout, { AuthInput, AuthButton, AuthAlert } from './AuthLayout';
 
 export default function ForgotPasswordPage() {
-  const { t } = useTranslation();
-  const auth = new AuthServices();
-  const [step, setStep] = useState(1);
+  const { t } = useI18n();
+  const [searchParams] = useSearchParams();
+  const tokenFromUrl = searchParams.get('token');
+  const [mode] = useState(tokenFromUrl ? 'reset' : 'forgot');
   const [email, setEmail] = useState('');
-  const [resetCode, setResetCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
-  const requestCode = async (e) => {
+  const onForgot = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setError(''); setMessage(''); setLoading(true);
     try {
-      await auth.forgotPassword(email);
-      toast.success(t('common.success'));
-      setStep(2);
+      await authService.forgotPassword(email);
+      setMessage(t('auth.emailSentMessage'));
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      setError(extractApiError(err).message);
     } finally {
       setLoading(false);
     }
   };
 
-  const reset = async (e) => {
+  const onReset = async (e) => {
     e.preventDefault();
+    setError(''); setMessage('');
+    if (password !== confirmPassword)
+      return setError(t('auth.passwordsDontMatch'));
     setLoading(true);
     try {
-      await auth.resetPassword(email, newPassword, resetCode);
-      toast.success(t('common.success'));
-      setStep(3);
+      await authService.resetPassword(tokenFromUrl, password, confirmPassword);
+      setMessage(t('auth.resetSuccess'));
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      setError(extractApiError(err).message);
     } finally {
       setLoading(false);
     }
   };
+
+  const title =
+    mode === 'forgot' ? t('auth.forgotPasswordTitle') : t('auth.resetPassword');
+  const subtitle =
+    mode === 'forgot'
+      ? t('auth.forgotPasswordSubtitle')
+      : t('auth.resetPasswordSubtitle');
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10">
-      <Toaster position="top-center" />
-      <div className="ce-card w-full max-w-md p-6 md:p-8">
-        <h1 className="mb-6 text-center text-2xl font-extrabold text-[var(--ce-primary)]">
-          {t('auth.forgotPassword')}
-        </h1>
+    <AuthLayout title={title} subtitle={subtitle}>
+      <AuthAlert>{error}</AuthAlert>
+      <AuthAlert type="success">{message}</AuthAlert>
 
-        {step === 1 && (
-          <form onSubmit={requestCode}>
-            <label className="ce-label">{t('auth.email')}</label>
-            <input type="email" className="ce-input mb-5" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <button type="submit" className="ce-btn ce-btn-primary w-full" disabled={loading}>
-              {loading ? t('common.loading') : t('common.save')}
-            </button>
-          </form>
-        )}
+      {mode === 'forgot' ? (
+        <form onSubmit={onForgot} className="space-y-4">
+          <AuthInput
+            label={t('auth.email')}
+            type="email"
+            required
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <AuthButton type="submit" loading={loading}>
+            {loading ? t('auth.sending') : t('auth.save')}
+          </AuthButton>
+        </form>
+      ) : (
+        <form onSubmit={onReset} className="space-y-4">
+          <AuthInput
+            label={t('auth.password')}
+            type="password"
+            required
+            minLength={8}
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <AuthInput
+            label={t('auth.confirmPassword')}
+            type="password"
+            required
+            minLength={8}
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          <AuthButton type="submit" loading={loading}>
+            {loading ? t('auth.saving') : t('auth.resetPassword')}
+          </AuthButton>
+        </form>
+      )}
 
-        {step === 2 && (
-          <form onSubmit={reset}>
-            <label className="ce-label">{t('auth.verifyCode')}</label>
-            <input className="ce-input mb-4" value={resetCode} onChange={(e) => setResetCode(e.target.value)} required />
-            <label className="ce-label">{t('auth.password')}</label>
-            <input type="password" className="ce-input mb-5" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} minLength={10} required />
-            <button type="submit" className="ce-btn ce-btn-primary w-full" disabled={loading}>
-              {loading ? t('common.loading') : t('common.save')}
-            </button>
-          </form>
-        )}
-
-        {step === 3 && (
-          <p className="text-center text-[var(--ce-muted)]">
-            {t('common.success')} —{' '}
-            <Link to="/auth/login" className="font-bold text-[var(--ce-primary)]">
-              {t('nav.login')}
-            </Link>
-          </p>
-        )}
-      </div>
-    </div>
+      <p className="mt-6 text-center text-sm text-slate-600">
+        <Link
+          to="/login"
+          className="text-[#1a3a5c] font-bold hover:underline"
+        >
+          {t('auth.backToLogin')}
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }

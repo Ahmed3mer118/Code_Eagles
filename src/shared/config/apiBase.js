@@ -1,18 +1,18 @@
-const PRODUCTION_API = 'https://api-codeeagles-cpq8.vercel.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_PREFIX = import.meta.env.VITE_API_PREFIX || 'api';
+const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1';
 
-/** API origin used for uploads and authenticated requests. */
-export function getApiBase() {
-  const fromEnv = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
-  if (fromEnv) return fromEnv;
+export const API_BASE = `${API_BASE_URL}/${API_PREFIX}/${API_VERSION}`;
+export const API_ORIGIN = API_BASE_URL;
 
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    if (host === 'www.code-eagles.com' || host === 'code-eagles.com') {
-      return PRODUCTION_API;
-    }
-  }
+export const STORAGE_KEYS = {
+  ACCESS_TOKEN: 'ce_access_token',
+  REFRESH_TOKEN: 'ce_refresh_token',
+  TENANT_ID: 'ce_tenant_id',
+  USER: 'ce_user',
+};
 
-  return 'http://localhost:8000';
-}
+export const GOOGLE_OAUTH_URL =
+  import.meta.env.VITE_GOOGLE_OAUTH_URL || `${API_BASE}/auth/google`;
 
-export default getApiBase;
+export default API_BASE;

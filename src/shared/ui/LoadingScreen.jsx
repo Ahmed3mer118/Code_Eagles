@@ -1,12 +1,9 @@
-import { useTranslation } from 'react-i18next';
-
-export default function LoadingScreen() {
-  const { t } = useTranslation();
+export default function LoadingScreen({ label = 'جاري التحميل...' }) {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-[var(--ce-border)] border-t-[var(--ce-accent)]" />
-        <p className="font-semibold text-[var(--ce-muted)]">{t('common.loading')}</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin" />
+        <p className="text-slate-600 text-sm font-medium">{label}</p>
       </div>
     </div>
   );

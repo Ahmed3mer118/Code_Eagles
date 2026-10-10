@@ -1,213 +1,178 @@
-import React, { Suspense } from 'react';
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { Toaster } from 'react-hot-toast';
-import { ErrorBoundary } from './shared/components/ErrorBoundary.jsx';
-import LoadingScreen from './shared/ui/LoadingScreen.jsx';
-import RoleGuard from './shared/guards/RoleGuard.jsx';
-import MarketingLayout from './shared/layouts/MarketingLayout.jsx';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useSearchParams,
+} from 'react-router-dom';
+import ErrorBoundary from './shared/components/ErrorBoundary';
+import { isAuthenticated } from './shared/api/client';
 
-const LandingPage = React.lazy(() => import('./features/marketing/LandingPage.jsx'));
-const ContactPage = React.lazy(() => import('./features/contact/ContactPage.jsx'));
-const LoginPage = React.lazy(() => import('./features/auth/LoginPage.jsx'));
-const RegisterPage = React.lazy(() => import('./features/auth/RegisterPage.jsx'));
-const VerifyEmailPage = React.lazy(() => import('./features/auth/VerifyEmailPage.jsx'));
-const ForgotPasswordPage = React.lazy(() => import('./features/auth/ForgotPasswordPage.jsx'));
-const NotFoundPage = React.lazy(() => import('./shared/pages/NotFoundPage.jsx'));
+// ===== Auth Pages =====
+import LoginPage from './features/auth/LoginPage';
+import RegisterPage from './features/auth/RegisterPage';
+import VerifyEmailPage from './features/auth/VerifyEmailPage';
+import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
+import SelectTenantPage from './features/auth/SelectTenantPage';
+import DashboardPage from './features/dashboard/DashboardPage';
 
-const SuperAdminDashboard = React.lazy(() => import('./features/dashboards/superAdmin/SuperAdminDashboard.jsx'));
-const TeacherDashboard = React.lazy(() => import('./features/dashboards/teacher/TeacherDashboard.jsx'));
-const AssistantDashboard = React.lazy(() => import('./features/dashboards/assistant/AssistantDashboard.jsx'));
-const ParentDashboard = React.lazy(() => import('./features/dashboards/parent/ParentDashboard.jsx'));
-const StudentDashboard = React.lazy(() => import('./features/dashboards/student/StudentDashboard.jsx'));
+// ===== Super Admin =====
+import { SuperAdminRoutes, SuperAdminGuard } from './features/superadmin';
 
-const SuperAdminOverview = React.lazy(() => import('./features/dashboards/superAdmin/SuperAdminOverview.jsx'));
-const TenantsPage = React.lazy(() => import('./features/dashboards/superAdmin/TenantsPage.jsx'));
-const SubscriptionsPage = React.lazy(() => import('./features/dashboards/superAdmin/SubscriptionsPage.jsx'));
-const SubscriptionRequestsPage = React.lazy(() => import('./features/dashboards/superAdmin/SubscriptionRequestsPage.jsx'));
-const ContactMessagesPage = React.lazy(() => import('./features/dashboards/superAdmin/ContactMessagesPage.jsx'));
-const PlatformCmsPage = React.lazy(() => import('./features/dashboards/superAdmin/PlatformCmsPage.jsx'));
-const TeacherOverview = React.lazy(() => import('./features/dashboards/teacher/TeacherOverview.jsx'));
-const TeacherPlatformSubscriptionPage = React.lazy(() => import('./features/teacher/TeacherPlatformSubscriptionPage.jsx'));
-const TeacherSubscriptionPlanPage = React.lazy(() => import('./features/teacher/TeacherSubscriptionPlanPage.jsx'));
-const TeacherPlatformPaymentPage = React.lazy(() => import('./features/teacher/TeacherPlatformPaymentPage.jsx'));
-const SubjectsPage = React.lazy(() => import('./features/content/ContentHubPage.jsx'));
-const GroupsPage = React.lazy(() => import('./features/groups/GroupsPage.jsx'));
-const AssistantsPage = React.lazy(() => import('./features/assistants/AssistantsPage.jsx'));
-const TeacherQuizzesPage = React.lazy(() => import('./features/quizzes/TeacherQuizzesPage.jsx'));
-const PaymentReviewPage = React.lazy(() => import('./features/payments/PaymentReviewPage.jsx'));
-const PaymentPlansPage = React.lazy(() => import('./features/payments/PaymentPlansPage.jsx'));
-const PromoCodesPage = React.lazy(() => import('./features/payments/PromoCodesPage.jsx'));
-const PaymentHistoryPage = React.lazy(() => import('./features/payments/PaymentHistoryPage.jsx'));
-const PaymentSubmitPage = React.lazy(() => import('./features/payments/PaymentSubmitPage.jsx'));
-const StudentSubscriptionPage = React.lazy(() => import('./features/student/StudentSubscriptionPage.jsx'));
-const StudentCoursesPage = React.lazy(() => import('./features/student/StudentCoursesPage.jsx'));
-const StudentJoinPage = React.lazy(() => import('./features/student/StudentJoinPage.jsx'));
-const StudentQuizzesPage = React.lazy(() => import('./features/student/StudentQuizzesPage.jsx'));
-const ExamPreFlightPage = React.lazy(() => import('./features/exams/pages/ExamPreFlightPage.jsx'));
-const ExamTakingPage = React.lazy(() => import('./features/exams/pages/ExamTakingPage.jsx'));
-const ExamResultsPage = React.lazy(() => import('./features/exams/pages/ExamResultsPage.jsx'));
-const ExamHistoryPage = React.lazy(() => import('./features/exams/pages/ExamHistoryPage.jsx'));
-const AttemptReviewPage = React.lazy(() => import('./features/exams/pages/AttemptReviewPage.jsx'));
-const PendingJoinRequestsPage = React.lazy(() => import('./features/teacher/PendingJoinRequestsPage.jsx'));
-const TeacherResultsPage = React.lazy(() => import('./features/teacher/TeacherResultsPage.jsx'));
-const TeacherReportsPage = React.lazy(() => import('./features/teacher/TeacherReportsPage.jsx'));
-const TeacherStudentsPage = React.lazy(() => import('./features/teacher/TeacherStudentsPage.jsx'));
-const StudentLeaderboardPage = React.lazy(() => import('./features/student/StudentLeaderboardPage.jsx'));
-const SettingsPage = React.lazy(() => import('./features/settings/SettingsPage.jsx'));
-const TeacherAssignmentsPage = React.lazy(() => import('./features/assignments/TeacherAssignmentsPage.jsx'));
-const AssignmentReviewPage = React.lazy(() => import('./features/assignments/AssignmentReviewPage.jsx'));
-const StudentAssignmentsPage = React.lazy(() => import('./features/assignments/StudentAssignmentsPage.jsx'));
-const StudentOverviewPage = React.lazy(() => import('./features/student/StudentOverviewPage.jsx'));
-const StudentAcademySelectPage = React.lazy(() => import('./features/student/StudentAcademySelectPage.jsx'));
-const ParentChildrenPage = React.lazy(() => import('./features/parent/ParentChildrenPage.jsx'));
-const ParentLinkRequestsPage = React.lazy(() => import('./features/parent/ParentLinkRequestsPage.jsx'));
-const ParentPaymentsPage = React.lazy(() => import('./features/parent/ParentPaymentsPage.jsx'));
-const StudentLinkRequestsPage = React.lazy(() => import('./features/student/StudentLinkRequestsPage.jsx'));
-const ActivityCenterPage = React.lazy(() => import('./features/activity/ActivityCenterPage.jsx'));
-const NotificationsPage = React.lazy(() => import('./features/notifications/NotificationsPage.jsx'));
-const AcademyPublicPage = React.lazy(() => import('./features/academy/AcademyPublicPage.jsx'));
+// ===== ✅ Landing & Marketing =====
+import LandingPage from './features/landing/LandingPage';
+import AcademyPublicPage from './features/landing/AcademyPublicPage';
+import ContactPage from './features/landing/ContactPage';
 
-const withRole = (roles, element) => <RoleGuard roles={roles}>{element}</RoleGuard>;
+// ============================================================
+// Guards
+// ============================================================
+function Protected({ children }) {
+  return isAuthenticated() ? children : <Navigate to="/login" replace />;
+}
 
-/** Built once at module level: rebuilding it on every render would remount every page. */
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <MarketingLayout />,
-    children: [
-      { index: true, element: <LandingPage /> },
-      { path: 'academies', element: <LandingPage /> },
-      { path: 'courses', element: <LandingPage /> },
-      { path: 'contact', element: <ContactPage /> },
-    ],
-  },
-  {
-    path: '/auth',
-    children: [
-      { path: 'login', element: <LoginPage /> },
-      { path: 'register', element: <RegisterPage /> },
-      { path: 'verif-email', element: <VerifyEmailPage /> },
-      { path: 'forget-password', element: <ForgotPasswordPage /> },
-    ],
-  },
-  {
-    path: '/dashboard/super-admin',
-    element: withRole(['super_admin'], <SuperAdminDashboard />),
-    children: [
-      { index: true, element: <SuperAdminOverview /> },
-      { path: 'tenants', element: <TenantsPage /> },
-      { path: 'subscription-requests', element: <SubscriptionRequestsPage /> },
-      { path: 'contact-messages', element: <ContactMessagesPage /> },
-      { path: 'subscriptions', element: <SubscriptionsPage /> },
-      { path: 'cms', element: <PlatformCmsPage /> },
-      { path: 'activity', element: <ActivityCenterPage /> },
-      { path: 'notifications', element: <NotificationsPage /> },
-      { path: 'settings', element: <SettingsPage /> },
-    ],
-  },
-  {
-    path: '/dashboard/teacher',
-    element: withRole(['teacher'], <TeacherDashboard />),
-    children: [
-      { index: true, element: <TeacherOverview /> },
-      { path: 'requests', element: <PendingJoinRequestsPage /> },
-      { path: 'groups', element: <GroupsPage /> },
-      { path: 'subjects', element: <SubjectsPage /> },
-      { path: 'students', element: <TeacherStudentsPage /> },
-      { path: 'quizzes', element: <TeacherQuizzesPage /> },
-      { path: 'quizzes/:quizId/review/:attemptId', element: <AttemptReviewPage /> },
-      { path: 'assignments', element: <TeacherAssignmentsPage /> },
-      { path: 'assignments/:id', element: <AssignmentReviewPage /> },
-      { path: 'assistants', element: <AssistantsPage /> },
-      { path: 'results', element: <TeacherResultsPage /> },
-      { path: 'reports', element: <TeacherReportsPage /> },
-      { path: 'payments', element: <PaymentReviewPage /> },
-      { path: 'payment-plans', element: <PaymentPlansPage /> },
-      { path: 'subscription', element: <TeacherSubscriptionPlanPage /> },
-      { path: 'platform-payments', element: <TeacherPlatformPaymentPage /> },
-      { path: 'promo-codes', element: <PromoCodesPage /> },
-      { path: 'payment-history', element: <PaymentHistoryPage /> },
-      { path: 'platform-subscription', element: <Navigate to="/dashboard/teacher/subscription" replace /> },
-      { path: 'activity', element: <ActivityCenterPage /> },
-      { path: 'notifications', element: <NotificationsPage /> },
-      { path: 'settings', element: <SettingsPage /> },
-    ],
-  },
-  {
-    path: '/dashboard/assistant',
-    element: withRole(['assistant'], <AssistantDashboard />),
-    children: [
-      { index: true, element: <Navigate to="groups" replace /> },
-      { path: 'groups', element: <GroupsPage /> },
-      { path: 'requests', element: <PendingJoinRequestsPage /> },
-      { path: 'payments', element: <PaymentReviewPage /> },
-      { path: 'content', element: <SubjectsPage /> },
-      { path: 'quizzes', element: <TeacherQuizzesPage /> },
-      { path: 'quizzes/:quizId/review/:attemptId', element: <AttemptReviewPage /> },
-      { path: 'results', element: <TeacherResultsPage /> },
-      { path: 'assignments', element: <TeacherAssignmentsPage /> },
-      { path: 'assignments/:id', element: <AssignmentReviewPage /> },
-      { path: 'activity', element: <ActivityCenterPage /> },
-      { path: 'settings', element: <SettingsPage /> },
-    ],
-  },
-  {
-    path: '/dashboard/parent',
-    element: withRole(['parent'], <ParentDashboard />),
-    children: [
-      { index: true, element: <ParentChildrenPage /> },
-      { path: 'notifications', element: <NotificationsPage /> },
-      { path: 'link-requests', element: <ParentLinkRequestsPage /> },
-      { path: 'activity', element: <ActivityCenterPage /> },
-      { path: 'payments', element: <ParentPaymentsPage /> },
-      { path: 'settings', element: <SettingsPage /> },
-    ],
-  },
-  {
-    path: '/dashboard/student',
-    element: withRole(['student'], <StudentDashboard />),
-    children: [
-      { path: 'select-academy', element: <StudentAcademySelectPage /> },
-      { index: true, element: <StudentOverviewPage /> },
-      { path: 'join', element: <StudentJoinPage /> },
-      { path: 'courses', element: <StudentCoursesPage /> },
-      { path: 'assignments', element: <StudentAssignmentsPage /> },
-      { path: 'payments', element: <PaymentSubmitPage /> },
-      { path: 'subscription', element: <StudentSubscriptionPage /> },
-      { path: 'quizzes', element: <StudentQuizzesPage /> },
-      { path: 'quizzes/history', element: <ExamHistoryPage /> },
-      { path: 'quizzes/:quizId', element: <ExamPreFlightPage /> },
-      { path: 'quizzes/:quizId/attempt/:attemptId', element: <ExamTakingPage /> },
-      { path: 'quizzes/:quizId/results/:attemptId', element: <ExamResultsPage /> },
-      { path: 'leaderboard', element: <StudentLeaderboardPage /> },
-      { path: 'link-requests', element: <StudentLinkRequestsPage /> },
-      { path: 'activity', element: <ActivityCenterPage /> },
-      { path: 'notifications', element: <NotificationsPage /> },
-      { path: 'settings', element: <SettingsPage /> },
-    ],
-  },
-  {
-    path: '/academy/:slug',
-    element: <AcademyPublicPage />,
-  },
-  { path: '/dashboard', element: <Navigate to="/dashboard/super-admin" replace /> },
-  { path: '/instructor', element: <Navigate to="/dashboard/teacher" replace /> },
-  { path: '/my-courses', element: <Navigate to="/dashboard/student/courses" replace /> },
-  { path: '*', element: <NotFoundPage /> },
-]);
-
-function App() {
-  return (
-    <HelmetProvider>
-      <ErrorBoundary>
-        <Toaster position="top-center" />
-        <Suspense fallback={<LoadingScreen />}>
-          <RouterProvider router={router} />
-        </Suspense>
-      </ErrorBoundary>
-    </HelmetProvider>
+function PublicOnly({ children }) {
+  return isAuthenticated() ? (
+    <Navigate to="/select-tenant" replace />
+  ) : (
+    children
   );
 }
 
-export default App;
+// ============================================================
+// ✅ Root — يعرض Landing لكن يحترم توكنات التحقق
+// ============================================================
+function RootRedirect() {
+  const [searchParams] = useSearchParams();
+
+  const token =
+    searchParams.get('token') ||
+    searchParams.get('code') ||
+    searchParams.get('verificationToken');
+
+  if (token) {
+    return (
+      <Navigate
+        to={`/verify-email?token=${encodeURIComponent(token)}`}
+        replace
+      />
+    );
+  }
+
+  const verified = searchParams.get('verified');
+  if (verified === '1' || verified === 'true') {
+    return <Navigate to="/login?verified=1" replace />;
+  }
+
+  // ✅ ✅ ✅ الحل: اعرض اللاندنج بدل ما تحوّل لـ login
+  return <LandingPage />;
+}
+
+// ============================================================
+// App
+// ============================================================
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          {/* ==================== PUBLIC LANDING ==================== */}
+          <Route path="/" element={<RootRedirect />} />
+
+          {/* Public academy page */}
+          <Route path="/academy/:slug" element={<AcademyPublicPage />} />
+
+          {/* Contact page */}
+          <Route path="/contact" element={<ContactPage />} />
+
+          {/* ==================== AUTH ==================== */}
+          <Route
+            path="/login"
+            element={
+              <PublicOnly>
+                <LoginPage />
+              </PublicOnly>
+            }
+          />
+          <Route
+            path="/auth/login"
+            element={
+              <PublicOnly>
+                <LoginPage />
+              </PublicOnly>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicOnly>
+                <RegisterPage />
+              </PublicOnly>
+            }
+          />
+          <Route
+            path="/auth/register"
+            element={
+              <PublicOnly>
+                <RegisterPage />
+              </PublicOnly>
+            }
+          />
+
+          {/* ==================== VERIFY EMAIL ==================== */}
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+          <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/auth/verify-email/:token" element={<VerifyEmailPage />} />
+          <Route path="/verify" element={<VerifyEmailPage />} />
+          <Route path="/activate" element={<VerifyEmailPage />} />
+
+          {/* ==================== PASSWORD RESET ==================== */}
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ForgotPasswordPage />} />
+
+          {/* ==================== POST LOGIN ==================== */}
+          <Route
+            path="/select-tenant"
+            element={
+              <Protected>
+                <SelectTenantPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <Protected>
+                <DashboardPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/onboarding"
+            element={
+              <Protected>
+                <div className="min-h-screen flex items-center justify-center text-2xl font-bold">
+                  🚧 Onboarding (coming soon)
+                </div>
+              </Protected>
+            }
+          />
+
+          {/* ==================== SUPER ADMIN ==================== */}
+          <Route
+            path="/admin/*"
+            element={
+              <SuperAdminGuard>
+                <SuperAdminRoutes />
+              </SuperAdminGuard>
+            }
+          />
+
+          {/* ==================== 404 ==================== */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
+  );
+}

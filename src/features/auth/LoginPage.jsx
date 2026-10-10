@@ -1,90 +1,205 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import toast, { Toaster } from 'react-hot-toast';
-import AuthServices from '../../shared/api/authService';
-import { buildRegisterUrl, resolveReturnTo } from '../../shared/guards/RoleGuard';
-import { getCleanParam } from '../../shared/utils/queryParams';
-import getApiErrorMessage from '../../shared/utils/apiError';
-import { resolveStudentPostLoginPath } from '../student/useStudentAcademy';
+import authService from '../../shared/api/authService';
+import { extractApiError } from '../../shared/utils/apiError';
+import { useI18n } from '../../shared/i18n';
+import AuthLayout, { AuthInput, AuthButton, AuthAlert } from './AuthLayout';
+
+/* ——— فك JWT ——— */
+function decodeJwtPayload(token) {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+  } catch {
+    return null;
+  }
+}
+
+/* ——— كشف super_admin ——— */
+function isSuperAdminResponse(res) {
+  if (!res) return false;
+
+  const platformRole = res?.user?.platformRole || res?.platformRole;
+  if (
+    typeof platformRole === 'string' &&
+    platformRole.toLowerCase() === 'super_admin'
+  ) {
+    return true;
+  }
+
+  if (res?.accessToken) {
+    const payload = decodeJwtPayload(res.accessToken);
+    const jwtRole =
+      payload?.platformRole || payload?.role || payload?.platform_role;
+    if (
+      typeof jwtRole === 'string' &&
+      jwtRole.toLowerCase() === 'super_admin'
+    ) {
+      return true;
+    }
+  }
+
+  const roles = [res?.user?.role, res?.role, res?.currentTenant?.role]
+    .filter(Boolean)
+    .map((r) => String(r).toLowerCase());
+  if (roles.some((r) => r.includes('super'))) return true;
+
+  if (res?.user?.isSuperAdmin === true || res?.isSuperAdmin === true) {
+    return true;
+  }
+
+  return false;
+}
 
 export default function LoginPage() {
-  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const auth = new AuthServices();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { t } = useI18n();
+  const [searchParams] = useSearchParams();
+  const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
 
-  const returnTo = resolveReturnTo(params, null);
+  const tokenRedirectedRef = useRef(false);
+
+  useEffect(() => {
+    if (tokenRedirectedRef.current) return;
+
+    const token =
+      searchParams.get('token') ||
+      searchParams.get('code') ||
+      searchParams.get('verificationToken');
+    const verified = searchParams.get('verified');
+
+    if (token) {
+      tokenRedirectedRef.current = true;
+      navigate(`/verify-email?token=${encodeURIComponent(token)}`, {
+        replace: true,
+      });
+      return;
+    }
+
+    if (verified === '1' || verified === 'true') {
+      setInfo('✅ تم تأكيد بريدك الإلكتروني بنجاح — يمكنك تسجيل الدخول الآن');
+      window.history.replaceState({}, '', '/login');
+    }
+  }, [searchParams, navigate]);
+
+  const onChange = (e) =>
+    setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setInfo('');
     setLoading(true);
     try {
-      const res = await auth.login(email, password);
-      if (res?.user?.preferredLanguage) {
-        i18n.changeLanguage(res.user.preferredLanguage);
-      }
+      const res = await authService.login(form);
 
-      if (res.role === 'student') {
-        const studentPath = await resolveStudentPostLoginPath(returnTo);
-        navigate(studentPath);
-        toast.success(t('auth.loginSuccess'));
+      // 👑 SUPER ADMIN — خزّن flag فوراً قبل أي navigate
+      if (isSuperAdminResponse(res)) {
+        try {
+          localStorage.setItem('isSuperAdmin', 'true');
+          console.log('👑 Super Admin detected — flag stored ✅');
+        } catch (e) {
+          console.warn('localStorage failed:', e);
+        }
+
+        // 🔥 hard redirect عشان نضمن الـ guard يشوف الـ flag من أول لحظة
+        window.location.href = '/admin/dashboard';
         return;
       }
 
-      toast.success(t('auth.loginSuccess'));
+      // مش super admin — امسح أي flag قديم
+      try {
+        localStorage.removeItem('isSuperAdmin');
+      } catch (_) {}
 
-      if (returnTo && ['teacher', 'assistant'].includes(res.role) && returnTo.includes('/join')) {
-        navigate(res.dashboardPath || auth.getDashboardPath(res.role));
-      } else if (returnTo) {
-        navigate(returnTo);
-      } else {
-        navigate(res.dashboardPath || auth.getDashboardPath(res.role));
+      if (res.needsOnboarding) {
+        navigate('/onboarding', { replace: true });
+        return;
       }
+
+      const membershipsCount = res.memberships?.length ?? 0;
+      if (res.requiresTenantSelection || membershipsCount > 1) {
+        navigate('/select-tenant', { replace: true });
+        return;
+      }
+
+      if (res.currentTenant?.tenantId) {
+        navigate('/dashboard', { replace: true });
+        return;
+      }
+
+      navigate('/select-tenant', { replace: true });
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      setError(extractApiError(err).message);
     } finally {
       setLoading(false);
     }
   };
 
-  const registerHref = buildRegisterUrl(returnTo, {
-    academy: getCleanParam(params, 'academy'),
-    group: getCleanParam(params, 'group'),
-  });
-
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10">
-      <Toaster position="top-center" />
-      <form onSubmit={onSubmit} className="ce-card w-full max-w-md p-6 md:p-8">
-        <div className="mb-6 text-center">
-          <img src="/images/LOGO.png" alt="" className="mx-auto mb-3 h-14 w-14" />
-          <h1 className="text-2xl font-extrabold text-[var(--ce-primary)]">{t('auth.loginTitle')}</h1>
-          {returnTo && <p className="mt-2 text-sm text-[var(--ce-muted)]">{t('auth.continueJoinFlow')}</p>}
+    <AuthLayout title={t('auth.login')} subtitle={t('auth.loginSubtitle')}>
+      <AuthAlert type="success">{info}</AuthAlert>
+      <AuthAlert>{error}</AuthAlert>
+
+      <form onSubmit={onSubmit} className="space-y-4">
+        <AuthInput
+          label={t('auth.email')}
+          type="email"
+          name="email"
+          required
+          value={form.email}
+          onChange={onChange}
+          placeholder="you@example.com"
+        />
+        <AuthInput
+          label={t('auth.password')}
+          type="password"
+          name="password"
+          required
+          minLength={8}
+          value={form.password}
+          onChange={onChange}
+          placeholder="••••••••"
+        />
+
+        <div className="flex justify-end -mt-1">
+          <Link
+            to="/forgot-password"
+            className="text-[13px] text-[#1a3a5c] hover:underline font-semibold"
+          >
+            {t('auth.forgotPassword')}
+          </Link>
         </div>
 
-        <label className="ce-label" htmlFor="email">{t('auth.email')}</label>
-        <input id="email" type="email" className="ce-input mb-4" value={email} onChange={(e) => setEmail(e.target.value)} required />
-
-        <label className="ce-label" htmlFor="password">{t('auth.password')}</label>
-        <input id="password" type="password" className="ce-input mb-2" value={password} onChange={(e) => setPassword(e.target.value)} required />
-
-        <div className="mb-5 text-end">
-          <Link to="/auth/forget-password" className="text-sm font-semibold text-[var(--ce-primary)]">{t('auth.forgotPassword')}</Link>
-        </div>
-
-        <button type="submit" className="ce-btn ce-btn-primary w-full" disabled={loading}>
-          {loading ? t('common.loading') : t('auth.submitLogin')}
-        </button>
-
-        <p className="mt-5 text-center text-sm text-[var(--ce-muted)]">
-          {t('auth.noAccount')}{' '}
-          <Link to={registerHref} className="font-bold text-[var(--ce-accent)]">{t('nav.register')}</Link>
-        </p>
+        <AuthButton type="submit" loading={loading}>
+          {loading ? t('auth.signingIn') : t('auth.login')}
+        </AuthButton>
       </form>
-    </div>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-slate-200" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="px-3 bg-white/85 text-[11px] text-slate-400 uppercase tracking-wider">
+            {t('common.or')}
+          </span>
+        </div>
+      </div>
+
+      <p className="text-center text-sm text-slate-600">
+        {t('auth.noAccount')}{' '}
+        <Link
+          to="/register"
+          className="text-[#1a3a5c] font-bold hover:underline"
+        >
+          {t('auth.register')}
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }
