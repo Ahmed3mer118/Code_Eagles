@@ -16,17 +16,21 @@ import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
 import SelectTenantPage from './features/auth/SelectTenantPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 
+// ===== Subscription =====
+import MySubscriptionPage from './features/dashboard/MySubscriptionPage';
+
 // ===== Super Admin =====
 import { SuperAdminRoutes, SuperAdminGuard } from './features/superadmin';
 
-// ===== ✅ Landing & Marketing =====
+// ===== Landing & Marketing =====
 import LandingPage from './features/landing/LandingPage';
 import AcademyPublicPage from './features/landing/AcademyPublicPage';
 import ContactPage from './features/landing/ContactPage';
 
-// ============================================================
-// Guards
-// ============================================================
+/* ============================================================
+   Guards
+   ============================================================ */
+
 function Protected({ children }) {
   return isAuthenticated() ? children : <Navigate to="/login" replace />;
 }
@@ -39,9 +43,6 @@ function PublicOnly({ children }) {
   );
 }
 
-// ============================================================
-// ✅ Root — يعرض Landing لكن يحترم توكنات التحقق
-// ============================================================
 function RootRedirect() {
   const [searchParams] = useSearchParams();
 
@@ -64,62 +65,30 @@ function RootRedirect() {
     return <Navigate to="/login?verified=1" replace />;
   }
 
-  // ✅ ✅ ✅ الحل: اعرض اللاندنج بدل ما تحوّل لـ login
   return <LandingPage />;
 }
 
-// ============================================================
-// App
-// ============================================================
+/* ============================================================
+   App
+   ============================================================ */
+
 export default function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
         <Routes>
-          {/* ==================== PUBLIC LANDING ==================== */}
+          {/* PUBLIC */}
           <Route path="/" element={<RootRedirect />} />
-
-          {/* Public academy page */}
           <Route path="/academy/:slug" element={<AcademyPublicPage />} />
-
-          {/* Contact page */}
           <Route path="/contact" element={<ContactPage />} />
 
-          {/* ==================== AUTH ==================== */}
-          <Route
-            path="/login"
-            element={
-              <PublicOnly>
-                <LoginPage />
-              </PublicOnly>
-            }
-          />
-          <Route
-            path="/auth/login"
-            element={
-              <PublicOnly>
-                <LoginPage />
-              </PublicOnly>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicOnly>
-                <RegisterPage />
-              </PublicOnly>
-            }
-          />
-          <Route
-            path="/auth/register"
-            element={
-              <PublicOnly>
-                <RegisterPage />
-              </PublicOnly>
-            }
-          />
+          {/* AUTH */}
+          <Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
+          <Route path="/auth/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
+          <Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
+          <Route path="/auth/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
 
-          {/* ==================== VERIFY EMAIL ==================== */}
+          {/* VERIFY EMAIL */}
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
           <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
@@ -127,27 +96,24 @@ export default function App() {
           <Route path="/verify" element={<VerifyEmailPage />} />
           <Route path="/activate" element={<VerifyEmailPage />} />
 
-          {/* ==================== PASSWORD RESET ==================== */}
+          {/* PASSWORD RESET */}
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ForgotPasswordPage />} />
 
-          {/* ==================== POST LOGIN ==================== */}
+          {/* POST LOGIN */}
+          <Route path="/select-tenant" element={<Protected><SelectTenantPage /></Protected>} />
+          <Route path="/dashboard" element={<Protected><DashboardPage /></Protected>} />
+
+          {/* ⭐ SUBSCRIPTION */}
           <Route
-            path="/select-tenant"
-            element={
-              <Protected>
-                <SelectTenantPage />
-              </Protected>
-            }
+            path="/dashboard/subscription"
+            element={<Protected><MySubscriptionPage /></Protected>}
           />
           <Route
-            path="/dashboard"
-            element={
-              <Protected>
-                <DashboardPage />
-              </Protected>
-            }
+            path="/subscription"
+            element={<Protected><MySubscriptionPage /></Protected>}
           />
+
           <Route
             path="/onboarding"
             element={
@@ -159,7 +125,7 @@ export default function App() {
             }
           />
 
-          {/* ==================== SUPER ADMIN ==================== */}
+          {/* SUPER ADMIN */}
           <Route
             path="/admin/*"
             element={
@@ -169,7 +135,7 @@ export default function App() {
             }
           />
 
-          {/* ==================== 404 ==================== */}
+          {/* 404 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

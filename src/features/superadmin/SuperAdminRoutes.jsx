@@ -7,6 +7,7 @@ import PlaceholderPage from './pages/PlaceholderPage';
 import ProfilePage from './pages/ProfilePage';
 import ContentManagementPage from './pages/content/ContentManagementPage';
 import PlansPage from './pages/PlansPage';
+import RequestsPage from './pages/RequestsPage';   // ⭐ جديد
 
 import {
   IconAcademy,
@@ -23,7 +24,7 @@ export default function SuperAdminRoutes() {
       <Routes>
         <Route path="dashboard"     element={<DashboardOverview />} />
         <Route path="academies"     element={<AcademiesPage />} />
-        <Route path="requests"      element={<PlaceholderPage sectionKey="requests"      Icon={IconRequests} />} />
+        <Route path="requests"      element={<RequestsPage />} />        {/* ⭐ */}
         <Route path="messages"      element={<PlaceholderPage sectionKey="messages"      Icon={IconMessages} />} />
         <Route path="plans"         element={<PlansPage />} />
         <Route path="content"       element={<ContentManagementPage />} />
