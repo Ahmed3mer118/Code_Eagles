@@ -27,6 +27,9 @@ import LandingPage from './features/landing/LandingPage';
 import AcademyPublicPage from './features/landing/AcademyPublicPage';
 import ContactPage from './features/landing/ContactPage';
 
+// ===== Teacher =====
+import TeacherRoutes from './features/teacher/TeacherRoutes';
+
 /* ============================================================
    Guards
    ============================================================ */
@@ -77,18 +80,46 @@ export default function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <Routes>
-          {/* PUBLIC */}
+          {/* ==================== PUBLIC ==================== */}
           <Route path="/" element={<RootRedirect />} />
           <Route path="/academy/:slug" element={<AcademyPublicPage />} />
           <Route path="/contact" element={<ContactPage />} />
 
-          {/* AUTH */}
-          <Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
-          <Route path="/auth/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
-          <Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
-          <Route path="/auth/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
+          {/* ==================== AUTH ==================== */}
+          <Route
+            path="/login"
+            element={
+              <PublicOnly>
+                <LoginPage />
+              </PublicOnly>
+            }
+          />
+          <Route
+            path="/auth/login"
+            element={
+              <PublicOnly>
+                <LoginPage />
+              </PublicOnly>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicOnly>
+                <RegisterPage />
+              </PublicOnly>
+            }
+          />
+          <Route
+            path="/auth/register"
+            element={
+              <PublicOnly>
+                <RegisterPage />
+              </PublicOnly>
+            }
+          />
 
-          {/* VERIFY EMAIL */}
+          {/* ==================== VERIFY EMAIL ==================== */}
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
           <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
@@ -96,22 +127,44 @@ export default function App() {
           <Route path="/verify" element={<VerifyEmailPage />} />
           <Route path="/activate" element={<VerifyEmailPage />} />
 
-          {/* PASSWORD RESET */}
+          {/* ==================== PASSWORD RESET ==================== */}
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ForgotPasswordPage />} />
 
-          {/* POST LOGIN */}
-          <Route path="/select-tenant" element={<Protected><SelectTenantPage /></Protected>} />
-          <Route path="/dashboard" element={<Protected><DashboardPage /></Protected>} />
+          {/* ==================== POST LOGIN ==================== */}
+          <Route
+            path="/select-tenant"
+            element={
+              <Protected>
+                <SelectTenantPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <Protected>
+                <DashboardPage />
+              </Protected>
+            }
+          />
 
-          {/* ⭐ SUBSCRIPTION */}
+          {/* ==================== SUBSCRIPTION ==================== */}
           <Route
             path="/dashboard/subscription"
-            element={<Protected><MySubscriptionPage /></Protected>}
+            element={
+              <Protected>
+                <MySubscriptionPage />
+              </Protected>
+            }
           />
           <Route
             path="/subscription"
-            element={<Protected><MySubscriptionPage /></Protected>}
+            element={
+              <Protected>
+                <MySubscriptionPage />
+              </Protected>
+            }
           />
 
           <Route
@@ -125,7 +178,10 @@ export default function App() {
             }
           />
 
-          {/* SUPER ADMIN */}
+          {/* ==================== TEACHER ==================== */}
+          <Route path="/teacher/*" element={<TeacherRoutes />} />
+
+          {/* ==================== SUPER ADMIN ==================== */}
           <Route
             path="/admin/*"
             element={
@@ -135,7 +191,7 @@ export default function App() {
             }
           />
 
-          {/* 404 */}
+          {/* ==================== 404 ==================== */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

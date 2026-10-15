@@ -31,6 +31,41 @@ export interface SessionItem {
   isCurrent?: boolean;
 }
 
+
+// src/shared/api/userService.ts — استبدل الـ UserProfile بالكامل
+export interface Membership {
+  id: string;
+  tenantId: string;
+  role: string;
+  tenant?: { id: string; name: string; logo?: string | null };
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phoneNumber?: string | null;
+  preferredLanguage?: string;
+  profileImageUrl?: string | null;
+  platformRole?: string | null;
+  gradeLevel?: string | null;
+  parentPhone?: string | null;
+  childContact?: string | null;
+  emailVerified?: boolean;
+  createdAt?: string;
+  memberships?: Membership[];
+}
+
+export interface UpdateProfilePayload {
+  name?: string;
+  phoneNumber?: string;
+  preferredLanguage?: 'ar' | 'en';
+  profileImageUrl?: string | null;
+  gradeLevel?: string;
+  parentPhone?: string;
+  childContact?: string;
+}
+
 /* ========== Service ========== */
 export const userService = {
   /* ----- Profile ----- */

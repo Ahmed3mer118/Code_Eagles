@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { platformPlansService } from '../../../shared/api/platformPlansService';
-import { useI18n } from '../../../shared/i18n/I18nContext';
+import { useI18n } from '../../../shared/i18n';
 
 /* ─────────────────────────────────────────────
    Constants

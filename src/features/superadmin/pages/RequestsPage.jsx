@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { subscriptionRequestsService } from '../../../shared/api/subscriptionRequestsService';
-import { useI18n } from '../../../shared/i18n/I18nContext';
+import { useI18n } from '../../../shared/i18n';
 
 const TABS = [
   { key: 'all',           ar: 'الكل',              en: 'All' },

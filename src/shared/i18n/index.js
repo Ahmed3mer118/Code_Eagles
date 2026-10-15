@@ -1,7 +1,14 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+// src/shared/i18n/index.js
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  createElement,
+} from 'react';
 import ar from './locales/ar.json';
 import en from './locales/en.json';
-import { createElement } from 'react';
 
 const DICTS = { ar, en };
 const STORAGE_KEY = 'ce_language';
@@ -12,6 +19,7 @@ const I18nContext = createContext(null);
 /* -------------------- Provider -------------------- */
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_LANG;
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored && DICTS[stored]) return stored;
     return DEFAULT_LANG;
@@ -53,7 +61,14 @@ export function LanguageProvider({ children }) {
     [lang],
   );
 
-  const value = { lang, setLang, toggleLang, t };
+  const value = {
+    lang,
+    setLang,
+    toggleLang,
+    t,
+    dir: lang === 'ar' ? 'rtl' : 'ltr',
+  };
+
   return createElement(I18nContext.Provider, { value }, children);
 }
 
@@ -66,6 +81,7 @@ export function useI18n() {
 
 /* -------------------- Non-hook helper (للاستخدام خارج React) -------------------- */
 export function getCurrentLang() {
+  if (typeof window === 'undefined') return DEFAULT_LANG;
   return localStorage.getItem(STORAGE_KEY) || DEFAULT_LANG;
 }
 

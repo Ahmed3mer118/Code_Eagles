@@ -1,3 +1,4 @@
+// src/shared/i18n/useRoleLabel.js
 import { useI18n } from './index';
 
 export function useRoleLabel() {

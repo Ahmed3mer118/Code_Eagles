@@ -390,5 +390,98 @@
       "contact": "تواصل معنا",
       "login": "تسجيل الدخول"
     }
+  },
+  "teacher": {
+    "layout": {
+      "title": "لوحة المدرس"
+    },
+    "menu": {
+      "overview": "نظرة عامة",
+      "pendingRequests": "طلبات الانضمام المعلقة",
+      "groups": "المجموعات",
+      "subjects": "المواد",
+      "students": "الطلاب",
+      "quizzes": "الاختبارات",
+      "assignments": "الواجبات",
+      "reports": "التقارير",
+      "reportsAnalytics": "التقارير والتحليلات",
+      "payments": "المدفوعات",
+      "pendingPayments": "مدفوعات معلقة",
+      "paymentPlans": "خطط الدفع",
+      "platformPlan": "باقة المنصة",
+      "platformPay": "دفع اشتراك المنصة",
+      "promoCodes": "أكواد الخصم",
+      "paymentHistory": "سجل المدفوعات",
+      "settings": "الإعدادات"
+    },
+    "notifications": {
+      "title": "الإشعارات",
+      "empty": "لا توجد إشعارات",
+      "markAllRead": "تعليم الكل كمقروء"
+    },
+    "user": {
+      "profile": "الملف الشخصي",
+      "settings": "الإعدادات",
+      "logout": "تسجيل الخروج"
+    },
+    "dashboard": {
+      "welcome": "أهلاً بك",
+      "stats": {
+        "students": "الطلاب",
+        "groups": "المجموعات",
+        "subjects": "المواد",
+        "revenue": "الإيرادات"
+      },
+      "recentEnrollments": "أحدث طلبات الانضمام",
+      "recentPayments": "أحدث المدفوعات",
+      "viewAll": "عرض الكل"
+    }
+  },
+   "sidebar": {
+    "teacherPanel": "لوحة المدرس",
+    "dashboard": "نظرة عامة",
+
+    "studentsManagement": "إدارة الطلاب",
+    "pendingRequests": "طلبات الانضمام المعلقة",
+    "students": "الطلاب",
+    "parents": "أولياء الأمور",
+
+    "content": "المحتوى التعليمي",
+    "subjects": "المواد",
+    "courses": "الكورسات",
+    "lectures": "المحاضرات",
+    "groups": "المجموعات",
+
+    "assessments": "التقييمات",
+    "quizzes": "الاختبارات",
+    "assignments": "الواجبات",
+    "questionsBank": "بنك الأسئلة",
+
+    "gamification": "التحفيز والنقاط",
+    "points": "النقاط",
+    "leaderboard": "لوحة المتصدرين",
+
+    "reports": "التقارير",
+    "reportsAnalytics": "التقارير والتحليلات",
+
+    "payments": "المدفوعات",
+    "pendingPayments": "مدفوعات معلقة",
+    "paymentPlans": "خطط الدفع",
+    "promoCodes": "أكواد الخصم",
+    "paymentHistory": "سجل المدفوعات",
+
+    "platformSubscription": "باقة المنصة",
+    "mySubscription": "باقة المنصة",
+    "paySubscription": "دفع اشتراك المنصة",
+
+    "team": "الفريق",
+    "assistants": "المساعدين",
+
+    "notifications": "الإشعارات",
+
+    "settings": "الإعدادات",
+    "tenantSettings": "إعدادات الأكاديمية",
+    "profile": "الملف الشخصي",
+    "security": "الأمان"
   }
 }

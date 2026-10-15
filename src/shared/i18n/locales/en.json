@@ -390,5 +390,98 @@
       "contact": "Contact",
       "login": "Login"
     }
+  },
+  "teacher": {
+    "layout": {
+      "title": "Teacher Dashboard"
+    },
+    "menu": {
+      "overview": "Overview",
+      "pendingRequests": "Pending Requests",
+      "groups": "Groups",
+      "subjects": "Subjects",
+      "students": "Students",
+      "quizzes": "Quizzes",
+      "assignments": "Assignments",
+      "reports": "Reports",
+      "reportsAnalytics": "Reports & Analytics",
+      "payments": "Payments",
+      "pendingPayments": "Pending Payments",
+      "paymentPlans": "Payment Plans",
+      "platformPlan": "Platform Plan",
+      "platformPay": "Pay Platform Subscription",
+      "promoCodes": "Promo Codes",
+      "paymentHistory": "Payment History",
+      "settings": "Settings"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "empty": "No notifications",
+      "markAllRead": "Mark all as read"
+    },
+    "user": {
+      "profile": "Profile",
+      "settings": "Settings",
+      "logout": "Logout"
+    },
+    "dashboard": {
+      "welcome": "Welcome",
+      "stats": {
+        "students": "Students",
+        "groups": "Groups",
+        "subjects": "Subjects",
+        "revenue": "Revenue"
+      },
+      "recentEnrollments": "Recent Enrollments",
+      "recentPayments": "Recent Payments",
+      "viewAll": "View all"
+    }
+  },
+  "sidebar": {
+    "teacherPanel": "Teacher Panel",
+    "dashboard": "Overview",
+
+    "studentsManagement": "Students Management",
+    "pendingRequests": "Pending Join Requests",
+    "students": "Students",
+    "parents": "Parents",
+
+    "content": "Educational Content",
+    "subjects": "Subjects",
+    "courses": "Courses",
+    "lectures": "Lectures",
+    "groups": "Groups",
+
+    "assessments": "Assessments",
+    "quizzes": "Quizzes",
+    "assignments": "Assignments",
+    "questionsBank": "Questions Bank",
+
+    "gamification": "Gamification & Points",
+    "points": "Points",
+    "leaderboard": "Leaderboard",
+
+    "reports": "Reports",
+    "reportsAnalytics": "Reports & Analytics",
+
+    "payments": "Payments",
+    "pendingPayments": "Pending Payments",
+    "paymentPlans": "Payment Plans",
+    "promoCodes": "Promo Codes",
+    "paymentHistory": "Payment History",
+
+    "platformSubscription": "Platform Subscription",
+    "mySubscription": "My Subscription",
+    "paySubscription": "Pay Subscription",
+
+    "team": "Team",
+    "assistants": "Assistants",
+
+    "notifications": "Notifications",
+
+    "settings": "Settings",
+    "tenantSettings": "Academy Settings",
+    "profile": "Profile",
+    "security": "Security"
   }
 }
