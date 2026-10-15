@@ -4,23 +4,12 @@ import LanguageSwitcher from '../../shared/ui/LanguageSwitcher';
 import { useI18n } from '../../shared/i18n';
 import authService from '../../shared/api/authService';
 import { getStoredUser } from '../../shared/api/client';
+import { contactService } from '../../shared/api/contactService';   // ⭐ جديد
 import {
   IconOverview, IconAcademy, IconRequests, IconMessages, IconPlans,
   IconContent, IconUsers, IconSettings, IconBell, IconSearch,
   IconMenu, IconClose, IconLogout, IconChevronLeft, IconChevronRight,
 } from './icons';
-
-const NAV = [
-  { to: '/admin/dashboard',     key: 'overview',      Icon: IconOverview,  badge: null },
-  { to: '/admin/academies',     key: 'academies',     Icon: IconAcademy,   badge: null },
-  { to: '/admin/requests',      key: 'requests',      Icon: IconRequests,  badge: 4 },
-  { to: '/admin/messages',      key: 'messages',      Icon: IconMessages,  badge: 2 },
-  { to: '/admin/plans',         key: 'plans',         Icon: IconPlans,     badge: null },
-  { to: '/admin/content',       key: 'content',       Icon: IconContent,   badge: null },
-  { to: '/admin/users',         key: 'users',         Icon: IconUsers,     badge: null },
-  { to: '/admin/notifications', key: 'notifications', Icon: IconBell,      badge: 7 },
-  { to: '/admin/settings',      key: 'settings',      Icon: IconSettings,  badge: null },
-];
 
 export default function SuperAdminLayout({ children }) {
   const { t } = useI18n();
@@ -28,6 +17,22 @@ export default function SuperAdminLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(() => getStoredUser() || null);
+
+  // ⭐ عدد الرسائل غير المقروءة
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  // ⭐ الـ NAV جوه الـ component عشان نقدر نستخدم unreadMessages
+  const NAV = [
+    { to: '/admin/dashboard',     key: 'overview',      Icon: IconOverview,  badge: null },
+    { to: '/admin/academies',     key: 'academies',     Icon: IconAcademy,   badge: null },
+    { to: '/admin/requests',      key: 'requests',      Icon: IconRequests,  badge: null },
+    { to: '/admin/messages',      key: 'messages',      Icon: IconMessages,  badge: unreadMessages || null },
+    { to: '/admin/plans',         key: 'plans',         Icon: IconPlans,     badge: null },
+    { to: '/admin/content',       key: 'content',       Icon: IconContent,   badge: null },
+    { to: '/admin/users',         key: 'users',         Icon: IconUsers,     badge: null },
+    { to: '/admin/notifications', key: 'notifications', Icon: IconBell,      badge: null },
+    { to: '/admin/settings',      key: 'settings',      Icon: IconSettings,  badge: null },
+  ];
 
   useEffect(() => {
     const onResize = () => {
@@ -44,6 +49,28 @@ export default function SuperAdminLayout({ children }) {
     // تحديث أولي
     sync();
     return () => window.removeEventListener('storage', sync);
+  }, []);
+
+  // ⭐ جلب عدد الرسائل غير المقروءة كل دقيقة
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchUnread = async () => {
+      try {
+        const res = await contactService.unreadCount();
+        if (mounted) setUnreadMessages(res?.count ?? 0);
+      } catch (err) {
+        // بنتجاهل الخطأ عشان ما يزعجش المستخدم
+        console.debug('Failed to fetch unread count:', err?.message);
+      }
+    };
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 60_000); // كل دقيقة
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const closeMobile = () => setMobileOpen(false);
@@ -115,14 +142,14 @@ export default function SuperAdminLayout({ children }) {
                   {!collapsed && (
                     <>
                       <span className="flex-1 truncate">{t(`admin.nav.${key}`)}</span>
-                      {badge != null && (
+                      {badge != null && badge > 0 && (
                         <span className="shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-amber-400 text-[#0f2744] text-[10px] font-bold flex items-center justify-center">
-                          {badge}
+                          {badge > 99 ? '99+' : badge}
                         </span>
                       )}
                     </>
                   )}
-                  {collapsed && badge != null && (
+                  {collapsed && badge != null && badge > 0 && (
                     <span className="absolute top-1 end-1 w-2 h-2 rounded-full bg-amber-400" />
                   )}
                 </>
