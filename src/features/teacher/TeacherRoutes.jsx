@@ -29,7 +29,7 @@ import SettingsPage from './pages/settings/SettingsPage';
 import SecurityPage from './pages/settings/SecurityPage';
 import TenantSettingsTab from './pages/settings/TenantSettingsTab';
 import ProfileTab from './pages/settings/ProfileTab';
-import AssistantsTab from './pages/settings/AssistantsTab';
+import AssistantsTab from './pages/settings/assistants/AssistantsTab';
 import TeacherGuard from './TeacherGuard';
 
 export default function TeacherRoutes() {

@@ -31,8 +31,7 @@ export default function SuperAdminLayout({ children }) {
     { to: '/admin/content',       key: 'content',       Icon: IconContent,   badge: null },
     { to: '/admin/users',         key: 'users',         Icon: IconUsers,     badge: null },
     { to: '/admin/notifications', key: 'notifications', Icon: IconBell,      badge: null },
-    { to: '/admin/settings',      key: 'settings',      Icon: IconSettings,  badge: null },
-  ];
+    { to: '/admin/settings/profile', key: 'settings',   Icon: IconSettings,  badge: null },  ];
 
   useEffect(() => {
     const onResize = () => {
@@ -233,7 +232,7 @@ export default function SuperAdminLayout({ children }) {
               {/* User box → clickable → profile */}
               <button
                 type="button"
-                onClick={() => navigate('/admin/settings')}
+                onClick={() => navigate('/admin/settings/profile')}
                 className="flex items-center gap-2 ps-2 ms-1 border-s border-slate-200 hover:opacity-90 transition text-start"
                 title="البروفايل"
               >

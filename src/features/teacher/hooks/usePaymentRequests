@@ -1,0 +1,61 @@
+// src/features/teacher/hooks/usePaymentRequests.js
+import { useCallback, useEffect, useState } from 'react';
+import teacherApi from '@/shared/api/teacherApi';
+
+const EMPTY = { data: [], total: 0, page: 1, limit: 20, totalPages: 1 };
+
+export function usePaymentRequests(initialParams = {}) {
+  const [params, setParams] = useState({
+    page: 1,
+    limit: 20,
+    search: '',
+    status: '',
+    ...initialParams,
+  });
+  const [result, setResult] = useState(EMPTY);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const clean = {};
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== '' && v !== null && v !== undefined) clean[k] = v;
+      });
+
+      const res = await teacherApi.getPaymentRequests(clean);
+      const payload = res?.data ?? res;
+      const items = payload?.data ?? (Array.isArray(payload) ? payload : []);
+
+      setResult({
+        data: items,
+        total: payload?.total ?? items.length,
+        page: payload?.page ?? params.page ?? 1,
+        limit: payload?.limit ?? params.limit ?? 20,
+        totalPages: payload?.totalPages ?? 1,
+      });
+    } catch (err) {
+      setError(
+        err?.response?.status === 403
+          ? 'ليس لديك صلاحية'
+          : err?.response?.data?.message || 'فشل تحميل المدفوعات',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [params]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const updateParams = useCallback((patch) => {
+    setParams((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  return { ...result, params, loading, error, refetch: fetchData, updateParams };
+}
+
+export default usePaymentRequests;

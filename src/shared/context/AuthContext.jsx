@@ -28,58 +28,45 @@ export function AuthProvider({ children }) {
 
     async function bootstrap() {
       const token = getAccessToken();
-      console.log('🔵 [AuthProvider] bootstrap — token?', !!token);
-
       if (!token) {
-        console.log('🔴 [AuthProvider] no token, skipping bootstrap');
         if (mounted) setIsLoading(false);
         return;
       }
 
       try {
         const tenantId = getTenantId();
-        console.log('🔵 [AuthProvider] calling /auth/me with tenantId:', tenantId);
-
         const data = await authService.me(tenantId);
-        console.log('🟢 [AuthProvider] /auth/me response:', data);
 
         if (!mounted) return;
 
         setUser(data.user ?? null);
         setMemberships(data.memberships ?? []);
 
-        if (data.currentTenant) {
-          setActiveTenant(data.currentTenant);
-          if (data.currentTenant.tenantId) {
-            setTenantId(data.currentTenant.tenantId);
-          }
-        } else {
-          const fallback =
-            (data.memberships || []).find((m) => m.tenantId === tenantId) ||
-            (data.memberships || [])[0];
+        // ✅ الحل: استخراج الـ Tenant ID من أي مكان متاح
+        let finalTenantId = null;
 
-          if (fallback) {
-            setActiveTenant(fallback);
-            setTenantId(fallback.tenantId);
-          }
+        if (data.currentTenant) {
+          finalTenantId = data.currentTenant.tenantId || data.currentTenant.id;
+          setActiveTenant(data.currentTenant);
+        } else if (data.memberships && data.memberships.length > 0) {
+          const fallback = data.memberships.find((m) => m.tenantId === tenantId) || data.memberships[0];
+          finalTenantId = fallback.tenantId;
+          setActiveTenant(fallback);
+        }
+
+        // ✅ الحفظ الإجباري في الـ localStorage
+        if (finalTenantId) {
+          setTenantId(finalTenantId);
         }
       } catch (err) {
-        console.error('🔴 [AuthProvider] bootstrap failed:', err);
-        console.error('🔴 Status:', err?.response?.status);
-        console.error('🔴 Data:', err?.response?.data);
-
-        // ⚠️ لا نعمل clearAuth إلا لو 401 صريح
         const status = err?.response?.status;
         if (status === 401 || status === 403) {
-          console.warn('🔴 [AuthProvider] clearing auth due to', status);
           clearAuth();
           clearTenant();
           if (mounted) {
             setUser(null);
             setActiveTenant(null);
           }
-        } else {
-          console.warn('⚠️ [AuthProvider] NOT clearing auth (status=' + status + ')');
         }
       } finally {
         if (mounted) setIsLoading(false);
@@ -97,11 +84,17 @@ export function AuthProvider({ children }) {
     setUser(data.user ?? null);
     setMemberships(data.memberships ?? []);
 
+    let finalTenantId = null;
     if (data.currentTenant) {
+      finalTenantId = data.currentTenant.tenantId || data.currentTenant.id;
       setActiveTenant(data.currentTenant);
-      if (data.currentTenant.tenantId) {
-        setTenantId(data.currentTenant.tenantId);
-      }
+    } else if (data.memberships && data.memberships.length > 0) {
+      finalTenantId = data.memberships[0].tenantId;
+      setActiveTenant(data.memberships[0]);
+    }
+
+    if (finalTenantId) {
+      setTenantId(finalTenantId);
     }
     return data;
   }, []);
@@ -130,7 +123,9 @@ export function AuthProvider({ children }) {
 
     if (data.currentTenant) {
       setActiveTenant(data.currentTenant);
-      setTenantId(data.currentTenant.tenantId);
+      setTenantId(data.currentTenant.tenantId || data.currentTenant.id);
+    } else {
+      setTenantId(tenantId);
     }
     return data;
   }, []);
@@ -140,7 +135,10 @@ export function AuthProvider({ children }) {
     const data = await authService.me(tenantId);
     setUser(data.user ?? null);
     setMemberships(data.memberships ?? []);
-    if (data.currentTenant) setActiveTenant(data.currentTenant);
+    if (data.currentTenant) {
+      setActiveTenant(data.currentTenant);
+      setTenantId(data.currentTenant.tenantId || data.currentTenant.id);
+    }
     return data;
   }, []);
 

@@ -1,3 +1,4 @@
+// src/features/landing/LandingPage.jsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -14,6 +15,7 @@ import { getAccessToken, getStoredUser } from '../../shared/api/client';
 
 import LandingHeader from './components/LandingHeader';
 import LandingFooter from './components/LandingFooter';
+import ContactSection from './components/ContactSection';   // ✅ NEW
 
 // ============================================================
 // Constants
@@ -535,6 +537,11 @@ export default function LandingPage() {
           </div>
         </section>
       )}
+
+      {/* ============================================================
+          CONTACT — ✅ NEW
+         ============================================================ */}
+      <ContactSection />
 
       <LandingFooter />
 

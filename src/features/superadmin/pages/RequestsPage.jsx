@@ -5,14 +5,14 @@ import { useI18n } from '../../../shared/i18n';
 const TABS = [
   { key: 'all',           ar: 'الكل',              en: 'All' },
   { key: 'pending',       ar: 'طلبات جديدة',        en: 'New Requests' },
-  { key: 'under_review',  ar: 'بانتظار الدفع',      en: 'Awaiting Payment' },
+  { key: 'under_review',  ar: 'قيد المراجعة',      en: 'Under Review' },
   { key: 'approved',      ar: 'مفعّلة',             en: 'Active' },
   { key: 'rejected',      ar: 'مرفوضة',            en: 'Rejected' },
 ];
 
 const STATUS_META = {
   pending:      { ar: 'قيد المراجعة', en: 'Pending',          color: 'bg-amber-50 text-amber-700 border-amber-200',     dot: 'bg-amber-500' },
-  under_review: { ar: 'بانتظار الدفع', en: 'Awaiting Payment', color: 'bg-blue-50 text-blue-700 border-blue-200',         dot: 'bg-blue-500' },
+  under_review: { ar: 'قيد المراجعة', en: 'Under Review',     color: 'bg-blue-50 text-blue-700 border-blue-200',         dot: 'bg-blue-500' },
   approved:     { ar: 'مفعّلة',       en: 'Active',           color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
   rejected:     { ar: 'مرفوضة',       en: 'Rejected',         color: 'bg-rose-50 text-rose-700 border-rose-200',         dot: 'bg-rose-500' },
 };
@@ -35,11 +35,6 @@ export default function RequestsPage() {
   const [error, setError]     = useState('');
   const [actionId, setActionId] = useState(null);
 
-  const [approveModal, setApproveModal]   = useState(null);
-  const [approveAmount, setApproveAmount] = useState('');
-  const [approveNotes, setApproveNotes]   = useState('');
-  const [approveSaving, setApproveSaving] = useState(false);
-
   const [rejectModal, setRejectModal]         = useState(null);
   const [rejectReason, setRejectReason]       = useState('');
   const [rejectSaving, setRejectSaving]       = useState(false);
@@ -59,29 +54,7 @@ export default function RequestsPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const openApproveModal = (sub) => {
-    setApproveModal(sub);
-    setApproveAmount(String(Number(sub.amount) || 0));
-    setApproveNotes(sub.notes || '');
-  };
-
-  const submitApprovePlan = async () => {
-    if (!approveModal) return;
-    try {
-      setApproveSaving(true);
-      await subscriptionRequestsService.approvePlan(approveModal.id, {
-        amount: Number(approveAmount),
-        notes: approveNotes.trim() || undefined,
-      });
-      setApproveModal(null);
-      await fetchData();
-    } catch (e) {
-      setError(e?.response?.data?.message || (isAr ? 'فشل الموافقة' : 'Approve failed'));
-    } finally {
-      setApproveSaving(false);
-    }
-  };
-
+  // ✅ زرار الموافقة بيعمل التفعيل على طول
   const handleApprovePayment = async (sub) => {
     const ok = window.confirm(
       isAr
@@ -91,6 +64,7 @@ export default function RequestsPage() {
     if (!ok) return;
     try {
       setActionId(sub.id);
+      // بيبعت الطلب لـ endpoint تفعيل الدفع
       await subscriptionRequestsService.approvePayment(sub.id);
       await fetchData();
     } catch (e) {
@@ -100,8 +74,9 @@ export default function RequestsPage() {
     }
   };
 
-  const openRejectModal = (sub, mode) => {
-    setRejectModal({ sub, mode });
+  // ✅ زرار الرفض بيفتح المودال عشان يكتب السبب
+  const openRejectModal = (sub) => {
+    setRejectModal(sub);
     setRejectReason('');
   };
 
@@ -109,12 +84,7 @@ export default function RequestsPage() {
     if (!rejectModal) return;
     try {
       setRejectSaving(true);
-      const { sub, mode } = rejectModal;
-      if (mode === 'plan') {
-        await subscriptionRequestsService.rejectPlan(sub.id, rejectReason.trim());
-      } else {
-        await subscriptionRequestsService.rejectPayment(sub.id, rejectReason.trim());
-      }
+      await subscriptionRequestsService.rejectPayment(rejectModal.id, rejectReason.trim());
       setRejectModal(null);
       await fetchData();
     } catch (e) {
@@ -213,66 +183,10 @@ export default function RequestsPage() {
               item={it}
               isAr={isAr}
               loading={actionId === it.id}
-              onApprovePlan={() => openApproveModal(it)}
-              onRejectPlan={() => openRejectModal(it, 'plan')}
               onApprovePayment={() => handleApprovePayment(it)}
-              onRejectPayment={() => openRejectModal(it, 'payment')}
+              onRejectPayment={() => openRejectModal(it)}
             />
           ))}
-        </div>
-      )}
-
-      {/* Approve Plan Modal */}
-      {approveModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => !approveSaving && setApproveModal(null)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div className="px-6 pt-5 pb-3 border-b border-slate-100">
-              <h3 className="text-lg font-bold text-slate-800">
-                {isAr ? 'الموافقة على الطلب' : 'Approve Request'}
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                {approveModal.tenant?.name} → <span className="font-mono">{approveModal.plan}</span>
-              </p>
-            </div>
-
-            <div className="px-6 py-5 space-y-4">
-              <label className="block">
-                <span className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  {isAr ? 'المبلغ المطلوب (ج.م) *' : 'Amount (EGP) *'}
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={approveAmount}
-                  onChange={(e) => setApproveAmount(e.target.value)}
-                  className="input-lite"
-                />
-              </label>
-
-              <label className="block">
-                <span className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  {isAr ? 'تعليمات الدفع' : 'Payment instructions'}
-                </span>
-                <textarea
-                  rows={4}
-                  value={approveNotes}
-                  onChange={(e) => setApproveNotes(e.target.value)}
-                  className="input-lite resize-none"
-                  placeholder={isAr ? 'مثال: تحويل على حساب بنك مصر 123456789' : 'E.g. Transfer to Bank Misr account 123456789'}
-                />
-              </label>
-            </div>
-
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
-              <button onClick={() => setApproveModal(null)} disabled={approveSaving} className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 text-sm font-medium">
-                {isAr ? 'إلغاء' : 'Cancel'}
-              </button>
-              <button onClick={submitApprovePlan} disabled={approveSaving} className="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold shadow-sm disabled:opacity-50">
-                {approveSaving ? '...' : (isAr ? 'تأكيد الموافقة' : 'Confirm')}
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
@@ -282,23 +196,24 @@ export default function RequestsPage() {
           <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
             <div className="px-6 pt-5 pb-3 border-b border-slate-100">
               <h3 className="text-lg font-bold text-slate-800">
-                {rejectModal.mode === 'plan'
-                  ? (isAr ? 'رفض الطلب' : 'Reject Request')
-                  : (isAr ? 'رفض إثبات الدفع' : 'Reject Payment Proof')}
+                {isAr ? 'رفض إثبات الدفع' : 'Reject Payment Proof'}
               </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                {rejectModal.tenant?.name} → <span className="font-mono">{rejectModal.plan}</span>
+              </p>
             </div>
 
             <div className="px-6 py-5">
               <label className="block">
                 <span className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  {isAr ? 'السبب' : 'Reason'}
+                  {isAr ? 'سبب الرفض (سيظهر للمدرس)' : 'Reason (shown to teacher)'}
                 </span>
                 <textarea
                   rows={4}
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   className="input-lite resize-none"
-                  placeholder={isAr ? 'اكتب سبباً واضحاً...' : 'Write a clear reason...'}
+                  placeholder={isAr ? 'مثال: الصورة غير واضحة، يرجى رفع إيصال آخر...' : 'E.g. Image is blurry, please upload another receipt...'}
                 />
               </label>
             </div>
@@ -335,12 +250,12 @@ function StatCard({ label, value, color }) {
   );
 }
 
-function RequestCard({ item, isAr, loading, onApprovePlan, onRejectPlan, onApprovePayment, onRejectPayment }) {
+function RequestCard({ item, isAr, loading, onApprovePayment, onRejectPayment }) {
   const meta = STATUS_META[item.status] || STATUS_META.pending;
   const paymentMeta = item.paymentStatus ? PAYMENT_META[item.paymentStatus] : null;
 
-  const canApprovePlan   = item.status === 'pending';
-  const canReviewPayment = item.status === 'under_review' && item.paymentStatus === 'under_review';
+  // ✅ الزراير هتظهر بس لو المدرس رفع صورة (paymentStatus === 'under_review')
+  const canReviewPayment = item.paymentStatus === 'under_review';
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition flex flex-col">
@@ -373,13 +288,6 @@ function RequestCard({ item, isAr, loading, onApprovePlan, onRejectPlan, onAppro
         {item.tenant?.owner?.email && <Info label={isAr ? 'البريد' : 'Email'} value={item.tenant.owner.email} />}
       </div>
 
-      {item.notes && item.status === 'under_review' && (
-        <div className="mt-4 rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 text-xs text-blue-800">
-          <div className="font-semibold mb-1">{isAr ? 'تعليمات الدفع:' : 'Payment instructions:'}</div>
-          <div className="whitespace-pre-line">{item.notes}</div>
-        </div>
-      )}
-
       {paymentMeta && (
         <div className={`mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border ${paymentMeta.color}`}>
           💳 {isAr ? paymentMeta.ar : paymentMeta.en}
@@ -409,30 +317,20 @@ function RequestCard({ item, isAr, loading, onApprovePlan, onRejectPlan, onAppro
       )}
 
       <div className="mt-auto pt-5 flex items-center gap-2">
-        {canApprovePlan && (
+        {/* ✅ الزراير بتظهر بس لو الإيصال مرفوع */}
+        {canReviewPayment && (
           <>
-            <button onClick={onApprovePlan} disabled={loading} className="flex-1 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold shadow-sm disabled:opacity-50">
-              {isAr ? '✓ موافقة' : '✓ Approve'}
+            <button onClick={onApprovePayment} disabled={loading} className="flex-1 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold shadow-sm disabled:opacity-50">
+              {loading ? '...' : (isAr ? '✓ موافقة وتفعيل' : '✓ Approve & Activate')}
             </button>
-            <button onClick={onRejectPlan} disabled={loading} className="flex-1 px-3 py-2 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-sm font-semibold disabled:opacity-50">
+            <button onClick={onRejectPayment} disabled={loading} className="flex-1 px-3 py-2 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-sm font-semibold disabled:opacity-50">
               {isAr ? '✕ رفض' : '✕ Reject'}
             </button>
           </>
         )}
 
-        {canReviewPayment && (
-          <>
-            <button onClick={onApprovePayment} disabled={loading} className="flex-1 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold shadow-sm disabled:opacity-50">
-              {loading ? '...' : (isAr ? '✓ تأكيد الدفع' : '✓ Confirm Payment')}
-            </button>
-            <button onClick={onRejectPayment} disabled={loading} className="flex-1 px-3 py-2 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-sm font-semibold disabled:opacity-50">
-              {isAr ? '✕ رفض الإيصال' : '✕ Reject Proof'}
-            </button>
-          </>
-        )}
-
-        {item.status === 'under_review' && item.paymentStatus !== 'under_review' && (
-          <div className="w-full text-center text-xs text-blue-500 py-2">
+        {!canReviewPayment && item.status !== 'approved' && item.status !== 'rejected' && (
+          <div className="w-full text-center text-xs text-amber-500 py-2">
             ⏳ {isAr ? 'بانتظار رفع إثبات الدفع من المدرس' : 'Waiting for teacher to upload proof'}
           </div>
         )}

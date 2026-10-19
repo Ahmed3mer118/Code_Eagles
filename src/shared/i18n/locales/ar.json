@@ -85,22 +85,6 @@
     "role": "الدور",
     "enter": "دخول"
   },
-  "dashboard": {
-    "loading": "جاري تحميل الداشبورد...",
-    "welcome": "أهلاً {name} 👋",
-    "welcomeRole": "Welcome, {role} 👋",
-    "youAreIn": "أهلاً {name} — أنت الآن في {tenant}",
-    "currentRole": "الدور الحالي",
-    "academy": "الأكاديمية",
-    "membershipsCount": "عدد العضويات",
-    "switchTenant": "تبديل الأكاديمية",
-    "logout": "خروج",
-    "comingSoonTitle": "لوحة التحكم قيد الإنشاء",
-    "comingSoonText": "دي صفحة مؤقتة لحد ما نكمّل باقي الـ features بتاعتك",
-    "errorTitle": "حدث خطأ",
-    "role": "Role",
-    "tenant": "Tenant"
-  },
   "roles": {
     "teacher": "معلّم",
     "student": "طالب",
@@ -228,14 +212,22 @@
     },
     "pages": {
       "placeholder": "القسم دا جاهز للربط مع الـ API. ابدأ بإضافة الجداول والـ filters اللي تحتاجها.",
-      "academies":     { "title": "الأكاديميات",           "subtitle": "إدارة كل الأكاديميات المسجلة" },
-      "requests":      { "title": "طلبات الاشتراك",         "subtitle": "مراجعة والموافقة على الطلبات" },
-      "messages":      { "title": "رسائل التواصل",          "subtitle": "رسائل الزوار وأصحاب الأكاديميات" },
-      "plans":         { "title": "باقات المنصة",           "subtitle": "إدارة باقات الاشتراك والأسعار" },
-      "content":       { "title": "إدارة محتوى المنصة",     "subtitle": "الصفحات، المقالات، والموارد" },
-      "users":         { "title": "إدارة المستخدمين",        "subtitle": "كل حسابات المستخدمين والأدوار" },
-      "notifications": { "title": "الإشعارات",              "subtitle": "إرسال وإدارة الإشعارات" },
-      "settings":      { "title": "الإعدادات",              "subtitle": "إعدادات المنصة العامة" }
+      "academies": { "title": "الأكاديميات", "subtitle": "إدارة كل الأكاديميات المسجلة" },
+      "requests": { "title": "طلبات الاشتراك", "subtitle": "مراجعة والموافقة على الطلبات" },
+      "messages": { "title": "رسائل التواصل", "subtitle": "رسائل الزوار وأصحاب الأكاديميات" },
+      "plans": { "title": "باقات المنصة", "subtitle": "إدارة باقات الاشتراك والأسعار" },
+      "content": { "title": "إدارة محتوى المنصة", "subtitle": "الصفحات، المقالات، والموارد" },
+      "users": { "title": "إدارة المستخدمين", "subtitle": "كل حسابات المستخدمين والأدوار" },
+      "notifications": { "title": "الإشعارات", "subtitle": "إرسال وإدارة الإشعارات" },
+      "settings": { "title": "الإعدادات", "subtitle": "إعدادات المنصة العامة" }
+    },
+    "settings": {
+      "title": "إعدادات الحساب",
+      "subtitle": "إدارة بياناتك الشخصية وإعدادات الأمان",
+      "tabs": {
+        "profile": "الملف الشخصي",
+        "security": "الأمان"
+      }
     },
     "profile": {
       "headerSubtitle": "يمكنك تعديل اسمك ورقم هاتفك من هنا.",
@@ -252,6 +244,7 @@
       "email": "البريد الإلكتروني",
       "accountType": "نوع الحساب",
       "verified": "موثّق",
+      "unverified": "غير موثّق",
       "changePhoto": "تغيير الصورة",
       "logout": "تسجيل الخروج",
       "logoutDesc": "سيتم إنهاء الجلسة الحالية فقط",
@@ -262,7 +255,42 @@
       "updateError": "تعذّر حفظ التغييرات",
       "loadError": "تعذّر تحميل بيانات البروفايل",
       "photoError": "تعذّر رفع الصورة",
-      "profileTooltip": "البروفايل"
+      "profileTooltip": "البروفايل",
+      "cardTitle": "الملف الشخصي",
+      "cardSubtitle": "إدارة معلومات حسابك الشخصي",
+      "emailLockedHint": "لا يمكن تغيير البريد الإلكتروني. تواصل مع الدعم لو محتاج تعديله.",
+      "preferredLanguage": "اللغة المفضلة",
+      "languageAr": "العربية",
+      "languageEn": "English",
+      "saveBtn": "حفظ التغييرات",
+      "savingBtn": "جاري الحفظ...",
+      "loadFailedTitle": "تعذّر تحميل البيانات",
+      "loadFailedHint": "حاول تحديث الصفحة",
+      "toastSaveSuccess": "تم حفظ البيانات بنجاح ✅",
+      "toastUploadSuccess": "تم رفع الصورة ✅",
+      "toastDeleteSuccess": "تم حذف الصورة ✅"
+    },
+    "security": {
+      "title": "الأمان",
+      "changePasswordTitle": "تغيير كلمة المرور",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "updatePassword": "تحديث كلمة المرور",
+      "updating": "جاري التحديث...",
+      "passwordMismatch": "كلمتا المرور غير متطابقتين",
+      "passwordTooShort": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+      "passwordChanged": "تم تغيير كلمة المرور بنجاح ✅",
+      "passwordChangeError": "حدث خطأ، حاول مرة أخرى",
+      "sessionsTitle": "الجلسات النشطة",
+      "revokeAll": "إنهاء كل الجلسات",
+      "noSessions": "لا توجد جلسات نشطة",
+      "currentSession": "الحالية",
+      "unknownDevice": "جهاز غير معروف",
+      "revoke": "إنهاء",
+      "loading": "جاري التحميل...",
+      "historyTitle": "سجل تسجيل الدخول",
+      "noHistory": "لا يوجد سجل"
     }
   },
   "landing": {
@@ -317,14 +345,14 @@
       "subtitle": "اعثر على المسار المناسب للبرمجة أو التحضير للثانوية العامة.",
       "items": {
         "programming": { "title": "برمجة", "desc": "أساسيات هندسة البرمجيات والبرمجة" },
-        "frontend":    { "title": "واجهات أمامية", "desc": "تطوير واجهات حديثة وReact" },
-        "backend":     { "title": "واجهات خلفية", "desc": "واجهات برمجية وقواعد بيانات" },
-        "ai":          { "title": "ذكاء اصطناعي", "desc": "تعلم آلي وأدوات ذكية" },
-        "data":        { "title": "علم البيانات", "desc": "تحليلات وبيانات وسير عمل Python" },
-        "cyber":       { "title": "أمن سيبراني", "desc": "أساسيات الأمان والحماية" },
-        "g1":          { "title": "أولى ثانوي", "desc": "منهج أولى ثانوي" },
-        "g2":          { "title": "ثانية ثانوي", "desc": "تحضير ثانية ثانوي" },
-        "g3":          { "title": "ثالثة ثانوي", "desc": "تحضير ثالثة ثانوي والجامعة" }
+        "frontend": { "title": "واجهات أمامية", "desc": "تطوير واجهات حديثة وReact" },
+        "backend": { "title": "واجهات خلفية", "desc": "واجهات برمجية وقواعد بيانات" },
+        "ai": { "title": "ذكاء اصطناعي", "desc": "تعلم آلي وأدوات ذكية" },
+        "data": { "title": "علم البيانات", "desc": "تحليلات وبيانات وسير عمل Python" },
+        "cyber": { "title": "أمن سيبراني", "desc": "أساسيات الأمان والحماية" },
+        "g1": { "title": "أولى ثانوي", "desc": "منهج أولى ثانوي" },
+        "g2": { "title": "ثانية ثانوي", "desc": "تحضير ثانية ثانوي" },
+        "g3": { "title": "ثالثة ثانوي", "desc": "تحضير ثالثة ثانوي والجامعة" }
       }
     },
     "features": {
@@ -333,13 +361,13 @@
       "subtitle": "كل ما تحتاجه للتعليم والتعلم والنمو — بثقة وتجربة عصرية.",
       "items": {
         "teachers": { "title": "مدرسون خبراء", "desc": "تعلم من مدربين موثقين بسجل نتائج مثبت." },
-        "live":     { "title": "حصص مباشرة", "desc": "انضم لجدول حصص مع تفاعل مباشر مع المدرس." },
+        "live": { "title": "حصص مباشرة", "desc": "انضم لجدول حصص مع تفاعل مباشر مع المدرس." },
         "recorded": { "title": "محاضرات مسجلة", "desc": "شاهد الدروس في أي وقت مع متابعة التقدم." },
-        "quizzes":  { "title": "اختبارات", "desc": "تدرّب عبر امتحانات تعزز نواتج التعلم." },
-        "certs":    { "title": "شهادات", "desc": "احتفل بالإنجازات والمحطات المهمة." },
-        "parent":   { "title": "لوحة ولي الأمر", "desc": "يتابع الأولياء التقدم والحضور والنتائج." },
-        "mobile":   { "title": "متوافق مع الجوال", "desc": "تجربة سريعة ومناسبة للمس على الهاتف." },
-        "smart":    { "title": "أدوات تعلم ذكية", "desc": "دعم ذكي للمراجعة والملاحظات ومسارات الدراسة." }
+        "quizzes": { "title": "اختبارات", "desc": "تدرّب عبر امتحانات تعزز نواتج التعلم." },
+        "certs": { "title": "شهادات", "desc": "احتفل بالإنجازات والمحطات المهمة." },
+        "parent": { "title": "لوحة ولي الأمر", "desc": "يتابع الأولياء التقدم والحضور والنتائج." },
+        "mobile": { "title": "متوافق مع الجوال", "desc": "تجربة سريعة ومناسبة للمس على الهاتف." },
+        "smart": { "title": "أدوات تعلم ذكية", "desc": "دعم ذكي للمراجعة والملاحظات ومسارات الدراسة." }
       }
     },
     "testimonials": {
@@ -392,8 +420,80 @@
     }
   },
   "teacher": {
+    "tenantSettings": {
+    "title": "إعدادات الأكاديمية",
+    "subtitle": "قم بتعديل بيانات أكاديميتك، شعارها، ورابطها.",
+    "cover": "صورة الغلاف",
+    "noCover": "لا توجد صورة غلاف",
+    "changeCover": "تغيير الغلاف",
+    "logo": "شعار الأكاديمية",
+    "noLogo": "لا يوجد",
+    "uploadLogo": "رفع شعار",
+    "logoHint": "PNG أو JPG، بحد أقصى 5MB",
+    "name": "اسم الأكاديمية",
+    "namePlaceholder": "مثال: أكاديمية النجاح",
+    "slug": "الرابط (Slug)",
+    "slugWarning": "⚠️ تحذير: تغيير الرابط هيكسر أي روابط قديمة بتشاور على الأكاديمية",
+    "description": "الوصف",
+    "descriptionPlaceholder": "نبذة مختصرة عن الأكاديمية...",
+    "maxStudents": "الحد الأقصى للطلاب",
+    "maxAssistants": "الحد الأقصى للمساعدين",
+    "limitsHint": "محدد بواسطة الخطة الحالية",
+    "currentPlan": "الخطة الحالية",
+    "status": "حالة الأكاديمية",
+    "statusActive": "نشطة",
+    "statusInactive": "غير نشطة",
+    "approvalStatus": "حالة الموافقة",
+    "approvalApproved": "موافق عليها",
+    "approvalPending": "قيد المراجعة",
+    "approvalRejected": "مرفوضة",
+    "save": "حفظ التغييرات",
+    "saving": "جاري الحفظ...",
+    "cancel": "إلغاء",
+    "saveSuccess": "تم حفظ الإعدادات بنجاح",
+    "logoSuccess": "تم رفع الشعار بنجاح",
+    "coverSuccess": "تم رفع صورة الغلاف بنجاح",
+    "errorSave": "حدث خطأ أثناء الحفظ",
+    "errorLogo": "حدث خطأ أثناء رفع الشعار",
+    "errorCover": "حدث خطأ أثناء رفع الغلاف",
+    "forbidden": "ليس لديك صلاحية لتعديل إعدادات الأكاديمية. تواصل مع الدعم.",
+    "slugTaken": "الرابط (Slug) مستخدم بالفعل، اختر رابطاً آخر.",
+    "nameRequired": "اسم الأكاديمية مطلوب",
+    "slugRequired": "الرابط (Slug) مطلوب",
+    "imageOnly": "الملف يجب أن يكون صورة",
+    "logoTooBig": "حجم الصورة يجب أن يكون أقل من 5MB",
+    "coverTooBig": "حجم الصورة يجب أن يكون أقل من 10MB"
+  },
+    "groups": {
+      "subtitle": "إدارة مجموعات الطلاب",
+      "empty": "لا توجد مجموعات",
+      "emptyHint": "ابدأ بإضافة مجموعة جديدة"
+    },
+    "lectures": {
+      "subtitle": "إدارة المحاضرات والدروس",
+      "module": "الوحدة",
+      "selectCourse": "اختر كورس أولاً",
+      "selectModule": "اختر وحدة",
+      "addModule": "إضافة وحدة",
+      "addLecture": "إضافة محاضرة",
+      "noLectures": "لا توجد محاضرات"
+    },
     "layout": {
-      "title": "لوحة المدرس"
+      "title": "لوحة المدرس",
+      "status": {
+        "draft": "مسودة",
+        "published": "منشور",
+        "archived": "مؤرشف"
+      },
+      "courses": {
+        "subtitle": "إدارة الكورسات التعليمية",
+        "empty": "لا توجد كورسات",
+        "emptyHint": "ابدأ بإضافة كورس جديد",
+        "form": {
+          "subject": "المادة",
+          "term": "الترم الدراسي"
+        }
+      }
     },
     "menu": {
       "overview": "نظرة عامة",
@@ -432,56 +532,186 @@
         "subjects": "المواد",
         "revenue": "الإيرادات"
       },
+      "charts": {
+        "studentsGroups": "الطلاب والمجموعات",
+        "revenue": "الإيرادات (شهرياً)",
+        "subjectsDistribution": "توزيع المواد",
+        "summary": "ملخص سريع",
+        "students": "الطلاب",
+        "groups": "المجموعات",
+        "subjects": "المواد",
+        "other": "أخرى",
+        "totalStudents": "إجمالي الطلاب",
+        "totalGroups": "إجمالي المجموعات",
+        "totalSubjects": "إجمالي المواد",
+        "months": {
+          "jan": "يناير",
+          "feb": "فبراير",
+          "mar": "مارس",
+          "apr": "أبريل",
+          "may": "مايو",
+          "jun": "يونيو"
+        }
+      },
       "recentEnrollments": "أحدث طلبات الانضمام",
       "recentPayments": "أحدث المدفوعات",
       "viewAll": "عرض الكل"
+    },
+    "assistants": {
+      "title": "المساعدين",
+      "subtitle": "إدارة فريق المساعدين والصلاحيات",
+      "addNew": "إضافة مساعد",
+      "search": "ابحث بالاسم أو البريد...",
+      "filterStatus": "الحالة",
+      "allStatuses": "كل الحالات",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "suspended": "موقوف",
+      "empty": "لا يوجد مساعدين",
+      "emptyHint": "ابدأ بإضافة مساعد جديد لفريقك",
+      "loading": "جاري التحميل...",
+      "showingResults": "عرض {count} من {total}",
+      "table": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "groups": "المجموعات",
+        "permissions": "الصلاحيات",
+        "status": "الحالة",
+        "createdAt": "تاريخ الإضافة",
+        "actions": "الإجراءات"
+      },
+      "actions": {
+        "view": "عرض",
+        "edit": "تعديل",
+        "permissions": "الصلاحيات",
+        "groups": "المجموعات",
+        "delete": "حذف",
+        "save": "حفظ",
+        "cancel": "إلغاء",
+        "confirm": "تأكيد"
+      },
+      "form": {
+        "createTitle": "إضافة مساعد جديد",
+        "editTitle": "تعديل بيانات المساعد",
+        "name": "الاسم الكامل",
+        "namePlaceholder": "أدخل اسم المساعد",
+        "email": "البريد الإلكتروني",
+        "emailPlaceholder": "assistant@example.com",
+        "phone": "رقم الهاتف",
+        "phonePlaceholder": "01xxxxxxxxx",
+        "password": "كلمة المرور",
+        "passwordPlaceholder": "اتركها فارغة لتوليد كلمة مرور تلقائية",
+        "passwordHint": "لو سيبتها فاضية، هيتم توليد كلمة مرور وإرسالها للمساعد",
+        "permissions": "الصلاحيات",
+        "permissionsHint": "اختر الصلاحيات اللي عايز تديها للمساعد",
+        "groups": "المجموعات",
+        "groupsHint": "اختر المجموعات اللي هيشرف عليها المساعد",
+        "status": "الحالة"
+      },
+      "permissions": {
+        "title": "صلاحيات المساعد",
+        "subtitle": "تحكم في إيه اللي المساعد يقدر يعمله",
+        "selectAll": "تحديد الكل",
+        "clearAll": "إلغاء الكل",
+        "saved": "تم حفظ الصلاحيات بنجاح"
+      },
+      "groups": {
+        "title": "تعيين المجموعات",
+        "subtitle": "اختر المجموعات اللي هيشرف عليها المساعد",
+        "noGroups": "لا توجد مجموعات متاحة",
+        "saved": "تم تعيين المجموعات بنجاح"
+      },
+      "delete": {
+        "title": "حذف المساعد",
+        "message": "هل أنت متأكد من حذف {name}؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirm": "نعم، احذف",
+        "success": "تم حذف المساعد بنجاح"
+      },
+      "messages": {
+        "createSuccess": "تم إضافة المساعد بنجاح",
+        "updateSuccess": "تم تحديث بيانات المساعد بنجاح",
+        "deleteSuccess": "تم حذف المساعد بنجاح",
+        "permissionsSuccess": "تم تحديث الصلاحيات بنجاح",
+        "groupsSuccess": "تم تعيين المجموعات بنجاح",
+        "error": "حدث خطأ، حاول مرة أخرى"
+      },
+      "permissionLabels": {
+        "user:read": "عرض المستخدمين",
+        "user:create": "إضافة مستخدمين",
+        "user:update": "تعديل المستخدمين",
+        "user:delete": "حذف المستخدمين",
+        "member:read": "عرض الأعضاء",
+        "member:create": "إضافة أعضاء",
+        "member:update": "تعديل الأعضاء",
+        "member:delete": "حذف الأعضاء",
+        "course:read": "عرض الكورسات",
+        "course:create": "إضافة كورسات",
+        "course:update": "تعديل الكورسات",
+        "course:delete": "حذف الكورسات",
+        "lesson:read": "عرض الدروس",
+        "lesson:create": "إضافة دروس",
+        "lesson:update": "تعديل الدروس",
+        "lesson:delete": "حذف الدروس",
+        "group:read": "عرض المجموعات",
+        "group:create": "إضافة مجموعات",
+        "group:update": "تعديل المجموعات",
+        "group:delete": "حذف المجموعات",
+        "payment:read": "عرض المدفوعات",
+        "payment:create": "إضافة مدفوعات",
+        "payment:update": "تعديل المدفوعات",
+        "assignment:read": "عرض الواجبات",
+        "assignment:create": "إضافة واجبات",
+        "assignment:update": "تعديل الواجبات",
+        "assignment:delete": "حذف الواجبات",
+        "quiz:read": "عرض الاختبارات",
+        "quiz:create": "إضافة اختبارات",
+        "quiz:update": "تعديل الاختبارات",
+        "quiz:delete": "حذف الاختبارات"
+      }
     }
   },
-   "sidebar": {
+  "sidebar": {
     "teacherPanel": "لوحة المدرس",
     "dashboard": "نظرة عامة",
-
     "studentsManagement": "إدارة الطلاب",
     "pendingRequests": "طلبات الانضمام المعلقة",
     "students": "الطلاب",
     "parents": "أولياء الأمور",
-
     "content": "المحتوى التعليمي",
     "subjects": "المواد",
     "courses": "الكورسات",
     "lectures": "المحاضرات",
     "groups": "المجموعات",
-
     "assessments": "التقييمات",
     "quizzes": "الاختبارات",
     "assignments": "الواجبات",
     "questionsBank": "بنك الأسئلة",
-
     "gamification": "التحفيز والنقاط",
     "points": "النقاط",
     "leaderboard": "لوحة المتصدرين",
-
     "reports": "التقارير",
     "reportsAnalytics": "التقارير والتحليلات",
-
     "payments": "المدفوعات",
     "pendingPayments": "مدفوعات معلقة",
     "paymentPlans": "خطط الدفع",
     "promoCodes": "أكواد الخصم",
     "paymentHistory": "سجل المدفوعات",
-
     "platformSubscription": "باقة المنصة",
     "mySubscription": "باقة المنصة",
     "paySubscription": "دفع اشتراك المنصة",
-
     "team": "الفريق",
     "assistants": "المساعدين",
-
     "notifications": "الإشعارات",
-
     "settings": "الإعدادات",
     "tenantSettings": "إعدادات الأكاديمية",
     "profile": "الملف الشخصي",
     "security": "الأمان"
+  },
+  "subjects": {
+    "title": "المواد",
+    "subtitle": "إدارة المواد الدراسية",
+    "empty": "لا توجد مواد",
+    "emptyHint": "ابدأ بإضافة مادة جديدة"
   }
 }

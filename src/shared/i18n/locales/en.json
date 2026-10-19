@@ -85,22 +85,6 @@
     "role": "Role",
     "enter": "Enter"
   },
-  "dashboard": {
-    "loading": "Loading dashboard...",
-    "welcome": "Welcome, {name} 👋",
-    "welcomeRole": "Welcome, {role} 👋",
-    "youAreIn": "Hi {name} — you're now in {tenant}",
-    "currentRole": "Current Role",
-    "academy": "Academy",
-    "membershipsCount": "Memberships",
-    "switchTenant": "Switch Academy",
-    "logout": "Logout",
-    "comingSoonTitle": "Dashboard Coming Soon",
-    "comingSoonText": "This is a temporary page until we finish the rest",
-    "errorTitle": "Something went wrong",
-    "role": "Role",
-    "tenant": "Tenant"
-  },
   "roles": {
     "teacher": "Teacher",
     "student": "Student",
@@ -228,14 +212,22 @@
     },
     "pages": {
       "placeholder": "This section is ready to connect with your API.",
-      "academies":     { "title": "Academies",              "subtitle": "Manage all registered academies" },
-      "requests":      { "title": "Subscription Requests",  "subtitle": "Review and approve requests" },
-      "messages":      { "title": "Contact Messages",       "subtitle": "Messages from visitors and owners" },
-      "plans":         { "title": "Platform Plans",         "subtitle": "Manage subscription plans and pricing" },
-      "content":       { "title": "Content Management",     "subtitle": "Pages, articles, and resources" },
-      "users":         { "title": "Users Management",       "subtitle": "All user accounts and roles" },
-      "notifications": { "title": "Notifications",          "subtitle": "Send and manage notifications" },
-      "settings":      { "title": "Settings",               "subtitle": "General platform settings" }
+      "academies": { "title": "Academies", "subtitle": "Manage all registered academies" },
+      "requests": { "title": "Subscription Requests", "subtitle": "Review and approve requests" },
+      "messages": { "title": "Contact Messages", "subtitle": "Messages from visitors and owners" },
+      "plans": { "title": "Platform Plans", "subtitle": "Manage subscription plans and pricing" },
+      "content": { "title": "Content Management", "subtitle": "Pages, articles, and resources" },
+      "users": { "title": "Users Management", "subtitle": "All user accounts and roles" },
+      "notifications": { "title": "Notifications", "subtitle": "Send and manage notifications" },
+      "settings": { "title": "Settings", "subtitle": "General platform settings" }
+    },
+    "settings": {
+      "title": "Account Settings",
+      "subtitle": "Manage your personal data and security settings",
+      "tabs": {
+        "profile": "Profile",
+        "security": "Security"
+      }
     },
     "profile": {
       "headerSubtitle": "You can edit your name and phone number from here.",
@@ -252,6 +244,7 @@
       "email": "Email Address",
       "accountType": "Account Type",
       "verified": "Verified",
+      "unverified": "Unverified",
       "changePhoto": "Change photo",
       "logout": "Sign Out",
       "logoutDesc": "This will end the current session only",
@@ -262,7 +255,42 @@
       "updateError": "Couldn't save changes",
       "loadError": "Couldn't load profile data",
       "photoError": "Couldn't upload photo",
-      "profileTooltip": "Profile"
+      "profileTooltip": "Profile",
+      "cardTitle": "Profile",
+      "cardSubtitle": "Manage your personal account info",
+      "emailLockedHint": "Email cannot be changed. Contact support if you need to update it.",
+      "preferredLanguage": "Preferred Language",
+      "languageAr": "العربية",
+      "languageEn": "English",
+      "saveBtn": "Save changes",
+      "savingBtn": "Saving...",
+      "loadFailedTitle": "Couldn't load data",
+      "loadFailedHint": "Try refreshing the page",
+      "toastSaveSuccess": "Saved successfully ✅",
+      "toastUploadSuccess": "Photo uploaded ✅",
+      "toastDeleteSuccess": "Photo removed ✅"
+    },
+    "security": {
+      "title": "Security",
+      "changePasswordTitle": "Change Password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "updatePassword": "Update password",
+      "updating": "Updating...",
+      "passwordMismatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordChanged": "Password changed successfully ✅",
+      "passwordChangeError": "Something went wrong, please try again",
+      "sessionsTitle": "Active Sessions",
+      "revokeAll": "Revoke all sessions",
+      "noSessions": "No active sessions",
+      "currentSession": "Current",
+      "unknownDevice": "Unknown device",
+      "revoke": "Revoke",
+      "loading": "Loading...",
+      "historyTitle": "Login History",
+      "noHistory": "No history"
     }
   },
   "landing": {
@@ -317,14 +345,14 @@
       "subtitle": "Find the right track for programming or high school preparation.",
       "items": {
         "programming": { "title": "Programming", "desc": "Software engineering and programming fundamentals" },
-        "frontend":    { "title": "Frontend", "desc": "Modern UIs and React" },
-        "backend":     { "title": "Backend", "desc": "APIs and databases" },
-        "ai":          { "title": "Artificial Intelligence", "desc": "Machine learning and smart tools" },
-        "data":        { "title": "Data Science", "desc": "Analytics, data, and Python workflows" },
-        "cyber":       { "title": "Cybersecurity", "desc": "Security and protection basics" },
-        "g1":          { "title": "Grade 10", "desc": "Grade 10 curriculum" },
-        "g2":          { "title": "Grade 11", "desc": "Grade 11 preparation" },
-        "g3":          { "title": "Grade 12", "desc": "Grade 12 and university prep" }
+        "frontend": { "title": "Frontend", "desc": "Modern UIs and React" },
+        "backend": { "title": "Backend", "desc": "APIs and databases" },
+        "ai": { "title": "Artificial Intelligence", "desc": "Machine learning and smart tools" },
+        "data": { "title": "Data Science", "desc": "Analytics, data, and Python workflows" },
+        "cyber": { "title": "Cybersecurity", "desc": "Security and protection basics" },
+        "g1": { "title": "Grade 10", "desc": "Grade 10 curriculum" },
+        "g2": { "title": "Grade 11", "desc": "Grade 11 preparation" },
+        "g3": { "title": "Grade 12", "desc": "Grade 12 and university prep" }
       }
     },
     "features": {
@@ -333,13 +361,13 @@
       "subtitle": "Everything you need to teach, learn, and grow — with confidence and a modern experience.",
       "items": {
         "teachers": { "title": "Expert Teachers", "desc": "Learn from verified instructors with proven results." },
-        "live":     { "title": "Live Classes", "desc": "Join schedules with direct interaction with the teacher." },
+        "live": { "title": "Live Classes", "desc": "Join schedules with direct interaction with the teacher." },
         "recorded": { "title": "Recorded Lectures", "desc": "Watch lessons anytime with progress tracking." },
-        "quizzes":  { "title": "Quizzes", "desc": "Practice with exams that reinforce learning outcomes." },
-        "certs":    { "title": "Certificates", "desc": "Celebrate achievements and important milestones." },
-        "parent":   { "title": "Parent Dashboard", "desc": "Parents track progress, attendance, and results." },
-        "mobile":   { "title": "Mobile Friendly", "desc": "Fast and touch-friendly mobile experience." },
-        "smart":    { "title": "Smart Learning Tools", "desc": "Smart support for review, notes, and study paths." }
+        "quizzes": { "title": "Quizzes", "desc": "Practice with exams that reinforce learning outcomes." },
+        "certs": { "title": "Certificates", "desc": "Celebrate achievements and important milestones." },
+        "parent": { "title": "Parent Dashboard", "desc": "Parents track progress, attendance, and results." },
+        "mobile": { "title": "Mobile Friendly", "desc": "Fast and touch-friendly mobile experience." },
+        "smart": { "title": "Smart Learning Tools", "desc": "Smart support for review, notes, and study paths." }
       }
     },
     "testimonials": {
@@ -392,96 +420,236 @@
     }
   },
   "teacher": {
+    "tenantSettings": {
+    "title": "Academy Settings",
+    "subtitle": "Edit your academy data, logo, and link.",
+    "cover": "Cover Image",
+    "noCover": "No cover image",
+    "changeCover": "Change Cover",
+    "logo": "Academy Logo",
+    "noLogo": "None",
+    "uploadLogo": "Upload Logo",
+    "logoHint": "PNG or JPG, max 5MB",
+    "name": "Academy Name",
+    "namePlaceholder": "e.g. Success Academy",
+    "slug": "Slug",
+    "slugWarning": "⚠️ Warning: changing the slug will break any old links pointing to this academy",
+    "description": "Description",
+    "descriptionPlaceholder": "A short bio about the academy...",
+    "maxStudents": "Max Students",
+    "maxAssistants": "Max Assistants",
+    "limitsHint": "Set by the current plan",
+    "currentPlan": "Current Plan",
+    "status": "Academy Status",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "approvalStatus": "Approval Status",
+    "approvalApproved": "Approved",
+    "approvalPending": "Pending",
+    "approvalRejected": "Rejected",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "saveSuccess": "Settings saved successfully",
+    "logoSuccess": "Logo uploaded successfully",
+    "coverSuccess": "Cover uploaded successfully",
+    "errorSave": "Error while saving",
+    "errorLogo": "Error while uploading logo",
+    "errorCover": "Error while uploading cover",
+    "forbidden": "You don't have permission to edit academy settings. Contact support.",
+    "slugTaken": "Slug is already taken, choose another.",
+    "nameRequired": "Academy name is required",
+    "slugRequired": "Slug is required",
+    "imageOnly": "File must be an image",
+    "logoTooBig": "Image must be less than 5MB",
+    "coverTooBig": "Image must be less than 10MB"
+  },
+    "groups": {
+      "subtitle": "Manage student groups",
+      "empty": "No groups found",
+      "emptyHint": "Start by adding a new group"
+    },
+    "lectures": {
+      "subtitle": "Manage lectures and lessons",
+      "module": "Module",
+      "selectCourse": "Select a course first",
+      "selectModule": "Select a module",
+      "addModule": "Add Module",
+      "addLecture": "Add Lecture",
+      "noLectures": "No lectures found"
+    },
+    "courses": {
+      "subtitle": "Manage educational courses",
+      "empty": "No courses found",
+      "emptyHint": "Start by adding a new course",
+      "form": {
+        "subject": "Subject",
+        "term": "Term"
+      }
+    },
     "layout": {
-      "title": "Teacher Dashboard"
+      "title": "Teacher Panel",
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      }
     },
-    "menu": {
-      "overview": "Overview",
-      "pendingRequests": "Pending Requests",
-      "groups": "Groups",
-      "subjects": "Subjects",
-      "students": "Students",
-      "quizzes": "Quizzes",
-      "assignments": "Assignments",
-      "reports": "Reports",
-      "reportsAnalytics": "Reports & Analytics",
-      "payments": "Payments",
-      "pendingPayments": "Pending Payments",
-      "paymentPlans": "Payment Plans",
-      "platformPlan": "Platform Plan",
-      "platformPay": "Pay Platform Subscription",
-      "promoCodes": "Promo Codes",
-      "paymentHistory": "Payment History",
-      "settings": "Settings"
-    },
-    "notifications": {
-      "title": "Notifications",
-      "empty": "No notifications",
-      "markAllRead": "Mark all as read"
-    },
-    "user": {
-      "profile": "Profile",
-      "settings": "Settings",
-      "logout": "Logout"
-    },
-    "dashboard": {
-      "welcome": "Welcome",
-      "stats": {
-        "students": "Students",
+    "assistants": {
+      "title": "Assistants",
+      "subtitle": "Manage your assistant team and permissions",
+      "addNew": "Add Assistant",
+      "search": "Search by name or email...",
+      "filterStatus": "Status",
+      "allStatuses": "All Statuses",
+      "active": "Active",
+      "inactive": "Inactive",
+      "suspended": "Suspended",
+      "empty": "No assistants found",
+      "emptyHint": "Start by adding a new assistant to your team",
+      "loading": "Loading...",
+      "showingResults": "Showing {count} of {total}",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
         "groups": "Groups",
-        "subjects": "Subjects",
-        "revenue": "Revenue"
+        "permissions": "Permissions",
+        "status": "Status",
+        "createdAt": "Added At",
+        "actions": "Actions"
       },
-      "recentEnrollments": "Recent Enrollments",
-      "recentPayments": "Recent Payments",
-      "viewAll": "View all"
+      "actions": {
+        "view": "View",
+        "edit": "Edit",
+        "permissions": "Permissions",
+        "groups": "Groups",
+        "delete": "Delete",
+        "save": "Save",
+        "cancel": "Cancel",
+        "confirm": "Confirm"
+      },
+      "form": {
+        "createTitle": "Add New Assistant",
+        "editTitle": "Edit Assistant",
+        "name": "Full Name",
+        "namePlaceholder": "Enter assistant name",
+        "email": "Email",
+        "emailPlaceholder": "assistant@example.com",
+        "phone": "Phone Number",
+        "phonePlaceholder": "01xxxxxxxxx",
+        "password": "Password",
+        "passwordPlaceholder": "Leave empty to auto-generate",
+        "passwordHint": "If left empty, a password will be generated and sent to the assistant",
+        "permissions": "Permissions",
+        "permissionsHint": "Select the permissions to grant this assistant",
+        "groups": "Groups",
+        "groupsHint": "Select the groups this assistant will supervise",
+        "status": "Status"
+      },
+      "permissions": {
+        "title": "Assistant Permissions",
+        "subtitle": "Control what this assistant can do",
+        "selectAll": "Select All",
+        "clearAll": "Clear All",
+        "saved": "Permissions saved successfully"
+      },
+      "groups": {
+        "title": "Assign Groups",
+        "subtitle": "Select groups this assistant will supervise",
+        "noGroups": "No groups available",
+        "saved": "Groups assigned successfully"
+      },
+      "delete": {
+        "title": "Delete Assistant",
+        "message": "Are you sure you want to delete {name}? This action cannot be undone.",
+        "confirm": "Yes, Delete",
+        "success": "Assistant deleted successfully"
+      },
+      "messages": {
+        "createSuccess": "Assistant added successfully",
+        "updateSuccess": "Assistant updated successfully",
+        "deleteSuccess": "Assistant deleted successfully",
+        "permissionsSuccess": "Permissions updated successfully",
+        "groupsSuccess": "Groups assigned successfully",
+        "error": "Something went wrong, please try again"
+      },
+      "permissionLabels": {
+        "user:read": "View Users",
+        "user:create": "Create Users",
+        "user:update": "Update Users",
+        "user:delete": "Delete Users",
+        "member:read": "View Members",
+        "member:create": "Create Members",
+        "member:update": "Update Members",
+        "member:delete": "Delete Members",
+        "course:read": "View Courses",
+        "course:create": "Create Courses",
+        "course:update": "Update Courses",
+        "course:delete": "Delete Courses",
+        "lesson:read": "View Lessons",
+        "lesson:create": "Create Lessons",
+        "lesson:update": "Update Lessons",
+        "lesson:delete": "Delete Lessons",
+        "group:read": "View Groups",
+        "group:create": "Create Groups",
+        "group:update": "Update Groups",
+        "group:delete": "Delete Groups",
+        "payment:read": "View Payments",
+        "payment:create": "Create Payments",
+        "payment:update": "Update Payments",
+        "assignment:read": "View Assignments",
+        "assignment:create": "Create Assignments",
+        "assignment:update": "Update Assignments",
+        "assignment:delete": "Delete Assignments",
+        "quiz:read": "View Quizzes",
+        "quiz:create": "Create Quizzes",
+        "quiz:update": "Update Quizzes",
+        "quiz:delete": "Delete Quizzes"
+      }
     }
   },
   "sidebar": {
     "teacherPanel": "Teacher Panel",
     "dashboard": "Overview",
-
     "studentsManagement": "Students Management",
     "pendingRequests": "Pending Join Requests",
     "students": "Students",
     "parents": "Parents",
-
     "content": "Educational Content",
     "subjects": "Subjects",
     "courses": "Courses",
     "lectures": "Lectures",
     "groups": "Groups",
-
     "assessments": "Assessments",
     "quizzes": "Quizzes",
     "assignments": "Assignments",
     "questionsBank": "Questions Bank",
-
     "gamification": "Gamification & Points",
     "points": "Points",
     "leaderboard": "Leaderboard",
-
     "reports": "Reports",
     "reportsAnalytics": "Reports & Analytics",
-
     "payments": "Payments",
     "pendingPayments": "Pending Payments",
     "paymentPlans": "Payment Plans",
     "promoCodes": "Promo Codes",
     "paymentHistory": "Payment History",
-
     "platformSubscription": "Platform Subscription",
     "mySubscription": "My Subscription",
     "paySubscription": "Pay Subscription",
-
     "team": "Team",
     "assistants": "Assistants",
-
     "notifications": "Notifications",
-
     "settings": "Settings",
     "tenantSettings": "Academy Settings",
     "profile": "Profile",
     "security": "Security"
+  },
+  "subjects": {
+    "title": "Subjects",
+    "subtitle": "Manage Subjects",
+    "empty": "No subjects found",
+    "emptyHint": "Start by adding a new subject"
   }
 }
