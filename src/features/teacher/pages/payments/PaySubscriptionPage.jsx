@@ -12,26 +12,27 @@ export default function PaySubscriptionPage() {
   } = usePlatformSubscription();
 
   const [successMsg, setSuccessMsg] = useState('');
+  const [localError, setLocalError] = useState('');
   const [activeUploadId, setActiveUploadId] = useState(null);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
 
-  // بنجيب الطلبات اللي حالتها pending أو under_review
   const pendingRequests = history.filter(
-    (req) => req.status === 'pending' || req.status === 'under_review'
+    (req) => req.status === 'pending' || req.status === 'under_review',
   );
 
   const handleFileChange = (e) => {
+    setLocalError('');
     const selected = e.target.files?.[0];
     if (!selected) return;
 
     if (!selected.type.startsWith('image/')) {
-      alert('يرجى اختيار صورة فقط');
+      setLocalError('يرجى اختيار صورة فقط');
       return;
     }
     if (selected.size > 5 * 1024 * 1024) {
-      alert('حجم الصورة يجب أن يكون أقل من 5 ميجابايت');
+      setLocalError('حجم الصورة يجب أن يكون أقل من 5 ميجابايت');
       return;
     }
 
@@ -41,7 +42,12 @@ export default function PaySubscriptionPage() {
 
   const handleSubmit = async (e, subscriptionId) => {
     e.preventDefault();
-    if (!subscriptionId || !file) return;
+    setLocalError('');
+
+    if (!subscriptionId || !file) {
+      setLocalError('اختر صورة أولاً');
+      return;
+    }
 
     const res = await uploadAndSubmitProof(subscriptionId, file);
     if (res.success) {
@@ -50,15 +56,18 @@ export default function PaySubscriptionPage() {
       setPreview(null);
       setActiveUploadId(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
-      
       setTimeout(() => setSuccessMsg(''), 4000);
+    } else {
+      setLocalError(res.error || 'حدث خطأ أثناء الرفع');
     }
   };
 
   const openUploadForm = (subId) => {
+    setLocalError('');
     setActiveUploadId(subId);
     setFile(null);
     setPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   if (loading) {
@@ -78,9 +87,9 @@ export default function PaySubscriptionPage() {
         </p>
       </div>
 
-      {error && (
+      {(error || localError) && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">
-          {error}
+          {localError || error}
         </div>
       )}
 
@@ -92,7 +101,9 @@ export default function PaySubscriptionPage() {
 
       {pendingRequests.length === 0 ? (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-8 text-center">
-          <p className="text-yellow-800 font-bold mb-2 text-lg">لا توجد طلبات اشتراك معلقة</p>
+          <p className="text-yellow-800 font-bold mb-2 text-lg">
+            لا توجد طلبات اشتراك معلقة
+          </p>
           <p className="text-yellow-700 text-sm mb-4">
             اشتراكك الحالي مفعل، أو لا يوجد لديك طلبات قيد الانتظار تحتاج لرفع إيصال.
           </p>
@@ -105,15 +116,18 @@ export default function PaySubscriptionPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          <h2 className="text-lg font-bold mb-3 text-gray-700">طلباتك المعلقة:</h2>
-          
+          <h2 className="text-lg font-bold mb-3 text-gray-700">
+            طلباتك المعلقة:
+          </h2>
+
           {pendingRequests.map((req) => (
             <div key={req.id} className="bg-white border rounded-xl p-5 shadow-sm">
-              {/* تفاصيل الطلب */}
               <div className="flex flex-wrap gap-6 text-sm text-gray-700 mb-4 bg-gray-50 p-4 rounded-lg">
                 <div>
                   <span className="text-gray-500 block mb-1">الباقة</span>
-                  <span className="font-bold text-blue-700 text-base">{req.plan}</span>
+                  <span className="font-bold text-blue-700 text-base">
+                    {req.plan}
+                  </span>
                 </div>
                 <div>
                   <span className="text-gray-500 block mb-1">المبلغ</span>
@@ -121,19 +135,26 @@ export default function PaySubscriptionPage() {
                 </div>
                 <div>
                   <span className="text-gray-500 block mb-1">الحالة</span>
-                  <span className={`font-bold px-2 py-1 rounded text-xs ${
-                    req.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {req.status === 'pending' ? 'في انتظار الموافقة' : 'قيد المراجعة'}
+                  <span
+                    className={`font-bold px-2 py-1 rounded text-xs ${
+                      req.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {req.status === 'pending'
+                      ? 'في انتظار الموافقة'
+                      : 'قيد المراجعة'}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-500 block mb-1">تاريخ الطلب</span>
-                  <span className="font-bold text-base">{new Date(req.createdAt).toLocaleDateString('ar-EG')}</span>
+                  <span className="font-bold text-base">
+                    {new Date(req.createdAt).toLocaleDateString('ar-EG')}
+                  </span>
                 </div>
               </div>
 
-              {/* ملاحظات الرفض لو موجودة */}
               {req.paymentStatus === 'rejected' && req.rejectionReason && (
                 <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm">
                   <span className="font-bold">تم رفض الإيصال السابق: </span>
@@ -141,10 +162,14 @@ export default function PaySubscriptionPage() {
                 </div>
               )}
 
-              {/* فورم رفع الصورة للطلب ده */}
               {activeUploadId === req.id ? (
-                <form onSubmit={(e) => handleSubmit(e, req.id)} className="space-y-3 mt-4 border-t pt-4">
-                  <label className="block text-sm font-medium">صورة إثبات الدفع</label>
+                <form
+                  onSubmit={(e) => handleSubmit(e, req.id)}
+                  className="space-y-3 mt-4 border-t pt-4"
+                >
+                  <label className="block text-sm font-medium">
+                    صورة إثبات الدفع
+                  </label>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -154,7 +179,11 @@ export default function PaySubscriptionPage() {
                   />
                   {preview && (
                     <div className="border rounded-lg p-2 bg-gray-50 max-w-sm">
-                      <img src={preview} alt="معاينة" className="max-h-48 mx-auto rounded" />
+                      <img
+                        src={preview}
+                        alt="معاينة"
+                        className="max-h-48 mx-auto rounded"
+                      />
                     </div>
                   )}
                   <div className="flex gap-2 pt-2">
@@ -177,7 +206,6 @@ export default function PaySubscriptionPage() {
                 </form>
               ) : (
                 <div className="mt-2">
-                  {/* ✅ لو الإيصال قيد المراجعة، نعرض رسالة. لو مرفوض أو لسه مرفوعش، نعرض زرار الرفع */}
                   {req.paymentStatus === 'under_review' ? (
                     <div className="text-sm font-medium text-blue-600 bg-blue-50 px-4 py-2 rounded-lg inline-block">
                       تم رفع الإيصال، وهو الآن قيد المراجعة من الإدارة.
@@ -187,7 +215,9 @@ export default function PaySubscriptionPage() {
                       onClick={() => openUploadForm(req.id)}
                       className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
                     >
-                      {req.paymentStatus === 'rejected' ? 'إعادة رفع إثبات الدفع' : 'رفع إثبات الدفع لهذه الباقة'}
+                      {req.paymentStatus === 'rejected'
+                        ? 'إعادة رفع إثبات الدفع'
+                        : 'رفع إثبات الدفع لهذه الباقة'}
                     </button>
                   )}
                 </div>

@@ -1,7 +1,6 @@
 // src/shared/api/contactService.ts
 import apiClient from './client';
 
-/* ======================= Types ======================= */
 export type ContactStatus = 'new_' | 'read_' | 'replied' | 'closed';
 
 export interface ContactMessage {
@@ -19,11 +18,7 @@ export interface ContactMessage {
   deletedAt?: string | null;
   createdAt: string;
   updatedAt: string;
-  replier?: {
-    id: string;
-    name: string;
-    email: string;
-  } | null;
+  replier?: { id: string; name: string; email: string } | null;
 }
 
 export interface Paginated<T> {
@@ -49,18 +44,19 @@ export interface SendContactPayload {
   message: string;
 }
 
-/* ======================= Service ======================= */
 export const contactService = {
-  /* ---------- Public (Landing Page) ---------- */
+  /* ---------- Public ---------- */
   async send(payload: SendContactPayload) {
-    const { data } = await apiClient.post('/api/platform/contact', payload);
+    // ✅ بدون /api
+    const { data } = await apiClient.post('/platform/contact', payload);
     return data;
   },
 
-  /* ---------- Admin (Super Admin) ---------- */
+  /* ---------- Admin ---------- */
   async list(params: QueryContactMessagesParams = {}) {
+    // ✅ بدون /api
     const { data } = await apiClient.get<Paginated<ContactMessage>>(
-      '/api/admin/contact-messages',
+      '/admin/contact-messages',
       { params },
     );
     return data;
@@ -68,14 +64,14 @@ export const contactService = {
 
   async getOne(id: string) {
     const { data } = await apiClient.get<ContactMessage>(
-      `/api/admin/contact-messages/${id}`,
+      `/admin/contact-messages/${id}`,
     );
     return data;
   },
 
   async reply(id: string, reply: string) {
     const { data } = await apiClient.patch<ContactMessage>(
-      `/api/admin/contact-messages/${id}/reply`,
+      `/admin/contact-messages/${id}/reply`,
       { reply },
     );
     return data;
@@ -83,21 +79,21 @@ export const contactService = {
 
   async close(id: string) {
     const { data } = await apiClient.patch<ContactMessage>(
-      `/api/admin/contact-messages/${id}/close`,
+      `/admin/contact-messages/${id}/close`,
     );
     return data;
   },
 
   async remove(id: string) {
     const { data } = await apiClient.delete(
-      `/api/admin/contact-messages/${id}`,
+      `/admin/contact-messages/${id}`,
     );
     return data;
   },
 
   async unreadCount() {
     const { data } = await apiClient.get<{ count: number }>(
-      '/api/admin/contact-messages/unread-count',
+      '/admin/contact-messages/unread-count',
     );
     return data;
   },

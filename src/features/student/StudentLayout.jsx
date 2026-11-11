@@ -1,21 +1,53 @@
+// src/features/student/StudentLayout.jsx
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import StudentSidebar from './StudentSidebar';
+import StudentPendingPage from './pages/StudentPendingPage';
 import { useAuth } from '../../shared/context/AuthContext';
+import useStudentEnrollments from './hooks/useStudentEnrollments';
+
+// ✅ المسارات المسموح بيها للطالب حتى لو مش مقبول بعد
+const ALLOWED_BEFORE_APPROVAL = [
+  '/student/payment-plans',
+  '/student/payments',
+  '/student/subscription',
+  '/student/profile',
+  '/student/notifications',
+  '/student/pending',
+];
 
 export default function StudentLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
+  const location = useLocation();
+
+  const { data: enrollments, loading } = useStudentEnrollments();
+
+  const hasActiveEnrollment =
+    Array.isArray(enrollments) && enrollments.some((e) => e.status === 'active');
+
+  const isAllowedBeforeApproval = ALLOWED_BEFORE_APPROVAL.some((path) =>
+    location.pathname.startsWith(path)
+  );
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        جاري التحقق من حالة الاشتراك...
+      </div>
+    );
+  }
+
+  const showPending = !hasActiveEnrollment && !isAllowedBeforeApproval;
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
-      {/* 🛑 كلمة السر: لو ظهرت دي، يبقى إحنا في المكان الصح */}
-      <div className="fixed top-0 left-0 bg-red-600 text-white text-xs p-1 z-[9999]">
-        نسخة الطالب الجديدة v2
-      </div>
-
-      <StudentSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <StudentSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        isPending={!hasActiveEnrollment}
+      />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4">
@@ -25,6 +57,7 @@ export default function StudentLayout() {
           >
             <Menu size={20} />
           </button>
+
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {user?.name || 'طالب'}
@@ -36,7 +69,7 @@ export default function StudentLayout() {
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <Outlet />
+          {showPending ? <StudentPendingPage /> : <Outlet />}
         </main>
       </div>
     </div>

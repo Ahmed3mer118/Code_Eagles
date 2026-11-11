@@ -20,13 +20,14 @@ import MySubscriptionPage from './features/dashboard/MySubscriptionPage';
 import { SuperAdminRoutes, SuperAdminGuard } from './features/superadmin';
 import LandingPage from './features/landing/LandingPage';
 import AcademyPublicPage from './features/landing/AcademyPublicPage';
+import SubjectDetailsPage from './features/landing/SubjectDetailsPage'; // ✅ جديد
 import ContactPage from './features/landing/ContactPage';
 
 // ===== Teacher, Student, Parent & Assistant =====
 import TeacherRoutes from './features/teacher/TeacherRoutes';
 import StudentRoutes from './features/student/StudentRoutes';
 import ParentRoutes from './features/parent/ParentRoutes';
-import AssistantRoutes from './features/assistant/AssistantRoutes'; // 🆕
+import AssistantRoutes from './features/assistant/AssistantRoutes';
 
 function Protected({ children }) {
   return isAuthenticated() ? children : <Navigate to="/login" replace />;
@@ -38,10 +39,15 @@ function PublicOnly({ children }) {
 
 function RootRedirect() {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') || searchParams.get('code') || searchParams.get('verificationToken');
-  if (token) return <Navigate to={`/verify-email?token=${encodeURIComponent(token)}`} replace />;
+  const token =
+    searchParams.get('token') ||
+    searchParams.get('code') ||
+    searchParams.get('verificationToken');
+  if (token)
+    return <Navigate to={`/verify-email?token=${encodeURIComponent(token)}`} replace />;
   const verified = searchParams.get('verified');
-  if (verified === '1' || verified === 'true') return <Navigate to="/login?verified=1" replace />;
+  if (verified === '1' || verified === 'true')
+    return <Navigate to="/login?verified=1" replace />;
   return <LandingPage />;
 }
 
@@ -59,22 +65,64 @@ export default function App() {
           {/* ✅ 3. مسار ولي الأمر */}
           <Route path="/parent/*" element={<ParentRoutes />} />
 
-          {/* ✅ 4. مسار المساعد (جديد) */}
+          {/* ✅ 4. مسار المساعد */}
           <Route path="/assistant/*" element={<AssistantRoutes />} />
 
           {/* ✅ 5. مسار الأدمن */}
-          <Route path="/admin/*" element={<SuperAdminGuard><SuperAdminRoutes /></SuperAdminGuard>} />
+          <Route
+            path="/admin/*"
+            element={
+              <SuperAdminGuard>
+                <SuperAdminRoutes />
+              </SuperAdminGuard>
+            }
+          />
 
           {/* ==================== PUBLIC ==================== */}
           <Route path="/" element={<RootRedirect />} />
           <Route path="/academy/:slug" element={<AcademyPublicPage />} />
+
+          {/* ✅ جديد — تفاصيل مادة */}
+          <Route
+            path="/academy/:slug/subject/:subjectId"
+            element={<SubjectDetailsPage />}
+          />
+
           <Route path="/contact" element={<ContactPage />} />
 
           {/* ==================== AUTH ==================== */}
-          <Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
-          <Route path="/auth/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
-          <Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
-          <Route path="/auth/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
+          <Route
+            path="/login"
+            element={
+              <PublicOnly>
+                <LoginPage />
+              </PublicOnly>
+            }
+          />
+          <Route
+            path="/auth/login"
+            element={
+              <PublicOnly>
+                <LoginPage />
+              </PublicOnly>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicOnly>
+                <RegisterPage />
+              </PublicOnly>
+            }
+          />
+          <Route
+            path="/auth/register"
+            element={
+              <PublicOnly>
+                <RegisterPage />
+              </PublicOnly>
+            }
+          />
 
           {/* ==================== VERIFY EMAIL ==================== */}
           <Route path="/verify-email" element={<VerifyEmailPage />} />
@@ -87,10 +135,38 @@ export default function App() {
           <Route path="/reset-password" element={<ForgotPasswordPage />} />
 
           {/* ==================== POST LOGIN ==================== */}
-          <Route path="/select-tenant" element={<Protected><SelectTenantPage /></Protected>} />
-          <Route path="/dashboard" element={<Protected><DashboardPage /></Protected>} />
-          <Route path="/dashboard/subscription" element={<Protected><MySubscriptionPage /></Protected>} />
-          <Route path="/subscription" element={<Protected><MySubscriptionPage /></Protected>} />
+          <Route
+            path="/select-tenant"
+            element={
+              <Protected>
+                <SelectTenantPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <Protected>
+                <DashboardPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/dashboard/subscription"
+            element={
+              <Protected>
+                <MySubscriptionPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/subscription"
+            element={
+              <Protected>
+                <MySubscriptionPage />
+              </Protected>
+            }
+          />
 
           {/* ==================== 404 ==================== */}
           <Route path="*" element={<Navigate to="/" replace />} />

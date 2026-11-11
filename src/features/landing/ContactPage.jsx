@@ -1,23 +1,25 @@
+// src/features/landing/ContactPage.jsx
 import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import LandingHeader from './components/LandingHeader';
+import LandingFooter from './components/LandingFooter';
+import ContactSection from './components/ContactSection';
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
-      <div className="max-w-md w-full text-center bg-white rounded-2xl shadow p-8">
-        <h1 className="text-3xl font-extrabold text-[#0B1F33]">تواصل معنا</h1>
-        <p className="mt-4 text-gray-600">
-          📧 contact@code-eagles.com
-        </p>
-        <p className="mt-2 text-gray-600">
-          📱 +20 100 000 0000
-        </p>
+    <div className="min-h-screen bg-[var(--ce-bg)]">
+      <LandingHeader />
+      <div className="mx-auto max-w-7xl px-4 pt-6">
         <Link
           to="/"
-          className="mt-6 inline-block rounded-full bg-[#0B1F33] px-5 py-2 text-white"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--ce-muted)] transition hover:text-[var(--ce-accent)]"
         >
-          ← العودة للرئيسية
+          <ArrowLeft className="h-4 w-4" />
+          العودة للرئيسية
         </Link>
       </div>
+      <ContactSection />
+      <LandingFooter />
     </div>
   );
 }

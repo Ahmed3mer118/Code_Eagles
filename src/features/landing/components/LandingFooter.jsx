@@ -1,5 +1,9 @@
+// src/features/landing/components/LandingFooter.jsx
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../../shared/i18n';
+import { platformApi } from '../../../lib/platformApi';
+import { onLiveUpdate } from '../../../shared/utils/liveUpdates';
 
 const FacebookIcon = ({ className = 'h-4 w-4' }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -29,138 +33,178 @@ const MailIcon = ({ className = 'h-4 w-4' }) => (
   </svg>
 );
 
-const SendIcon = ({ className = 'h-4 w-4' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
-    <path d="m21.854 2.147-10.94 10.939" />
-  </svg>
-);
+function siteText(site, key, lang) {
+  const val = site?.[key];
+  if (val == null) return null;
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object') return val[lang] ?? val.ar ?? val.en ?? null;
+  return null;
+}
 
 export default function LandingFooter() {
-  const { t } = useI18n();
+  const { lang } = useI18n();
+  const [site, setSite] = useState({});
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const res = await platformApi.getSiteContent();
+        if (mounted) setSite(res || {});
+      } catch (err) {
+        console.error('Footer site load error:', err);
+      }
+    };
+    load();
+    const unsubscribe = onLiveUpdate(() => load());
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  const txt = (key) => siteText(site, key, lang);
+
+  const brandName = txt('landing.header.brandName') ?? '';
+  const logoUrl = txt('landing.header.logoUrl') ?? '';
+  const homePath = txt('landing.links.home') ?? '/';
+  const contactPath = txt('landing.links.contact') ?? '/contact';
+  const loginPath = txt('landing.links.login') ?? '/login';
+  const registerPath = txt('landing.links.register') ?? '/register';
 
   return (
     <footer className="border-t border-white/10 bg-[var(--ce-brand)] text-white">
       <div className="mx-auto max-w-7xl px-4 py-14">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:gap-10">
-          {/* Brand */}
           <div>
             <div className="flex items-center gap-3">
-              <img
-                src="/images/LOGO.png"
-                alt="Code Eagles"
-                className="h-11 w-11 rounded-2xl bg-white/10 p-1 object-contain"
-              />
+              {logoUrl && (
+                <img
+                  src={logoUrl}
+                  alt={brandName}
+                  className="h-11 w-11 rounded-2xl bg-white/10 p-1 object-contain"
+                />
+              )}
               <div>
-                <div className="text-xl font-extrabold">Code Eagles</div>
-                <p className="text-sm text-white/70">{t('landing.brandTagline')}</p>
+                <div className="text-xl font-extrabold">{brandName}</div>
+                {txt('landing.brandTagline') && (
+                  <p className="text-sm text-white/70">{txt('landing.brandTagline')}</p>
+                )}
               </div>
             </div>
 
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
-              {t('landing.footer.about')}
-            </p>
+            {txt('landing.footer.about') && (
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
+                {txt('landing.footer.about')}
+              </p>
+            )}
 
             <div className="mt-5 flex gap-3">
-              <Link to="/contact" aria-label="Facebook" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-[var(--ce-accent)] hover:text-[#1a1200]">
+              <a
+                href={txt('landing.footer.social.facebook') ?? '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-[var(--ce-accent)] hover:text-[#1a1200]"
+              >
                 <FacebookIcon />
-              </Link>
-              <Link to="/contact" aria-label="Instagram" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-[var(--ce-accent)] hover:text-[#1a1200]">
-                <InstagramIcon />
-              </Link>
-              <Link to="/contact" aria-label="Youtube" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-[var(--ce-accent)] hover:text-[#1a1200]">
-                <YoutubeIcon />
-              </Link>
-              <a href="mailto:contact@code-eagles.com" aria-label="Email" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-[var(--ce-accent)] hover:text-[#1a1200]">
-                <MailIcon />
               </a>
+              <a
+                href={txt('landing.footer.social.instagram') ?? '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-[var(--ce-accent)] hover:text-[#1a1200]"
+              >
+                <InstagramIcon />
+              </a>
+              <a
+                href={txt('landing.footer.social.youtube') ?? '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Youtube"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-[var(--ce-accent)] hover:text-[#1a1200]"
+              >
+                <YoutubeIcon />
+              </a>
+              {txt('landing.footer.social.email') && (
+                <a
+                  href={txt('landing.footer.social.email')}
+                  aria-label="Email"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-[var(--ce-accent)] hover:text-[#1a1200]"
+                >
+                  <MailIcon />
+                </a>
+              )}
             </div>
           </div>
 
-          {/* Platform */}
           <div>
-            <h3 className="font-extrabold">{t('landing.footer.platform')}</h3>
+            <h3 className="font-extrabold">{txt('landing.footer.platform')}</h3>
             <ul className="mt-4 space-y-2 text-sm text-white/75">
               <li>
-                <Link to="/" className="transition hover:text-[var(--ce-accent-soft)]">
-                  {t('landing.footer.home')}
+                <Link to={homePath} className="transition hover:text-[var(--ce-accent-soft)]">
+                  {txt('landing.footer.home')}
                 </Link>
               </li>
               <li>
                 <a href="#academies" className="transition hover:text-[var(--ce-accent-soft)]">
-                  {t('landing.footer.academies')}
+                  {txt('landing.footer.academies')}
                 </a>
               </li>
               <li>
                 <a href="#teacher-cta" className="transition hover:text-[var(--ce-accent-soft)]">
-                  {t('landing.footer.pricing')}
+                  {txt('landing.footer.forTeachers')}
                 </a>
               </li>
               <li>
-                <Link to="/contact" className="transition hover:text-[var(--ce-accent-soft)]">
-                  {t('landing.footer.contact')}
+                <Link to={contactPath} className="transition hover:text-[var(--ce-accent-soft)]">
+                  {txt('landing.footer.contact')}
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Learn */}
           <div>
-            <h3 className="font-extrabold">{t('landing.footer.learn')}</h3>
+            <h3 className="font-extrabold">{txt('landing.footer.learn')}</h3>
             <ul className="mt-4 space-y-2 text-sm text-white/75">
               <li>
-                <Link to="/auth/register?role=student" className="transition hover:text-[var(--ce-accent-soft)]">
-                  {t('landing.footer.joinAsStudent')}
+                <Link to={`${registerPath}?role=student`} className="transition hover:text-[var(--ce-accent-soft)]">
+                  {txt('landing.footer.joinAsStudent')}
                 </Link>
               </li>
               <li>
-                <a href="#categories" className="transition hover:text-[var(--ce-accent-soft)]">
-                  {t('landing.footer.programming')}
-                </a>
+                <Link to={`${registerPath}?role=teacher`} className="transition hover:text-[var(--ce-accent-soft)]">
+                  {txt('landing.footer.joinAsTeacher')}
+                </Link>
               </li>
               <li>
-                <a href="#categories" className="transition hover:text-[var(--ce-accent-soft)]">
-                  {t('landing.footer.secondary')}
+                <a href="#features" className="transition hover:text-[var(--ce-accent-soft)]">
+                  {txt('landing.footer.features')}
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Legal */}
           <div>
-            <h3 className="font-extrabold">{t('landing.footer.legal')}</h3>
+            <h3 className="font-extrabold">{txt('landing.footer.legal')}</h3>
             <ul className="mt-4 space-y-2 text-sm text-white/75">
               <li>
-                <Link to="/contact" className="transition hover:text-[var(--ce-accent-soft)]">
-                  {t('landing.footer.terms')}
+                <Link to={contactPath} className="transition hover:text-[var(--ce-accent-soft)]">
+                  {txt('landing.footer.terms')}
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="transition hover:text-[var(--ce-accent-soft)]">
-                  {t('landing.footer.privacy')}
+                <Link to={contactPath} className="transition hover:text-[var(--ce-accent-soft)]">
+                  {txt('landing.footer.privacy')}
                 </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Newsletter */}
-        <div className="mt-10 grid gap-4 border-t border-white/10 pt-8 md:grid-cols-[1fr_auto] md:items-center">
-          <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-2 sm:flex-row">
-            <input
-              type="email"
-              placeholder={t('landing.footer.newsletterPlaceholder')}
-              className="flex-1 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-white placeholder-white/50 outline-none focus:border-[var(--ce-accent)]"
-            />
-            <button
-              type="submit"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--ce-accent)] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
-            >
-              <SendIcon />
-              {t('landing.footer.subscribe')}
-            </button>
-          </form>
-          <p className="text-sm text-white/60">{t('landing.footer.copyright')}</p>
+        <div className="mt-10 border-t border-white/10 pt-8 text-center text-sm text-white/60">
+          {txt('landing.footer.copyright')}
         </div>
       </div>
     </footer>

@@ -25,12 +25,17 @@ export function useParentLinks(initialParams = {}) {
         if (v !== '' && v !== null && v !== undefined) cleanParams[k] = v;
       });
 
+      console.log('🚀 [Frontend] Sending params to API:', cleanParams);
       const res = await teacherApi.getParentLinks(cleanParams);
+      console.log('✅ [Frontend] Raw API Response:', res);
+
       const payload = res?.data ?? res;
       const items =
         payload?.data ??
         payload?.items ??
         (Array.isArray(payload) ? payload : []);
+
+      console.log('📦 [Frontend] Parsed items:', items);
 
       setResult({
         data: items,
@@ -42,6 +47,7 @@ export function useParentLinks(initialParams = {}) {
           Math.max(1, Math.ceil((payload?.total ?? items.length) / (params.limit || 20))),
       });
     } catch (err) {
+      console.error('❌ [Frontend] API Error:', err);
       const status = err?.response?.status;
       setError(
         status === 403

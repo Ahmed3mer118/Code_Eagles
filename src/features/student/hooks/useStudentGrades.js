@@ -1,39 +1,58 @@
+// src/features/student/hooks/useStudentGrades.js
 import { useState, useEffect, useCallback } from 'react';
-import { getStudentSubmissions } from '../api/assignments.api';
-import { getStudentQuizzes } from '../api/quizzes.api';
+import { getStudentQuizzes } from '../api/quizzes.api'; 
 
 export default function useStudentGrades() {
-  const [submissions, setSubmissions] = useState([]);
-  const [quizzes, setQuizzes] = useState([]);
+  const [grades, setGrades] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchAll = useCallback(async () => {
+  const fetchGrades = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const [submissionsData, quizzesData] = await Promise.all([
-        getStudentSubmissions().catch(() => []),
-        getStudentQuizzes().catch(() => []),
-      ]);
+      // بنجيب كل الكويزات، وكل كويز جواه الـ attempts بتاعته
+      const quizzes = await getStudentQuizzes(); 
+      const quizzesList = Array.isArray(quizzes) ? quizzes : (quizzes?.data || []);
 
-      setSubmissions(Array.isArray(submissionsData) ? submissionsData : []);
-      setQuizzes(Array.isArray(quizzesData) ? quizzesData : []);
+      // بنجمع كل المحاولات من كل الكويزات في مصفوفة واحدة
+      const allAttempts = [];
+      quizzesList.forEach((quiz) => {
+        if (quiz.attempts && quiz.attempts.length > 0) {
+          quiz.attempts.forEach((attempt) => {
+            allAttempts.push({
+              ...attempt,
+              quiz: { // بنضيف بيانات الكويز عشان نعرض اسمه
+                id: quiz.id,
+                title: quiz.title,
+                totalMarks: quiz.totalMarks,
+                passingMarks: quiz.passingMarks,
+              }
+            });
+          });
+        }
+      });
+
+      // بنفلتر المحاولات اللي خلصت (مش in_progress) 
+      const gradedAttempts = allAttempts.filter(
+        (a) => a.status === 'graded' || a.status === 'submitted'
+      );
+
+      // بنرتبهم من الأحدث للأقدم
+      gradedAttempts.sort((a, b) => new Date(b.submittedAt || b.createdAt) - new Date(a.submittedAt || a.createdAt));
+
+      setGrades(gradedAttempts);
     } catch (err) {
       console.error('Failed to load grades:', err);
-      setError(
-        err?.response?.data?.message ||
-          err?.message ||
-          'تعذر تحميل الدرجات، حاول تاني.'
-      );
+      setError(err?.response?.data?.message || 'تعذر تحميل الدرجات.');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    fetchGrades();
+  }, [fetchGrades]);
 
-  return { submissions, quizzes, isLoading, error, refetch: fetchAll };
+  return { grades, isLoading, error, refetch: fetchGrades };
 }

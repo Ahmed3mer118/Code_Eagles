@@ -9,14 +9,40 @@ export default function ParentGuard() {
   if (isLoading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
 
-  const activeRole = activeTenant?.role || activeTenant?.membership?.role;
-  const hasParentMembership = memberships?.some(m => m.role === 'parent') || false;
-  const isParent = activeRole === 'parent' || hasParentMembership;
+  // ✅ اجمع كل المصادر الممكنة للـ role
+  const possibleRoles = [
+    user?.role,
+    user?.platformRole,
+    activeTenant?.role,
+    activeTenant?.membership?.role,
+    ...(memberships || []).map((m) => m?.role),
+    ...(memberships || []).map((m) => m?.tenant?.role),
+    ...(user?.memberships || []).map((m) => m?.role),
+    ...(user?.memberships || []).map((m) => m?.tenant?.role),
+  ]
+    .filter(Boolean)
+    .map((r) => String(r).toLowerCase());
 
-  if (!isParent) {
-    console.warn('🛑 Not a parent, redirecting home. Role:', activeRole);
-    return <Navigate to="/" replace />;
+  const isParent = possibleRoles.includes('parent');
+
+  console.log('🔍 ParentGuard check:', {
+    userRole: user?.role,
+    activeRole: activeTenant?.role,
+    membershipsCount: memberships?.length,
+    possibleRoles,
+    isParent,
+  });
+
+  if (isParent) {
+    return <Outlet />;
   }
 
-  return <Outlet />;
+  // ⚠️ لو مفيش memberships خالص (لسه بتحمل أو المستخدم جديد)
+  // سيبه يعدي والباك إند هو اللي يرفض
+  if (!memberships || memberships.length === 0) {
+    return <Outlet />;
+  }
+
+  console.warn('🛑 Not a parent, redirecting home. Roles found:', possibleRoles);
+  return <Navigate to="/" replace />;
 }

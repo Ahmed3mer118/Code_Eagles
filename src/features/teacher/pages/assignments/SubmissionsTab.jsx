@@ -27,13 +27,28 @@ export default function SubmissionsTab({ assignmentId, maxPoints }) {
     limit: 20,
   });
 
-  const submissions = data?.data ?? [];
-  const totalPages = data?.totalPages ?? 1;
+  console.log("SubmissionsTab data:", data);
+
+  // ✅ حل المشكلة: استخراج الداتا مهما كان شكلها
+  let submissions = [];
+  let total = 0;
+  let totalPages = 1;
+
+  if (Array.isArray(data)) {
+    // لو الـ API راجع Array مباشرة
+    submissions = data;
+    total = data.length;
+  } else if (data?.data && Array.isArray(data.data)) {
+    // لو الـ API راجع { data: [...] }
+    submissions = data.data;
+    total = data.total ?? data.data.length;
+    totalPages = data.totalPages ?? 1;
+  }
 
   return (
     <div>
       <h2 className="text-lg font-semibold mb-4">
-        التسليمات ({data?.total ?? 0})
+        التسليمات ({total})
       </h2>
 
       {isLoading && (

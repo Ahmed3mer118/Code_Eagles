@@ -24,40 +24,15 @@ export function useStudentCourseDetails(courseId) {
       const payload = res?.data ?? res;
       const course = payload?.data ?? payload;
 
-      // محاولة جلب المحاضرات من course.modules (لو موجودة)
+      // ✅ الباك دلوقتي بيرجع الـ modules جواها الـ lectures
       const modules = course?.modules || [];
-      const lectures = course?.lectures || [];
+      const lectures = modules.flatMap((m) => m.lectures || []);
 
-      // لو course.modules فيه عناصر، محتاجين نجيب محاضرات كل module
-      if (modules.length > 0) {
-        const results = await Promise.allSettled(
-          modules.map((m) => studentCoursesApi.getModuleLectures(m.id)),
-        );
-
-        const modulesWithLectures = modules.map((m, idx) => {
-          const r = results[idx];
-          let moduleLectures = [];
-          if (r.status === 'fulfilled') {
-            const p = r.value?.data ?? r.value;
-            moduleLectures = Array.isArray(p)
-              ? p
-              : p?.data ?? p?.items ?? [];
-          }
-          return { ...m, lectures: moduleLectures };
-        });
-
-        setData({
-          course,
-          modules: modulesWithLectures,
-          lectures: modulesWithLectures.flatMap((m) => m.lectures || []),
-        });
-      } else {
-        setData({
-          course,
-          modules: [],
-          lectures,
-        });
-      }
+      setData({
+        course,
+        modules,
+        lectures,
+      });
     } catch (err) {
       const status = err?.response?.status;
       if (status === 404) {

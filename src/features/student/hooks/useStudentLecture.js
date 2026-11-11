@@ -14,9 +14,11 @@ export default function useStudentLecture(lectureId) {
     try {
       const res = await studentLecturesApi.getLectureById(lectureId);
       const data = res?.data ?? res;
+      console.log('✅ [useStudentLecture] Success:', data);
       setLecture(data);
     } catch (err) {
-      console.error('Failed to load lecture:', err);
+      console.error('❌ [useStudentLecture] Failed:', err);
+      console.log('❌ [useStudentLecture] Error Response:', err?.response);
       setError(
         err?.response?.data?.message ||
           err?.message ||

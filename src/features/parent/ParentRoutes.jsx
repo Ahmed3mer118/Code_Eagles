@@ -9,17 +9,18 @@ import ParentPoints from './pages/ParentPoints';
 import ParentPayments from './pages/ParentPayments';
 import ParentEnrollments from './pages/ParentEnrollments';
 import ParentProfile from './pages/ParentProfile';
-import ParentLinkRequests from './pages/ParentLinkRequests'; // 🆕
-import ParentNotifications from './pages/ParentNotifications'; // 🆕
-import ParentAssignments from './pages/ParentAssignments'; // 🆕
-import ParentQuizzes from './pages/ParentQuizzes'; // 🆕
+import ParentLinkRequests from './pages/ParentLinkRequests';
+import ParentNotifications from './pages/ParentNotifications';
+import ParentAssignments from './pages/ParentAssignments';
+import ParentQuizzes from './pages/ParentQuizzes';
 
 export default function ParentRoutes() {
   return (
     <Routes>
       <Route element={<ParentGuard />}>
         <Route element={<ParentLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
+          {/* ✅ تم تعديلها لمسار مطلق عشان ميعملش loop */}
+          <Route index element={<Navigate to="/parent/dashboard" replace />} />
           <Route path="dashboard" element={<ParentDashboard />} />
           <Route path="children" element={<ParentChildren />} />
           <Route path="requests" element={<ParentLinkRequests />} />
@@ -34,6 +35,9 @@ export default function ParentRoutes() {
           <Route path="payments" element={<ParentPayments />} />
           
           <Route path="profile" element={<ParentProfile />} />
+
+          {/* ✅ fallback لأي مسار غلط جوه البيرنت */}
+          <Route path="*" element={<Navigate to="/parent/dashboard" replace />} />
         </Route>
       </Route>
     </Routes>

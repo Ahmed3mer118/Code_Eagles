@@ -1,12 +1,10 @@
+// src/shared/api/subscriptionRequestsService.js
 import apiClient from './client';
 
 const ADMIN_BASE = '/platform/subscriptions';
 const TENANT_BASE = '/tenant/subscriptions';
 
 export const subscriptionRequestsService = {
-  /* ═══════════════════════════════════════════
-     Super Admin APIs
-     ═══════════════════════════════════════════ */
   list: async (params = {}) => {
     const { data } = await apiClient.get(ADMIN_BASE, { params });
     return data;
@@ -42,9 +40,6 @@ export const subscriptionRequestsService = {
     return data;
   },
 
-  /* ═══════════════════════════════════════════
-     Tenant (Teacher) APIs
-     ═══════════════════════════════════════════ */
   request: async (payload) => {
     const { data } = await apiClient.post(`${TENANT_BASE}/request`, payload);
     return data;
@@ -55,67 +50,47 @@ export const subscriptionRequestsService = {
     });
     return data;
   },
-  submitPaymentProof: async (subscriptionId, paymentProofUrl) => {
+
+  // ✅✅✅ رفع إثبات الدفع — الأصح: FormData فيها file
+  submitPaymentProof: async (subscriptionId, file) => {
+    if (!file) throw new Error('No file provided');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
     const { data } = await apiClient.patch(
       `${TENANT_BASE}/${subscriptionId}/payment-proof`,
-      { paymentProofUrl },
+      formData,
+      { headers: { 'Content-Type': undefined } },
     );
     return data;
   },
 
-  /* ═══════════════════════════════════════════
-     ⭐ Upload Image (بيستخدم للـ payment proofs)
-     ═══════════════════════════════════════════ */
   uploadImage: async (file, folder = 'payment-proofs') => {
-    if (!file) {
-      throw new Error('No file selected');
-    }
-
+    if (!file) throw new Error('No file selected');
     const formData = new FormData();
     formData.append('file', file);
 
-    // ⭐ headers مهمة للـ backend
-    const token = localStorage.getItem('ce_access_token');
-    const tenantId = localStorage.getItem('ce_tenant_id');
-
     const { data } = await apiClient.post(
-      `/api/upload/image?folder=${encodeURIComponent(folder)}`,
+      `/upload/image?folder=${encodeURIComponent(folder)}`,
       formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          ...(token && { Authorization: `Bearer ${token}` }),
-          ...(tenantId && { 'x-tenant-id': tenantId }),
-        },
-      },
+      { headers: { 'Content-Type': undefined } },
     );
-
-    return data; // { id, url, path, fileName, ... }
+    return data;
   },
 
-  /* ═══════════════════════════════════════════
-     رفع عام لأي ملف (احتياطي)
-     ═══════════════════════════════════════════ */
   uploadFile: async (file, folder = 'files') => {
     if (!file) throw new Error('No file selected');
-
     const formData = new FormData();
     formData.append('file', file);
 
-    const token = localStorage.getItem('ce_access_token');
-    const tenantId = localStorage.getItem('ce_tenant_id');
-
     const { data } = await apiClient.post(
-      `/api/upload/file?folder=${encodeURIComponent(folder)}`,
+      `/upload/file?folder=${encodeURIComponent(folder)}`,
       formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          ...(token && { Authorization: `Bearer ${token}` }),
-          ...(tenantId && { 'x-tenant-id': tenantId }),
-        },
-      },
+      { headers: { 'Content-Type': undefined } },
     );
     return data;
   },
 };
+
+export default subscriptionRequestsService;

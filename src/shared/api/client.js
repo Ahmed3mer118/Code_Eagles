@@ -1,3 +1,4 @@
+// src/shared/api/client.js
 import axios from 'axios';
 import API_BASE, { STORAGE_KEYS } from '../config/apiBase';
 
@@ -28,6 +29,10 @@ apiClient.interceptors.request.use((config) => {
 
     if (token) config.headers.Authorization = `Bearer ${token}`;
     if (tenantId) config.headers['X-Tenant-Id'] = tenantId;
+  }
+
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
   }
 
   return config;
@@ -72,7 +77,6 @@ async function refreshTokens() {
   const tenantId = localStorage.getItem(STORAGE_KEYS.TENANT_ID);
   if (!refreshToken) throw new Error('No refresh token');
 
-  // ✅ بنبعت tenantId الحالي عشان الباك ما يختارش tenant عشوائي
   const { data } = await axios.post(
     `${API_BASE}/auth/refresh`,
     { refreshToken, ...(tenantId ? { tenantId } : {}) },
@@ -82,7 +86,6 @@ async function refreshTokens() {
   setAuthSession({
     accessToken: data.accessToken,
     refreshToken: data.refreshToken,
-    // ✅ بنحافظ على tenantId الحالي (الباك مش بيرجعه)
     ...(tenantId ? { tenantId } : {}),
   });
 
@@ -95,7 +98,6 @@ apiClient.interceptors.response.use(
     const original = error.config;
     const status = error.response?.status;
     const url = original?.url || '';
-
     const isAuthRoute = PUBLIC_PATHS.some((p) => url.startsWith(p));
 
     if (status === 401 && !original._retry && !isAuthRoute) {

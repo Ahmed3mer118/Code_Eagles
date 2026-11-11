@@ -28,19 +28,22 @@ export default function CreateSubjectModal({ isOpen, onClose, subject, onSuccess
     setError('');
     try {
       const payload = {
-        name: form.name,
-        description: form.description,
+        name: form.name.trim(),
+        description: form.description.trim(),
         ...(form.gradeLevel && { gradeLevel: form.gradeLevel }),
       };
+      
       if (subject) {
         await teacherApi.updateSubject(subject.id, payload);
       } else {
         await teacherApi.createSubject(payload);
       }
+      
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err?.response?.data?.message || t('common.error') || 'حدث خطأ');
+      console.error("Error saving subject:", err);
+      setError(err?.response?.data?.message || t('common.error') || 'حدث خطأ أثناء الحفظ');
     } finally {
       setLoading(false);
     }

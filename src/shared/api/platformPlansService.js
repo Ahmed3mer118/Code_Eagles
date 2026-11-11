@@ -1,5 +1,7 @@
+// src/shared/api/platformPlansService.js
 import apiClient from './client';
 
+// ✅ بدون /api — الـ prefix في apiBase
 const BASE = '/platform-plans';
 
 export const platformPlansService = {
@@ -19,7 +21,6 @@ export const platformPlansService = {
     const { data } = await apiClient.patch(`${BASE}/${id}`, payload);
     return data;
   },
-  /** ⭐ تغيير الحالة فقط */
   updateStatus: async (id, status) => {
     const { data } = await apiClient.patch(`${BASE}/${id}/status`, { status });
     return data;

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+// src/features/superadmin/pages/DashboardOverview.jsx
+import { useEffect, useMemo, useState } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -12,32 +13,47 @@ import {
   Award,
   BarChart3,
   Sparkles,
+  Calendar,
+  Inbox,
 } from 'lucide-react';
 import { superadminApi } from '../../../shared/api/superadminApi';
 import { platformApi } from '../../../lib/platformApi';
 import { useI18n } from '../../../shared/i18n';
 
+const PERIODS = [
+  { days: 7, ar: '7 أيام', en: '7 days' },
+  { days: 14, ar: '14 يوم', en: '14 days' },
+  { days: 30, ar: '30 يوم', en: '30 days' },
+  { days: 60, ar: '60 يوم', en: '60 days' },
+];
+
 export default function DashboardOverview() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const isAr = lang === 'ar';
 
   const [overview, setOverview] = useState(null);
   const [growth, setGrowth] = useState([]);
   const [publicStats, setPublicStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [period, setPeriod] = useState(14);
+  const [growthLoading, setGrowthLoading] = useState(false);
 
-  const loadData = async () => {
+  const loadData = async (days = period) => {
     try {
+      setGrowthLoading(true);
       const [ov, gr, ps] = await Promise.all([
         superadminApi.getOverview(),
-        superadminApi.getGrowth(14),
+        superadminApi.getGrowth(days),
         platformApi.getStats().catch(() => null),
       ]);
       setOverview(ov);
-      setGrowth(gr);
+      setGrowth(gr || []);
       setPublicStats(ps);
     } catch (err) {
       console.error('Dashboard load error:', err);
+    } finally {
+      setGrowthLoading(false);
     }
   };
 
@@ -47,12 +63,12 @@ export default function DashboardOverview() {
       try {
         const [ov, gr, ps] = await Promise.all([
           superadminApi.getOverview(),
-          superadminApi.getGrowth(14),
+          superadminApi.getGrowth(period),
           platformApi.getStats().catch(() => null),
         ]);
         if (!mounted) return;
         setOverview(ov);
-        setGrowth(gr);
+        setGrowth(gr || []);
         setPublicStats(ps);
       } catch (err) {
         console.error('Dashboard load error:', err);
@@ -60,12 +76,21 @@ export default function DashboardOverview() {
         if (mounted) setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
+
+  // لما المستخدم يغير الفترة → reload
+  useEffect(() => {
+    if (loading) return;
+    loadData(period);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadData();
+    await loadData(period);
     setRefreshing(false);
   };
 
@@ -85,31 +110,31 @@ export default function DashboardOverview() {
   const mainCards = [
     {
       label: t('admin.overview.stats.revenue'),
-      value: overview?.revenue.value ?? 0,
-      growth: overview?.revenue.growth ?? 0,
+      value: overview?.revenue?.value ?? 0,
+      growth: overview?.revenue?.growth ?? 0,
       icon: DollarSign,
       color: 'emerald',
-      format: (v) => `${v.toLocaleString('en-US')} EGP`,
+      format: (v) => `${v.toLocaleString('en-US')} ${isAr ? 'ج.م' : 'EGP'}`,
     },
     {
       label: t('admin.overview.stats.requests'),
-      value: overview?.pendingRequests.value ?? 0,
-      growth: overview?.pendingRequests.growth ?? 0,
+      value: overview?.pendingRequests?.value ?? 0,
+      growth: overview?.pendingRequests?.growth ?? 0,
       icon: FileText,
       color: 'orange',
     },
     {
       label: t('admin.overview.stats.users'),
-      value: overview?.totalUsers.value ?? 0,
-      growth: overview?.totalUsers.growth ?? 0,
+      value: overview?.totalUsers?.value ?? 0,
+      growth: overview?.totalUsers?.growth ?? 0,
       icon: Users,
       color: 'purple',
       format: (v) => v.toLocaleString('en-US'),
     },
     {
       label: t('admin.overview.stats.academies'),
-      value: overview?.totalAcademies.value ?? 0,
-      growth: overview?.totalAcademies.growth ?? 0,
+      value: overview?.totalAcademies?.value ?? 0,
+      growth: overview?.totalAcademies?.growth ?? 0,
       icon: GraduationCap,
       color: 'blue',
     },
@@ -183,7 +208,14 @@ export default function DashboardOverview() {
       </div>
 
       {/* Growth Chart */}
-      <GrowthChart data={growth} t={t} />
+      <GrowthChart
+        data={growth}
+        period={period}
+        onPeriodChange={setPeriod}
+        loading={growthLoading}
+        lang={lang}
+        t={t}
+      />
 
       {/* Secondary Stats */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -302,36 +334,73 @@ function MiniStatCard({ label, value, icon: Icon, color }) {
 }
 
 // ============================================================
-// Growth Chart
+// Growth Chart — محدّث بالكامل
 // ============================================================
-function GrowthChart({ data, t }) {
-  const hasData = data && data.length > 0;
+function GrowthChart({ data, period, onPeriodChange, loading, lang, t }) {
+  const isAr = lang === 'ar';
+  const [hoveredIdx, setHoveredIdx] = useState(null);
 
-  const maxValue = hasData
-    ? Math.max(...data.map((d) => Math.max(d.academies, d.users)), 1)
-    : 1;
+  // احسب الإجماليات
+  const totals = useMemo(() => {
+    const users = data.reduce((sum, d) => sum + (d.users || 0), 0);
+    const academies = data.reduce((sum, d) => sum + (d.academies || 0), 0);
+    return { users, academies };
+  }, [data]);
+
+  const hasData = data && data.length > 0;
+  const hasAnyValue = totals.users > 0 || totals.academies > 0;
+
+  // احسب أقصى قيمة للـ Y-axis
+  const maxValue = useMemo(() => {
+    if (!hasData) return 1;
+    const m = Math.max(
+      ...data.map((d) => Math.max(d.users || 0, d.academies || 0)),
+      1,
+    );
+    // قرب لأقرب عدد صحيح أو 5 عشان المحاور تبقى أنضف
+    if (m <= 5) return 5;
+    if (m <= 10) return 10;
+    if (m <= 20) return 20;
+    if (m <= 50) return 50;
+    return Math.ceil(m / 10) * 10;
+  }, [data, hasData]);
+
+  // قيم المحاور الـ Y (5 ticks)
+  const yTicks = useMemo(() => {
+    const steps = 4;
+    return Array.from({ length: steps + 1 }, (_, i) =>
+      Math.round((maxValue / steps) * i),
+    );
+  }, [maxValue]);
 
   const width = 1000;
-  const height = 260;
+  const height = 300;
   const paddingTop = 20;
-  const paddingBottom = 30;
+  const paddingBottom = 40;
+  const paddingLeft = 50;
+  const paddingRight = 20;
+  const chartW = width - paddingLeft - paddingRight;
   const chartH = height - paddingTop - paddingBottom;
 
-  const stepX = hasData && data.length > 1 ? width / (data.length - 1) : width;
+  const stepX =
+    hasData && data.length > 1 ? chartW / (data.length - 1) : chartW;
 
   const toPath = (key) =>
     data
       .map((d, i) => {
-        const x = i * stepX;
-        const y = paddingTop + chartH - (d[key] / maxValue) * chartH;
+        const x = paddingLeft + i * stepX;
+        const y = paddingTop + chartH - ((d[key] || 0) / maxValue) * chartH;
         return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
       })
       .join(' ');
 
   const toAreaPath = (key) => {
+    if (!hasData) return '';
     const line = toPath(key);
-    const lastX = (data.length - 1) * stepX;
-    return `${line} L ${lastX} ${paddingTop + chartH} L 0 ${paddingTop + chartH} Z`;
+    const lastX = paddingLeft + (data.length - 1) * stepX;
+    return `${line} L ${lastX} ${paddingTop + chartH} L ${paddingLeft} ${
+      paddingTop + chartH
+    } Z`;
   };
 
   return (
@@ -339,101 +408,265 @@ function GrowthChart({ data, t }) {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
         <div>
-          <h3 className="text-lg font-extrabold text-slate-900">
+          <h3 className="flex items-center gap-2 text-lg font-extrabold text-slate-900">
+            <BarChart3 className="h-5 w-5 text-indigo-600" />
             {t('admin.overview.chart.title')}
           </h3>
           <p className="mt-0.5 text-sm text-slate-500">
-            {t('admin.overview.chart.subtitle', { days: data.length })}
+            {isAr
+              ? `آخر ${period} يوم — الأكاديميات والمستخدمون الجدد`
+              : `Last ${period} days — new academies and users`}
           </p>
         </div>
-        <div className="flex gap-4 text-xs font-semibold">
-          <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-amber-700">
-            <span className="h-2 w-2 rounded-full bg-amber-500" />
-            {t('admin.overview.chart.academies')}
-          </span>
-          <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 text-indigo-700">
-            <span className="h-2 w-2 rounded-full bg-indigo-500" />
-            {t('admin.overview.chart.users')}
-          </span>
+
+        {/* Period selector */}
+        <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1">
+          <Calendar className="ms-2 h-3.5 w-3.5 text-slate-400" />
+          {PERIODS.map((p) => (
+            <button
+              key={p.days}
+              type="button"
+              onClick={() => onPeriodChange(p.days)}
+              disabled={loading}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                period === p.days
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:bg-white/60'
+              } disabled:opacity-50`}
+            >
+              {isAr ? p.ar : p.en}
+            </button>
+          ))}
         </div>
       </div>
 
+      {/* Summary */}
+      <div className="grid grid-cols-2 gap-4 border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100">
+            <Users className="h-5 w-5 text-indigo-600" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-slate-500">
+              {isAr ? 'مستخدمون جدد' : 'New Users'}
+            </p>
+            <p className="text-xl font-extrabold text-slate-900">
+              {totals.users.toLocaleString('en-US')}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100">
+            <GraduationCap className="h-5 w-5 text-amber-600" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-slate-500">
+              {isAr ? 'أكاديميات جديدة' : 'New Academies'}
+            </p>
+            <p className="text-xl font-extrabold text-slate-900">
+              {totals.academies.toLocaleString('en-US')}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap items-center gap-4 border-b border-slate-100 px-6 py-3 text-xs font-semibold">
+        <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-amber-700">
+          <span className="h-2 w-2 rounded-full bg-amber-500" />
+          {t('admin.overview.chart.academies')}
+        </span>
+        <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 text-indigo-700">
+          <span className="h-2 w-2 rounded-full bg-indigo-500" />
+          {t('admin.overview.chart.users')}
+        </span>
+      </div>
+
       {/* Body */}
-      {!hasData ? (
+      {loading ? (
         <div className="flex items-center justify-center py-20">
-          <p className="text-sm text-slate-400">
-            {t('admin.overview.chart.empty')}
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+        </div>
+      ) : !hasData || !hasAnyValue ? (
+        <div className="flex flex-col items-center justify-center gap-3 py-20">
+          <Inbox className="h-12 w-12 text-slate-300" />
+          <p className="text-sm font-semibold text-slate-500">
+            {isAr
+              ? 'لا توجد بيانات في هذه الفترة'
+              : 'No data in this period'}
+          </p>
+          <p className="text-xs text-slate-400">
+            {isAr
+              ? 'جرّب فترة زمنية أطول'
+              : 'Try a longer time period'}
           </p>
         </div>
       ) : (
         <div className="p-6">
-          <svg
-            viewBox={`0 0 ${width} ${height}`}
-            className="w-full"
-            preserveAspectRatio="none"
-            style={{ height: '260px' }}
-          >
-            <defs>
-              <linearGradient id="academyGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="userGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-              </linearGradient>
-            </defs>
+          <div className="relative">
+            <svg
+              viewBox={`0 0 ${width} ${height}`}
+              className="w-full"
+              preserveAspectRatio="none"
+              style={{ height: '300px' }}
+              onMouseLeave={() => setHoveredIdx(null)}
+            >
+              <defs>
+                <linearGradient id="academyGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+                </linearGradient>
+                <linearGradient id="userGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                </linearGradient>
+              </defs>
 
-            {[0, 0.25, 0.5, 0.75, 1].map((tick) => (
-              <line
-                key={tick}
-                x1="0"
-                x2={width}
-                y1={paddingTop + chartH * tick}
-                y2={paddingTop + chartH * tick}
-                stroke="#e2e8f0"
-                strokeDasharray="6 6"
-                strokeWidth="1"
+              {/* Y-axis labels + grid lines */}
+              {yTicks.map((tick, i) => {
+                const y = paddingTop + chartH - (tick / maxValue) * chartH;
+                return (
+                  <g key={i}>
+                    <line
+                      x1={paddingLeft}
+                      x2={width - paddingRight}
+                      y1={y}
+                      y2={y}
+                      stroke="#e2e8f0"
+                      strokeDasharray="4 4"
+                      strokeWidth="1"
+                    />
+                    <text
+                      x={paddingLeft - 8}
+                      y={y + 4}
+                      textAnchor="end"
+                      className="fill-slate-400"
+                      style={{ fontSize: '11px', fontWeight: 600 }}
+                    >
+                      {tick}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Areas */}
+              <path d={toAreaPath('academies')} fill="url(#academyGradient)" />
+              <path d={toAreaPath('users')} fill="url(#userGradient)" />
+
+              {/* Lines */}
+              <path
+                d={toPath('academies')}
+                fill="none"
+                stroke="#f59e0b"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-            ))}
+              <path
+                d={toPath('users')}
+                fill="none"
+                stroke="#6366f1"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
 
-            <path d={toAreaPath('academies')} fill="url(#academyGradient)" />
-            <path d={toAreaPath('users')} fill="url(#userGradient)" />
+              {/* Points + Hover areas */}
+              {data.map((d, i) => {
+                const x = paddingLeft + i * stepX;
+                const yA = paddingTop + chartH - ((d.academies || 0) / maxValue) * chartH;
+                const yU = paddingTop + chartH - ((d.users || 0) / maxValue) * chartH;
+                const isHovered = hoveredIdx === i;
 
-            <path
-              d={toPath('academies')}
-              fill="none"
-              stroke="#f59e0b"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d={toPath('users')}
-              fill="none"
-              stroke="#6366f1"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+                return (
+                  <g
+                    key={d.date}
+                    onMouseEnter={() => setHoveredIdx(i)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {/* invisible vertical line on hover */}
+                    {isHovered && (
+                      <line
+                        x1={x}
+                        x2={x}
+                        y1={paddingTop}
+                        y2={paddingTop + chartH}
+                        stroke="#94a3b8"
+                        strokeWidth="1"
+                        strokeDasharray="4 4"
+                      />
+                    )}
+                    <circle
+                      cx={x}
+                      cy={yA}
+                      r={isHovered ? 7 : 5}
+                      fill="#fff"
+                      stroke="#f59e0b"
+                      strokeWidth="2.5"
+                      style={{ transition: 'r 0.15s' }}
+                    />
+                    <circle
+                      cx={x}
+                      cy={yU}
+                      r={isHovered ? 7 : 5}
+                      fill="#fff"
+                      stroke="#6366f1"
+                      strokeWidth="2.5"
+                      style={{ transition: 'r 0.15s' }}
+                    />
+                  </g>
+                );
+              })}
+            </svg>
 
+            {/* Hover Tooltip */}
+            {hoveredIdx !== null && data[hoveredIdx] && (
+              <div
+                className="pointer-events-none absolute rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-lg"
+                style={{
+                  left: `${
+                    ((paddingLeft + hoveredIdx * stepX) / width) * 100
+                  }%`,
+                  top: '10px',
+                  transform: 'translateX(-50%)',
+                }}
+              >
+                <p className="text-[10px] font-semibold text-slate-400">
+                  {data[hoveredIdx].date}
+                </p>
+                <div className="mt-1 flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                    <span className="text-xs font-bold text-slate-700">
+                      {data[hoveredIdx].users || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                    <span className="text-xs font-bold text-slate-700">
+                      {data[hoveredIdx].academies || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* X-axis labels */}
+          <div
+            className="mt-2 flex justify-between text-[10px] font-semibold text-slate-400"
+            style={{
+              paddingLeft: `${(paddingLeft / width) * 100}%`,
+              paddingRight: `${(paddingRight / width) * 100}%`,
+            }}
+          >
             {data.map((d, i) => {
-              const x = i * stepX;
-              const yA = paddingTop + chartH - (d.academies / maxValue) * chartH;
-              const yU = paddingTop + chartH - (d.users / maxValue) * chartH;
-              return (
-                <g key={d.date}>
-                  <circle cx={x} cy={yA} r="5" fill="#fff" stroke="#f59e0b" strokeWidth="2.5" />
-                  <circle cx={x} cy={yU} r="5" fill="#fff" stroke="#6366f1" strokeWidth="2.5" />
-                </g>
-              );
+              // اعرض بس كل N تاريخ عشان ما يزدحمش
+              const totalPoints = data.length;
+              const showEvery = totalPoints > 20 ? Math.ceil(totalPoints / 10) : 1;
+              if (i % showEvery !== 0 && i !== totalPoints - 1) return null;
+              return <span key={d.date}>{d.date.slice(5)}</span>;
             })}
-          </svg>
-
-          <div className="mt-3 flex justify-between text-xs font-semibold text-slate-400">
-            {data.map((d) => (
-              <span key={d.date}>{d.date.slice(5)}</span>
-            ))}
           </div>
         </div>
       )}

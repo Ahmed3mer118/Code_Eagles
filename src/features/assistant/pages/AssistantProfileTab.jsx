@@ -20,11 +20,11 @@ const PERMISSION_LABELS = {
   'assignments.view': 'عرض الواجبات',
   'assignments.grade': 'تصحيح الواجبات',
   'quizzes.view': 'عرض الاختبارات',
-  'quizzes.grade': 'تصحيح الاختبارات',
+  'grade_quizzes': 'تصحيح الاختبارات',        // ✅ الاسم الصح
+  'manage_quizzes': 'إنشاء وتعديل الاختبارات', // ✅ الاسم الصح
   'attendance.manage': 'إدارة الحضور',
   'payments.view': 'عرض المدفوعات',
 };
-
 export default function AssistantProfileTab() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -1,11 +1,11 @@
 // src/features/teacher/TeacherHeader.jsx
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../shared/context/AuthContext';
 import { useI18n } from '../../shared/i18n';
 import teacherApi from '../../shared/api/teacherApi';
 import {
-  Menu, Bell, LogOut, User, Settings, Globe, X,
+  Menu, Bell, LogOut, User, Settings, Globe,
 } from 'lucide-react';
 
 export default function TeacherHeader({ onMenuClick }) {
@@ -39,23 +39,40 @@ export default function TeacherHeader({ onMenuClick }) {
       try {
         const res = await teacherApi.getUnreadCount();
         if (mounted) setUnreadCount(res?.data?.count ?? res?.data ?? 0);
-      } catch { /* silent */ }
+      } catch {
+        /* silent */
+      }
     };
     fetchCount();
     const interval = setInterval(fetchCount, 60000);
-    return () => { mounted = false; clearInterval(interval); };
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
-  const openNotifications = async () => {
-    setNotifOpen((v) => !v);
-    if (!notifOpen) {
-      setLoadingNotifs(true);
-      try {
-        const res = await teacherApi.getNotifications({ limit: 10 });
-        setNotifications(res?.data?.items ?? res?.data ?? []);
-      } catch { /* silent */ }
+  const loadNotifications = useCallback(async () => {
+    setLoadingNotifs(true);
+    try {
+      const res = await teacherApi.getNotifications({ limit: 10 });
+      setNotifications(res?.data?.items ?? res?.data ?? []);
+    } catch {
+      /* silent */
+    } finally {
       setLoadingNotifs(false);
     }
+  }, []);
+
+  const toggleNotifications = () => {
+    // ✅ نستخدم القيمة الحالية قبل التحديث
+    setNotifOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        // فتح → تحميل الإشعارات
+        loadNotifications();
+      }
+      return next;
+    });
   };
 
   const markAllRead = async () => {
@@ -63,12 +80,29 @@ export default function TeacherHeader({ onMenuClick }) {
       await teacherApi.markAllNotificationsRead();
       setUnreadCount(0);
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
+  };
+
+  const markOneRead = async (id) => {
+    try {
+      await teacherApi.markNotificationRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      );
+      setUnreadCount((c) => Math.max(0, c - 1));
+    } catch {
+      /* silent */
+    }
   };
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+    try {
+      await logout();
+    } finally {
+      navigate('/login');
+    }
   };
 
   return (
@@ -104,7 +138,7 @@ export default function TeacherHeader({ onMenuClick }) {
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
           <button
-            onClick={openNotifications}
+            onClick={toggleNotifications}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 relative"
             aria-label="Notifications"
           >
@@ -117,11 +151,20 @@ export default function TeacherHeader({ onMenuClick }) {
           </button>
 
           {notifOpen && (
-            <div className={`absolute top-full mt-2 ${dir === 'rtl' ? 'left-0' : 'right-0'} w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg z-50`}>
+            <div
+              className={`absolute top-full mt-2 ${
+                dir === 'rtl' ? 'left-0' : 'right-0'
+              } w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg z-50`}
+            >
               <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-800">
-                <span className="font-semibold text-sm">{t('teacher.notifications.title')}</span>
+                <span className="font-semibold text-sm">
+                  {t('teacher.notifications.title')}
+                </span>
                 {unreadCount > 0 && (
-                  <button onClick={markAllRead} className="text-xs text-primary-600 hover:underline">
+                  <button
+                    onClick={markAllRead}
+                    className="text-xs text-primary-600 hover:underline"
+                  >
                     {t('teacher.notifications.markAllRead')}
                   </button>
                 )}
@@ -137,17 +180,20 @@ export default function TeacherHeader({ onMenuClick }) {
                   notifications.map((n) => (
                     <button
                       key={n.id}
-                      onClick={() => {
-                        teacherApi.markNotificationRead(n.id);
-                        setUnreadCount((c) => Math.max(0, c - 1));
-                      }}
-                      className={`w-full text-start p-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 ${!n.read ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''}`}
+                      onClick={() => markOneRead(n.id)}
+                      className={`w-full text-start p-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                        !n.read ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''
+                      }`}
                     >
                       <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
-                        {typeof n.title === 'object' ? (n.title?.[lang] || n.title?.ar || n.title?.en) : n.title}
+                        {typeof n.title === 'object'
+                          ? n.title?.[lang] || n.title?.ar || n.title?.en
+                          : n.title}
                       </p>
                       <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">
-                        {typeof n.body === 'object' ? (n.body?.[lang] || n.body?.ar || n.body?.en) : n.body}
+                        {typeof n.body === 'object'
+                          ? n.body?.[lang] || n.body?.ar || n.body?.en
+                          : n.body}
                       </p>
                     </button>
                   ))
@@ -164,7 +210,11 @@ export default function TeacherHeader({ onMenuClick }) {
             className="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             {user?.profileImageUrl ? (
-              <img src={user.profileImageUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
+              <img
+                src={user.profileImageUrl}
+                alt=""
+                className="w-8 h-8 rounded-full object-cover"
+              />
             ) : (
               <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center text-sm font-semibold">
                 {user?.name?.[0]?.toUpperCase() || 'T'}
@@ -176,20 +226,32 @@ export default function TeacherHeader({ onMenuClick }) {
           </button>
 
           {userOpen && (
-            <div className={`absolute top-full mt-2 ${dir === 'rtl' ? 'left-0' : 'right-0'} w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg z-50`}>
+            <div
+              className={`absolute top-full mt-2 ${
+                dir === 'rtl' ? 'left-0' : 'right-0'
+              } w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg z-50`}
+            >
               <div className="p-3 border-b border-gray-200 dark:border-gray-800">
-                <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">{user?.name}</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">
+                  {user?.name}
+                </p>
                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>
               </div>
               <div className="py-1">
                 <button
-                  onClick={() => { navigate('/teacher/settings'); setUserOpen(false); }}
+                  onClick={() => {
+                    navigate('/teacher/settings/profile');
+                    setUserOpen(false);
+                  }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   <User size={16} /> {t('teacher.user.profile')}
                 </button>
                 <button
-                  onClick={() => { navigate('/teacher/settings'); setUserOpen(false); }}
+                  onClick={() => {
+                    navigate('/teacher/settings/tenant');
+                    setUserOpen(false);
+                  }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   <Settings size={16} /> {t('teacher.user.settings')}

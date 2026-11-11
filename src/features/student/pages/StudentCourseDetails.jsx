@@ -65,9 +65,12 @@ function StatItem({ icon: Icon, label, value, color = 'indigo' }) {
 
 function ModuleAccordion({ module, index, isOpen, onToggle, onLectureClick }) {
   const lectures = module.lectures || [];
+  
+  // ✅ إصلاح قراءة حالة الإكمال
   const completedLectures = lectures.filter(
-    (l) => l.progress?.completed || l.completed,
+    (l) => l.isCompleted || l.completed || l.progress?.isCompleted || l.progress?.completed
   ).length;
+  
   const progress = lectures.length > 0
     ? Math.round((completedLectures / lectures.length) * 100)
     : 0;
@@ -134,8 +137,9 @@ function ModuleAccordion({ module, index, isOpen, onToggle, onLectureClick }) {
             </div>
           ) : (
             lectures.map((lecture, lIdx) => {
+              // ✅ إصلاح قراءة حالة المحاضرة
               const isCompleted =
-                lecture.progress?.completed || lecture.completed || false;
+                lecture.isCompleted || lecture.completed || lecture.progress?.isCompleted || lecture.progress?.completed || false;
               const isLocked =
                 lecture.isLocked || lecture.locked || false;
 
@@ -267,9 +271,12 @@ export default function StudentCourseDetails() {
 
   // حساب الإحصائيات
   const totalLectures = lectures.length;
+  
+  // ✅ إصلاح الإحصائيات
   const completedLectures = lectures.filter(
-    (l) => l.progress?.completed || l.completed,
+    (l) => l.isCompleted || l.completed || l.progress?.isCompleted || l.progress?.completed
   ).length;
+  
   const overallProgress =
     totalLectures > 0
       ? Math.round((completedLectures / totalLectures) * 100)
@@ -425,7 +432,7 @@ export default function StudentCourseDetails() {
             <button
               onClick={() => {
                 const nextLecture = lectures.find(
-                  (l) => !(l.progress?.completed || l.completed) && !l.isLocked,
+                  (l) => !(l.isCompleted || l.completed || l.progress?.isCompleted || l.progress?.completed) && !l.isLocked,
                 );
                 if (nextLecture) handleLectureClick(nextLecture);
               }}

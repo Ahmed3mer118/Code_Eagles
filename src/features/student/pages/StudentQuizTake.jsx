@@ -1,3 +1,4 @@
+// src/features/student/pages/StudentQuizTake.jsx
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -210,8 +211,15 @@ export default function StudentQuizTake() {
 
   const isLowTime = minutes < 5;
 
+  // ✅ تحديد أنواع الأسئلة اللي بتظهر كخيارات (MCQ)
+  const isChoiceQuestion = 
+    currentQ?.type === 'mcq' || 
+    currentQ?.type === 'multiple_choice' || 
+    currentQ?.type === 'true_false' || 
+    currentQ?.type === 'multiple_select';
+
   return (
-    <div className="max-w-3xl mx-auto space-y-4">
+    <div className="max-w-3xl mx-auto space-y-4" dir="rtl">
       {/* Header: Timer + Progress */}
       <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -258,8 +266,8 @@ export default function StudentQuizTake() {
             </span>
           </div>
 
-          {/* Options (MCQ) */}
-          {currentQ.type === 'mcq' && currentQ.options && (
+          {/* ✅ Options (MCQ / True-False / Multiple Select) */}
+          {isChoiceQuestion && currentQ.options && (
             <div className="space-y-2">
               {currentQ.options.map((opt) => {
                 const selected = currentAnswer.selectedOption === opt.id;
@@ -297,8 +305,8 @@ export default function StudentQuizTake() {
             </div>
           )}
 
-          {/* Text Answer */}
-          {currentQ.type === 'short_answer' && (
+          {/* Text Answer (Short / Long Answer) */}
+          {(currentQ.type === 'short_answer' || currentQ.type === 'long_answer') && (
             <textarea
               value={currentAnswer.textAnswer || ''}
               onChange={(e) =>

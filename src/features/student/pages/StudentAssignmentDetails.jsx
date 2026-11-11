@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ArrowRight,
-  FileText,
   Calendar,
   Award,
   Clock,
@@ -14,8 +13,10 @@ import {
   Paperclip,
   MessageSquare,
   Upload,
+  FileText,
 } from 'lucide-react';
 import useStudentAssignment from '../hooks/useStudentAssignment';
+import { uploadAssignmentFile } from '../api/assignments.api';
 
 function formatDateTime(dateStr) {
   if (!dateStr) return null;
@@ -44,13 +45,15 @@ export default function StudentAssignmentDetails() {
   const [content, setContent] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
   const [showForm, setShowForm] = useState(false);
+  
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const submission = assignment?.submissions?.[0];
   const isGraded = submission?.status === 'graded';
   const isReturned = submission?.status === 'returned';
   const isSubmitted = submission && !isGraded && !isReturned;
 
-  // تعبئة الفورم بالقيم الموجودة
   useEffect(() => {
     if (submission) {
       setContent(submission.content || '');
@@ -58,18 +61,57 @@ export default function StudentAssignmentDetails() {
     }
   }, [submission]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!content.trim() && !attachmentUrl.trim()) {
-      alert('لازم تكتب محتوى أو تضيف رابط مرفق على الأقل');
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('مسموح بالصور (JPG, PNG) أو ملفات PDF فقط.');
       return;
     }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('حجم الملف يجب أن يكون أقل من 5 ميجابايت.');
+      return;
+    }
+
+    setSelectedFile(file);
+    setIsUploading(true);
+    
+    try {
+      const res = await uploadAssignmentFile(file);
+      setAttachmentUrl(res.url); 
+    } catch (err) {
+      console.error('Upload failed:', err);
+      alert('فشل رفع الملف، حاول تاني.');
+      setSelectedFile(null);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (isUploading) {
+      alert('استنى لما الملف يخلص رفع الأول.');
+      return;
+    }
+
+    if (!content.trim() && !attachmentUrl.trim()) {
+      alert('لازم تكتب محتوى أو ترفع ملف على الأقل');
+      return;
+    }
+
     const result = await submit({
       content: content.trim() || undefined,
       attachmentUrl: attachmentUrl.trim() || undefined,
     });
+    
     if (result.success) {
       setShowForm(false);
+      setSelectedFile(null);
     }
   };
 
@@ -105,7 +147,6 @@ export default function StudentAssignmentDetails() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      {/* Breadcrumb */}
       <Link
         to="/student/assignments"
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-600 transition-colors"
@@ -114,7 +155,6 @@ export default function StudentAssignmentDetails() {
         رجوع للواجبات
       </Link>
 
-      {/* Header card */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-0">
@@ -128,41 +168,31 @@ export default function StudentAssignmentDetails() {
             )}
           </div>
 
-          {/* Status Badge */}
           {isGraded && (
             <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-sm font-semibold">
-              <CheckCircle2 size={16} />
-              مصحح
+              <CheckCircle2 size={16} /> مصحح
             </span>
           )}
           {isReturned && (
             <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-sm font-semibold">
-              <RefreshCw size={16} />
-              مرتجع
+              <RefreshCw size={16} /> مرتجع
             </span>
           )}
           {isSubmitted && (
             <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-sm font-semibold">
-              <Send size={16} />
-              مسلّم
+              <Send size={16} /> مسلّم
             </span>
           )}
           {!submission && isOverdue && (
             <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm font-semibold">
-              <XCircle size={16} />
-              متأخر
+              <XCircle size={16} /> متأخر
             </span>
           )}
         </div>
 
-        {/* Meta */}
         <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
           {dueDate && (
-            <span
-              className={`inline-flex items-center gap-1.5 ${
-                isOverdue && !submission ? 'text-red-600 dark:text-red-400 font-medium' : ''
-              }`}
-            >
+            <span className={`inline-flex items-center gap-1.5 ${isOverdue && !submission ? 'text-red-600 dark:text-red-400 font-medium' : ''}`}>
               <Calendar size={15} />
               التسليم: {formatDateTime(assignment.dueDate)}
             </span>
@@ -175,18 +205,14 @@ export default function StudentAssignmentDetails() {
             <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
               <Clock size={15} />
               يقبل التسليم المتأخر
-              {assignment.latePenaltyPercent > 0 &&
-                ` (خصم ${assignment.latePenaltyPercent}%)`}
+              {assignment.latePenaltyPercent > 0 && ` (خصم ${assignment.latePenaltyPercent}%)`}
             </span>
           )}
         </div>
 
-        {/* Description */}
         {assignment.description && (
           <div className="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800">
-            <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-2">
-              التعليمات
-            </h2>
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-2">التعليمات</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
               {assignment.description}
             </p>
@@ -194,20 +220,16 @@ export default function StudentAssignmentDetails() {
         )}
       </div>
 
-      {/* Submission section */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4">
           <Send size={18} className="text-primary-600" />
           {submission ? 'تسليمك' : 'تسليم الواجب'}
         </h2>
 
-        {/* Grade display */}
         {isGraded && (
           <div className="mb-4 p-4 rounded-xl bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-green-800 dark:text-green-300">
-                الدرجة النهائية
-              </span>
+              <span className="text-sm font-medium text-green-800 dark:text-green-300">الدرجة النهائية</span>
               <span className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {submission.grade} / {assignment.maxPoints}
               </span>
@@ -215,8 +237,7 @@ export default function StudentAssignmentDetails() {
             {submission.feedback && (
               <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-800">
                 <p className="text-xs font-semibold text-green-800 dark:text-green-300 mb-1 flex items-center gap-1">
-                  <MessageSquare size={12} />
-                  ملاحظات المدرس
+                  <MessageSquare size={12} /> ملاحظات المدرس
                 </p>
                 <p className="text-sm text-green-700 dark:text-green-300 whitespace-pre-wrap">
                   {submission.feedback}
@@ -231,7 +252,6 @@ export default function StudentAssignmentDetails() {
           </div>
         )}
 
-        {/* Returned notice */}
         {isReturned && (
           <div className="mb-4 p-4 rounded-xl bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800">
             <p className="text-sm font-medium text-orange-800 dark:text-orange-300 flex items-center gap-2">
@@ -241,7 +261,6 @@ export default function StudentAssignmentDetails() {
           </div>
         )}
 
-        {/* Submitted content (view mode) */}
         {submission && !showForm && (
           <div className="space-y-3">
             {submission.content && (
@@ -272,7 +291,6 @@ export default function StudentAssignmentDetails() {
               </p>
             )}
 
-            {/* Edit button if allowed */}
             {(isSubmitted || (!isGraded && !isReturned)) && (
               <button
                 onClick={() => setShowForm(true)}
@@ -284,7 +302,6 @@ export default function StudentAssignmentDetails() {
           </div>
         )}
 
-        {/* Submit form */}
         {(!submission || showForm) && canSubmit && (
           <form onSubmit={handleSubmit} className="space-y-4">
             {submitError && (
@@ -307,40 +324,61 @@ export default function StudentAssignmentDetails() {
               />
             </div>
 
+            {/* ✅ حقل رفع الملف المبسط */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                رابط المرفق (اختياري)
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                إرفاق ملف (صورة أو PDF)
               </label>
-              <div className="relative">
-                <Paperclip
-                  size={16}
-                  className="absolute top-1/2 -translate-y-1/2 start-3 text-gray-400"
-                />
+              
+              <div className="flex flex-col gap-2">
                 <input
-                  type="url"
-                  value={attachmentUrl}
-                  onChange={(e) => setAttachmentUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full ps-9 pe-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg,application/pdf"
+                  onChange={handleFileUpload}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/30 dark:file:text-primary-400"
                 />
+                
+                {isUploading && (
+                  <div className="flex items-center gap-2 text-sm text-blue-600 mt-1">
+                    <RefreshCw className="animate-spin" size={14} />
+                    جاري رفع الملف...
+                  </div>
+                )}
+
+                {attachmentUrl && !isUploading && (
+                  <div className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/20 rounded-lg text-sm text-green-700 dark:text-green-400">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 size={16} />
+                      <span>تم الرفع بنجاح</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAttachmentUrl('');
+                        setSelectedFile(null);
+                      }}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      حذف
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-4">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isUploading}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors"
               >
                 {isSubmitting ? (
                   <>
-                    <RefreshCw size={16} className="animate-spin" />
-                    جاري التسليم...
+                    <RefreshCw size={16} className="animate-spin" /> جاري التسليم...
                   </>
                 ) : (
                   <>
-                    <Upload size={16} />
-                    {submission ? 'حفظ التعديل' : 'تسليم الواجب'}
+                    <Upload size={16} /> {submission ? 'حفظ التعديل' : 'تسليم الواجب'}
                   </>
                 )}
               </button>
@@ -363,7 +401,6 @@ export default function StudentAssignmentDetails() {
           </form>
         )}
 
-        {/* Cannot submit notice */}
         {!submission && !canSubmit && (
           <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
             <p className="text-sm text-red-800 dark:text-red-300 flex items-center gap-2">

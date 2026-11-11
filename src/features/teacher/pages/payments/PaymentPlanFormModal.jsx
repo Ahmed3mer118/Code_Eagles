@@ -2,11 +2,11 @@
 import { useEffect, useState } from 'react';
 import { Save } from 'lucide-react';
 
+// ✅ القيم دي هي اللي السيرفر بيقبلها بالظبط
 const PACKAGE_TYPES = [
-  { value: 'monthly', label: 'شهري' },
-  { value: 'term', label: 'ترم' },
-  { value: 'yearly', label: 'سنوي' },
-  { value: 'session', label: 'بالجلسة' },
+  { value: 'lectures_only', label: 'محاضرات فقط' },
+  { value: 'exams_only', label: 'امتحانات فقط' },
+  { value: 'lectures_and_exams', label: 'محاضرات وامتحانات' },
 ];
 
 const PLAN_STATUSES = [
@@ -21,7 +21,7 @@ export default function PaymentPlanFormModal({ open, onClose, onSubmit, loading,
     name: '',
     description: '',
     price: 0,
-    packageType: 'monthly',
+    packageType: 'lectures_and_exams', // ✅ القيمة الافتراضية بقت من القيم المسموحة
     planType: '',
     durationDays: 30,
     trialDays: 0,
@@ -36,7 +36,7 @@ export default function PaymentPlanFormModal({ open, onClose, onSubmit, loading,
         name: plan?.name || '',
         description: plan?.description || '',
         price: Number(plan?.price) || 0,
-        packageType: plan?.packageType || 'monthly',
+        packageType: plan?.packageType || 'lectures_and_exams', // ✅ تأمين القيمة الافتراضية
         planType: plan?.planType || '',
         durationDays: plan?.durationDays || 30,
         trialDays: plan?.trialDays || 0,

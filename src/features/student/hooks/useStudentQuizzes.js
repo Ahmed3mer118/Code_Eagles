@@ -1,3 +1,4 @@
+// src/features/student/hooks/useStudentQuizzes.js
 import { useState, useEffect, useCallback } from 'react';
 import { getStudentQuizzes } from '../api/quizzes.api';
 
@@ -11,14 +12,14 @@ export default function useStudentQuizzes() {
     setError(null);
     try {
       const data = await getStudentQuizzes();
-      setQuizzes(Array.isArray(data) ? data : []);
+      console.log('🔍 [useStudentQuizzes] Data from API:', data); // 👈 هنبص على ده
+      
+      // الباك بيرجع array مباشرة أو { data: [...] }
+      const list = Array.isArray(data) ? data : (data?.data || []);
+      setQuizzes(list);
     } catch (err) {
-      console.error('Failed to load quizzes:', err);
-      setError(
-        err?.response?.data?.message ||
-          err?.message ||
-          'تعذر تحميل الاختبارات، حاول تاني.'
-      );
+      console.error('❌ [useStudentQuizzes] Error:', err);
+      setError(err?.response?.data?.message || err?.message || 'حدث خطأ');
       setQuizzes([]);
     } finally {
       setIsLoading(false);

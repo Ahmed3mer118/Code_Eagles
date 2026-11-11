@@ -28,6 +28,7 @@ export function AuthProvider({ children }) {
 
     async function bootstrap() {
       const token = getAccessToken();
+      
       if (!token) {
         if (mounted) setIsLoading(false);
         return;
@@ -40,9 +41,12 @@ export function AuthProvider({ children }) {
         if (!mounted) return;
 
         setUser(data.user ?? null);
-        setMemberships(data.memberships ?? []);
+        
+        // لو الـ memberships راجعة، بنخزنها
+        if (data.memberships && data.memberships.length > 0) {
+          setMemberships(data.memberships);
+        }
 
-        // ✅ الحل: استخراج الـ Tenant ID من أي مكان متاح
         let finalTenantId = null;
 
         if (data.currentTenant) {
@@ -54,11 +58,11 @@ export function AuthProvider({ children }) {
           setActiveTenant(fallback);
         }
 
-        // ✅ الحفظ الإجباري في الـ localStorage
         if (finalTenantId) {
           setTenantId(finalTenantId);
         }
       } catch (err) {
+        console.error("Auth Bootstrap Error:", err);
         const status = err?.response?.status;
         if (status === 401 || status === 403) {
           clearAuth();
@@ -69,6 +73,7 @@ export function AuthProvider({ children }) {
           }
         }
       } finally {
+        // ✅ بنخليها false في كل الحالات عشان الصفحة تفتح
         if (mounted) setIsLoading(false);
       }
     }
@@ -77,7 +82,7 @@ export function AuthProvider({ children }) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, []); // ✅ الـ dependency array فاضية عشان يشتغل مرة واحدة
 
   const login = useCallback(async (credentials) => {
     const data = await authService.login(credentials);

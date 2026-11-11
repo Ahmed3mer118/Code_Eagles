@@ -1,3 +1,4 @@
+// src/shared/api/superadminApi.ts
 import api from './client';
 
 export interface DashboardOverview {
@@ -29,26 +30,27 @@ export interface ActivityItem {
 
 export const superadminApi = {
   async getOverview(): Promise<DashboardOverview> {
-    const { data } = await api.get('/api/admin/dashboard/overview');
+    // ✅ بدون /api
+    const { data } = await api.get('/admin/dashboard/overview');
     return data.data ?? data;
   },
 
   async getGrowth(days = 7): Promise<GrowthPoint[]> {
-    const { data } = await api.get('/api/admin/dashboard/growth', {
+    const { data } = await api.get('/admin/dashboard/growth', {
       params: { days },
     });
     return data.data ?? data;
   },
 
   async getActivity(limit = 10): Promise<ActivityItem[]> {
-    const { data } = await api.get('/api/admin/dashboard/activity', {
+    const { data } = await api.get('/admin/dashboard/activity', {
       params: { limit },
     });
     return data.data ?? data;
   },
 
   async getBadges() {
-    const { data } = await api.get('/api/admin/dashboard/badges');
+    const { data } = await api.get('/admin/dashboard/badges');
     return data.data ?? data;
   },
 };

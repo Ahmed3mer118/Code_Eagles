@@ -1,3 +1,4 @@
+// src/features/auth/LoginPage.jsx
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import authService from '../../shared/api/authService';
@@ -38,15 +39,6 @@ function isSuperAdminResponse(res) {
     ) {
       return true;
     }
-  }
-
-  const roles = [res?.user?.role, res?.role, res?.currentTenant?.role]
-    .filter(Boolean)
-    .map((r) => String(r).toLowerCase());
-  if (roles.some((r) => r.includes('super'))) return true;
-
-  if (res?.user?.isSuperAdmin === true || res?.isSuperAdmin === true) {
-    return true;
   }
 
   return false;
@@ -97,25 +89,62 @@ export default function LoginPage() {
     try {
       const res = await authService.login(form);
 
-      // 👑 SUPER ADMIN — خزّن flag فوراً قبل أي navigate
+      // 1️⃣ SUPER ADMIN
       if (isSuperAdminResponse(res)) {
         try {
           localStorage.setItem('isSuperAdmin', 'true');
-          console.log('👑 Super Admin detected — flag stored ✅');
-        } catch (e) {
-          console.warn('localStorage failed:', e);
-        }
-
-        // 🔥 hard redirect عشان نضمن الـ guard يشوف الـ flag من أول لحظة
+        } catch (e) {}
         window.location.href = '/admin/dashboard';
         return;
       }
 
-      // مش super admin — امسح أي flag قديم
       try {
         localStorage.removeItem('isSuperAdmin');
       } catch (_) {}
 
+      // 2️⃣ استخراج الـ Role بشكل ذكي جداً (عشان مشكلة البيرنت)
+      let role = 
+        res?.currentTenant?.role || 
+        res?.user?.role || 
+        res?.memberships?.[0]?.role || 
+        res?.user?.memberships?.[0]?.role;
+
+      // لو لسه مفيش، نجيبها من التوكن
+      if (!role && res.accessToken) {
+        const payload = decodeJwtPayload(res.accessToken);
+        role = payload?.role || payload?.tenantRole;
+      }
+
+      // لو لسه مفيش، نجيبها من الـ LocalStorage
+      if (!role) {
+        try {
+          const storedUser = JSON.parse(localStorage.getItem('ce_user') || '{}');
+          role = storedUser?.role || storedUser?.memberships?.[0]?.role;
+        } catch (err) {}
+      }
+
+      // 3️⃣ التوجيه بناءً على الـ Role
+      if (role === 'parent') {
+        navigate('/parent/dashboard', { replace: true });
+        return;
+      }
+
+      if (role === 'student') {
+        navigate('/student/dashboard', { replace: true });
+        return;
+      }
+
+      if (role === 'teacher') {
+        navigate('/teacher/dashboard', { replace: true });
+        return;
+      }
+
+      if (role === 'assistant') {
+        navigate('/assistant/dashboard', { replace: true });
+        return;
+      }
+
+      // 4️⃣ حالات التوجيه الأخرى (لو مفيش Role)
       if (res.needsOnboarding) {
         navigate('/onboarding', { replace: true });
         return;
@@ -132,7 +161,10 @@ export default function LoginPage() {
         return;
       }
 
+      // 5️⃣ لو لسه مفيش أي حاجة، نوديه لصفحة اختيار الأكاديمية (مش الطالب)
+      console.log('🔀 No clear role/tenant found, redirecting to select-tenant');
       navigate('/select-tenant', { replace: true });
+
     } catch (err) {
       setError(extractApiError(err).message);
     } finally {

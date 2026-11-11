@@ -1,6 +1,6 @@
+// src/shared/api/adminUsersService.ts
 import apiClient from './client';
 
-/* ======================= Types ======================= */
 export type PlatformRole = 'user' | 'super_admin';
 export type ActiveStatus = 'active' | 'inactive' | 'suspended';
 export type PreferredLanguage = 'ar' | 'en';
@@ -79,11 +79,10 @@ export interface ActivityItem {
   createdAt: string;
 }
 
-/* ======================= Service ======================= */
-const ADMIN_BASE = '/api/admin/users';
+// ✅ بدون /api
+const ADMIN_BASE = '/admin/users';
 
 export const adminUsersService = {
-  /* ---- List ---- */
   async list(params: QueryUsersParams = {}): Promise<Paginated<AdminUser>> {
     const { data } = await apiClient.get<Paginated<AdminUser>>(ADMIN_BASE, {
       params,
@@ -91,13 +90,11 @@ export const adminUsersService = {
     return data;
   },
 
-  /* ---- Get one ---- */
   async getOne(id: string): Promise<AdminUser> {
     const { data } = await apiClient.get<AdminUser>(`${ADMIN_BASE}/${id}`);
     return data;
   },
 
-  /* ---- Update ---- */
   async update(id: string, payload: UpdateUserPayload): Promise<AdminUser> {
     const { data } = await apiClient.patch<AdminUser>(
       `${ADMIN_BASE}/${id}`,
@@ -106,7 +103,6 @@ export const adminUsersService = {
     return data;
   },
 
-  /* ---- Change status ---- */
   async updateStatus(id: string, status: ActiveStatus) {
     const { data } = await apiClient.patch(`${ADMIN_BASE}/${id}/status`, {
       status,
@@ -114,13 +110,11 @@ export const adminUsersService = {
     return data;
   },
 
-  /* ---- Unlock ---- */
   async unlock(id: string) {
     const { data } = await apiClient.post(`${ADMIN_BASE}/${id}/unlock`);
     return data;
   },
 
-  /* ---- Verify email ---- */
   async verifyEmail(id: string) {
     const { data } = await apiClient.post(
       `${ADMIN_BASE}/${id}/verify-email`,
@@ -128,7 +122,6 @@ export const adminUsersService = {
     return data;
   },
 
-  /* ---- Reset password ---- */
   async resetPassword(
     id: string,
     payload: { newPassword: string; confirmPassword: string },
@@ -140,19 +133,16 @@ export const adminUsersService = {
     return data;
   },
 
-  /* ---- Delete ---- */
   async remove(id: string) {
     const { data } = await apiClient.delete(`${ADMIN_BASE}/${id}`);
     return data;
   },
 
-  /* ---- Restore ---- */
   async restore(id: string) {
     const { data } = await apiClient.post(`${ADMIN_BASE}/${id}/restore`);
     return data;
   },
 
-  /* ---- Activity ---- */
   async getActivity(
     id: string,
     page = 1,
@@ -165,7 +155,6 @@ export const adminUsersService = {
     return data;
   },
 
-  /* ---- Sessions ---- */
   async getSessions(id: string): Promise<UserSession[]> {
     const { data } = await apiClient.get<UserSession[]>(
       `${ADMIN_BASE}/${id}/sessions`,

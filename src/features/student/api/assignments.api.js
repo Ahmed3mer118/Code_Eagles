@@ -1,56 +1,46 @@
 import apiClient from '../../../shared/api/client';
 
-/**
- * جلب كل الواجبات الخاصة بالطالب
- * GET /api/student/assignments
- */
 export async function getStudentAssignments() {
-  const { data } = await apiClient.get('/api/student/assignments');
+  const { data } = await apiClient.get('/student/assignments');
   return data;
 }
 
-/**
- * جلب تفاصيل واجب معين + التسليم بتاعه
- * GET /api/student/assignments/:id
- */
 export async function getStudentAssignmentById(assignmentId) {
-  const { data } = await apiClient.get(
-    `/api/student/assignments/${assignmentId}`
-  );
+  const { data } = await apiClient.get(`/student/assignments/${assignmentId}`);
   return data;
 }
 
-/**
- * تسليم واجب (أول مرة أو تعديل تسليم موجود)
- * POST /api/student/assignments/:id/submit
- * body: { content?: string, attachmentUrl?: string }
- */
 export async function submitAssignment(assignmentId, payload) {
-  const { data } = await apiClient.post(
-    `/api/student/assignments/${assignmentId}/submit`,
-    payload
-  );
+  const { data } = await apiClient.post(`/student/assignments/${assignmentId}/submit`, payload);
   return data;
 }
 
-/**
- * جلب كل التسليمات بتاعة الطالب
- * GET /api/student/submissions
- */
 export async function getStudentSubmissions() {
-  const { data } = await apiClient.get('/api/student/submissions');
+  const { data } = await apiClient.get('/student/submissions');
   return data;
 }
 
-/**
- * جلب تفاصيل تسليم معين
- * GET /api/student/submissions/:id
- */
 export async function getStudentSubmissionById(submissionId) {
-  const { data } = await apiClient.get(
-    `/api/student/submissions/${submissionId}`
-  );
+  const { data } = await apiClient.get(`/student/submissions/${submissionId}`);
   return data;
+}
+
+// ✅ الدالة الجديدة لرفع الملفات (صورة أو PDF)
+export async function uploadAssignmentFile(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  // بنستخدم endpoint الـ file عشان يقبل PDF، ولو صورة ممكن تستخدمي image
+  const { data } = await apiClient.post(
+    `/upload/file?folder=assignments/submissions`,
+    formData,
+    {
+      headers: {
+        'Content-Type': undefined, // Axios هيضيف الـ boundary تلقائي
+      },
+    }
+  );
+  return data; // بيرجع { url, path, ... }
 }
 
 export default {
@@ -59,5 +49,5 @@ export default {
   submitAssignment,
   getStudentSubmissions,
   getStudentSubmissionById,
+  uploadAssignmentFile,
 };
-

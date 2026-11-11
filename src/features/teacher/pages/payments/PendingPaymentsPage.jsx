@@ -8,6 +8,7 @@ import {
   XCircle,
   Wallet,
   AlertCircle,
+  ImageIcon,
 } from 'lucide-react';
 import teacherApi from '@/shared/api/teacherApi';
 import usePaymentRequests from '../../hooks/usePaymentRequests';
@@ -25,6 +26,17 @@ const STATUS_OPTIONS = [
   { value: 'approved', label: 'مقبول' },
   { value: 'rejected', label: 'مرفوض' },
 ];
+
+/** ✅ استخراج رابط صورة التحويل من أي شكل */
+function getProofUrl(req) {
+  if (!req) return null;
+  return (
+    req.metadata?.proofImageUrl ||
+    req.metadata?.receiptImageUrl ||
+    req.proofImageUrl ||
+    null
+  );
+}
 
 export default function PendingPaymentsPage() {
   const { data, total, totalPages, params, loading, error, refetch, updateParams } =
@@ -47,6 +59,7 @@ export default function PendingPaymentsPage() {
       await teacherApi.approvePaymentRequest(approveTarget.id, payload);
       showToast('success', 'تم قبول الدفعة');
       setApproveTarget(null);
+      setDetailTarget(null);
       refetch();
     } catch (err) {
       showToast('error', err?.response?.data?.message || 'فشل القبول');
@@ -61,6 +74,7 @@ export default function PendingPaymentsPage() {
       await teacherApi.rejectPaymentRequest(rejectTarget.id, payload);
       showToast('success', 'تم رفض الدفعة');
       setRejectTarget(null);
+      setDetailTarget(null);
       refetch();
     } catch (err) {
       showToast('error', err?.response?.data?.message || 'فشل الرفض');
@@ -124,7 +138,9 @@ export default function PendingPaymentsPage() {
             className="px-3 py-2 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
           >
             {STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
           </select>
         </div>
@@ -149,21 +165,36 @@ export default function PendingPaymentsPage() {
         />
       ) : (
         <>
+          {/* Desktop table */}
           <div className="hidden md:block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">الطالب</th>
-                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">المبلغ</th>
-                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">الحالة</th>
-                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">التاريخ</th>
-                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">الإجراءات</th>
+                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">
+                    الطالب
+                  </th>
+                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">
+                    المبلغ
+                  </th>
+                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">
+                    الإيصال
+                  </th>
+                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">
+                    الحالة
+                  </th>
+                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">
+                    التاريخ
+                  </th>
+                  <th className="text-right p-3 font-semibold text-gray-600 dark:text-gray-300">
+                    الإجراءات
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {data.map((req) => {
                   const student = req.student || {};
                   const isPending = req.status === 'pending';
+                  const proofUrl = getProofUrl(req);
                   return (
                     <tr
                       key={req.id}
@@ -187,7 +218,36 @@ export default function PendingPaymentsPage() {
                       <td className="p-3 font-bold text-gray-900 dark:text-white">
                         {fmt(req.amount)}
                       </td>
-                      <td className="p-3"><StatusBadge status={req.status} /></td>
+                      {/* ✅ عمود الإيصال */}
+                      <td className="p-3">
+                        {proofUrl ? (
+                          <a
+                            href={proofUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block group"
+                            title="عرض إثبات الدفع"
+                          >
+                            <div className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 group-hover:ring-2 group-hover:ring-primary-500 transition">
+                              <img
+                                src={proofUrl}
+                                alt="إثبات الدفع"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                            <ImageIcon size={12} /> لا يوجد
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-3">
+                        <StatusBadge status={req.status} />
+                      </td>
                       <td className="p-3 text-gray-600 dark:text-gray-300 text-xs whitespace-nowrap">
                         {formatDate(req.createdAt)}
                       </td>
@@ -196,7 +256,7 @@ export default function PendingPaymentsPage() {
                           <button
                             onClick={() => setDetailTarget(req)}
                             className="p-1.5 rounded-lg text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
-                            title="عرض"
+                            title="عرض التفاصيل"
                           >
                             <Eye size={16} />
                           </button>
@@ -227,10 +287,12 @@ export default function PendingPaymentsPage() {
             </table>
           </div>
 
+          {/* Mobile cards */}
           <div className="md:hidden space-y-3">
             {data.map((req) => {
               const student = req.student || {};
               const isPending = req.status === 'pending';
+              const proofUrl = getProofUrl(req);
               return (
                 <div
                   key={req.id}
@@ -252,6 +314,23 @@ export default function PendingPaymentsPage() {
                     </div>
                     <StatusBadge status={req.status} />
                   </div>
+
+                  {/* ✅ thumbnail صورة التحويل على الموبايل */}
+                  {proofUrl && (
+                    <a
+                      href={proofUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                    >
+                      <img
+                        src={proofUrl}
+                        alt="إثبات الدفع"
+                        className="w-full max-h-40 object-contain bg-gray-50 dark:bg-gray-800"
+                      />
+                    </a>
+                  )}
+
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-500">المبلغ:</span>
                     <span className="font-bold text-gray-900 dark:text-white">
@@ -300,6 +379,12 @@ export default function PendingPaymentsPage() {
         open={!!detailTarget}
         onClose={() => setDetailTarget(null)}
         request={detailTarget}
+        onApprove={(req) => {
+          setApproveTarget(req);
+        }}
+        onReject={(req) => {
+          setRejectTarget(req);
+        }}
       />
       <ApprovePaymentModal
         open={!!approveTarget}

@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { platformPlansService } from '../../../shared/api/platformPlansService';
-import tenantSubscriptionService from '../../../shared/api/tenantSubscriptionService';
+// src/features/teacher/hooks/usePlatformSubscription.js
+import { useCallback, useEffect, useState } from 'react';
+import tenantSubscriptionService from '@/shared/api/tenantSubscriptionService';
+import platformApi from '@/lib/platformApi';
 
 export function usePlatformSubscription() {
   const [plans, setPlans] = useState([]);
@@ -8,56 +9,53 @@ export function usePlatformSubscription() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
 
-  const fetchAll = useCallback(async () => {
+  const loadAll = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setError('');
     try {
       const [plansRes, currentRes, historyRes] = await Promise.allSettled([
-        platformPlansService.list(),
+        platformApi.getPlans(),
         tenantSubscriptionService.getCurrentSubscription(),
-        tenantSubscriptionService.getSubscriptionHistory({ limit: 20 }),
+        tenantSubscriptionService.getSubscriptionHistory({ limit: 50 }),
       ]);
 
       if (plansRes.status === 'fulfilled') {
-        const raw = plansRes.value;
-        const list = Array.isArray(raw) ? raw : raw?.data ?? [];
-        setPlans(list.filter((p) => p.status === 'active'));
+        setPlans(Array.isArray(plansRes.value) ? plansRes.value : []);
       }
-
       if (currentRes.status === 'fulfilled') {
         setCurrentSubscription(currentRes.value);
       }
-
       if (historyRes.status === 'fulfilled') {
-        const raw = historyRes.value;
-        setHistory(Array.isArray(raw) ? raw : raw?.data ?? []);
+        const h = historyRes.value;
+        setHistory(Array.isArray(h?.data) ? h.data : Array.isArray(h) ? h : []);
       }
-    } catch (err) {
-      setError(err?.response?.data?.message || 'فشل تحميل بيانات الاشتراك');
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Failed to load');
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    loadAll();
+  }, [loadAll]);
 
-  const requestSubscription = async (planSlug, periodMonths = 1, notes = '') => {
+  const requestSubscription = async (planSlug, periodMonths = 1) => {
     setActionLoading(true);
-    setError(null);
+    setError('');
     try {
-      const result = await tenantSubscriptionService.requestSubscription({
-        plan: planSlug,
+      const plan = plans.find((p) => p.slug === planSlug);
+      await tenantSubscriptionService.requestSubscription({
+        plan: plan?.name || planSlug,
+        amount: Number(plan?.price) || 0,
         periodMonths,
-        notes,
       });
-      await fetchAll();
-      return { success: true, data: result };
-    } catch (err) {
-      const msg = err?.response?.data?.message || 'فشل إرسال طلب الاشتراك';
+      await loadAll();
+      return { success: true };
+    } catch (e) {
+      const msg = e?.response?.data?.message || e.message || 'Request failed';
       setError(msg);
       return { success: false, error: msg };
     } finally {
@@ -65,21 +63,39 @@ export function usePlatformSubscription() {
     }
   };
 
+  // ✅✅✅ رفع إثبات الدفع — المصحح
   const uploadAndSubmitProof = async (subscriptionId, file) => {
     setActionLoading(true);
-    setError(null);
+    setError('');
     try {
-      const uploadResult = await tenantSubscriptionService.uploadImage(file, 'payments/proofs');
-      
-      // التعامل مع شكل الـ Response سواء كان { url } أو { data: { url } }
-      const url = uploadResult?.url || uploadResult?.data?.url || uploadResult?.data?.data?.url;
-      if (!url) throw new Error('لم يتم استلام رابط الصورة من السيرفر');
+      // 1) رفع الصورة أولاً
+      const uploadRes = await tenantSubscriptionService.uploadImage(
+        file,
+        'payments/proofs',
+      );
 
-      const result = await tenantSubscriptionService.submitPaymentProof(subscriptionId, url);
-      await fetchAll();
-      return { success: true, data: result, url };
-    } catch (err) {
-      const msg = err?.response?.data?.message || 'فشل رفع إثبات الدفع';
+      // 2) استخراج URL من الـ Response (بيدعم أكثر من شكل)
+      const url =
+        uploadRes?.url ||
+        uploadRes?.data?.url ||
+        uploadRes?.data?.data?.url;
+
+      if (!url) throw new Error('Upload response missing URL');
+
+      // 3) إرسال الـ URL للـ subscription (لو الـ backend بياخد URL)
+      //    أو استخدم submitPaymentProof مع file مباشرة (لو بياخد file)
+      await tenantSubscriptionService.submitPaymentProof(
+        subscriptionId,
+        file, // ✅ بنبعت الملف نفسه — الـ controller بيستقبل @UploadedFile
+      );
+
+      await loadAll();
+      return { success: true, url };
+    } catch (e) {
+      const msg =
+        e?.response?.data?.message ||
+        e?.message ||
+        'Failed to upload payment proof';
       setError(msg);
       return { success: false, error: msg };
     } finally {
@@ -94,7 +110,7 @@ export function usePlatformSubscription() {
     loading,
     actionLoading,
     error,
-    refetch: fetchAll,
+    refetch: loadAll,
     requestSubscription,
     uploadAndSubmitProof,
   };

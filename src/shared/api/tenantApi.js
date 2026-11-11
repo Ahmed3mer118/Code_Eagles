@@ -1,9 +1,8 @@
+// src/shared/api/tenantApi.js
 import api from './client';
 
 export const tenantApi = {
-  // ============================================
-  // 👑 Super Admin Endpoints
-  // ============================================
+  // ============ Super Admin ============
 
   /** GET /admin/tenants */
   async list(params = {}) {
@@ -11,43 +10,36 @@ export const tenantApi = {
     return data;
   },
 
-  /** GET /admin/tenants/:id */
   async getOne(id) {
     const { data } = await api.get(`/admin/tenants/${id}`);
     return data;
   },
 
-  /** PATCH /admin/tenants/:id */
   async update(id, payload) {
     const { data } = await api.patch(`/admin/tenants/${id}`, payload);
     return data;
   },
 
-  /** DELETE /admin/tenants/:id */
   async remove(id) {
     const { data } = await api.delete(`/admin/tenants/${id}`);
     return data;
   },
 
-  /** PATCH /admin/tenants/:id/approve */
   async approve(id, payload = {}) {
     const { data } = await api.patch(`/admin/tenants/${id}/approve`, payload);
     return data;
   },
 
-  /** PATCH /admin/tenants/:id/reject */
   async reject(id, payload) {
     const { data } = await api.patch(`/admin/tenants/${id}/reject`, payload);
     return data;
   },
 
-  /** PATCH /admin/tenants/:id/status */
   async updateStatus(id, status) {
     const { data } = await api.patch(`/admin/tenants/${id}/status`, { status });
     return data;
   },
 
-  /** PATCH /admin/tenants/:id/plan */
   async changePlan(id, platformPlanId) {
     const { data } = await api.patch(`/admin/tenants/${id}/plan`, {
       platformPlanId,
@@ -55,13 +47,12 @@ export const tenantApi = {
     return data;
   },
 
-  /** GET /admin/tenants/:id/stats */
   async getStats(id) {
     const { data } = await api.get(`/admin/tenants/${id}/stats`);
     return data;
   },
 
-  /** POST /tenants/register — إنشاء أكاديمية جديدة */
+  /** POST /tenants/register */
   async create(payload) {
     const { data } = await api.post('/tenants/register', payload);
     return data;
@@ -73,23 +64,18 @@ export const tenantApi = {
     return data;
   },
 
-  // ============================================
-  // 👨‍🏫 Teacher Endpoints (tenant-scoped)
-  // ============================================
+  // ============ Teacher ============
 
-  /** GET /tenant/settings — جلب إعدادات الأكاديمية */
   async getSettings() {
     const { data } = await api.get('/tenant/settings');
     return data;
   },
 
-  /** PATCH /tenant/settings — تحديث إعدادات الأكاديمية */
   async updateSettings(payload) {
     const { data } = await api.patch('/tenant/settings', payload);
     return data;
   },
 
-  /** POST /tenant/logo — رفع شعار الأكاديمية */
   async uploadLogo(file) {
     const formData = new FormData();
     formData.append('file', file);
@@ -99,7 +85,6 @@ export const tenantApi = {
     return data;
   },
 
-  /** POST /tenant/cover — رفع صورة غلاف الأكاديمية */
   async uploadCover(file) {
     const formData = new FormData();
     formData.append('file', file);
@@ -109,13 +94,11 @@ export const tenantApi = {
     return data;
   },
 
-  /** GET /tenant/stats — إحصائيات الأكاديمية */
   async getTeacherStats() {
     const { data } = await api.get('/tenant/stats');
     return data;
   },
 
-  /** GET /tenant/dashboard — Dashboard الأكاديمية */
   async getDashboard() {
     const { data } = await api.get('/tenant/dashboard');
     return data;

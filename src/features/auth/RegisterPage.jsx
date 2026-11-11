@@ -29,11 +29,18 @@ export default function RegisterPage() {
     gradeLevel: '',
     parentContact: '',
     childContact: '',
+    academyId: '',
+    parentAcademyId: '',
   });
 
   const [plans, setPlans] = useState([]);
   const [plansLoading, setPlansLoading] = useState(false);
   const [plansError, setPlansError] = useState('');
+
+  // قائمة الأكاديميات للطالب وولي الأمر
+  const [academies, setAcademies] = useState([]);
+  const [academiesLoading, setAcademiesLoading] = useState(false);
+  const [academiesError, setAcademiesError] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -42,7 +49,7 @@ export default function RegisterPage() {
   const onChange = (e) =>
     setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
 
-  /* ——— Fetch plans لما يكون teacher ——— */
+  /* ——— Fetch plans (للمدرس فقط) ——— */
   useEffect(() => {
     if (form.accountType !== 'teacher') return;
     if (plans.length > 0) return;
@@ -65,6 +72,31 @@ export default function RegisterPage() {
     return () => { mounted = false; };
   }, [form.accountType, plans.length]);
 
+  /* ——— Fetch academies (للطالب وولي الأمر) ——— */
+  useEffect(() => {
+    if (form.accountType !== 'student' && form.accountType !== 'parent') {
+      return;
+    }
+    if (academies.length > 0) return;
+
+    let mounted = true;
+    setAcademiesLoading(true);
+    setAcademiesError('');
+
+    (async () => {
+      try {
+        const data = await authService.getSignupAcademies();
+        if (mounted) setAcademies(data || []);
+      } catch (err) {
+        if (mounted) setAcademiesError(extractApiError(err).message);
+      } finally {
+        if (mounted) setAcademiesLoading(false);
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, [form.accountType, academies.length]);
+
   const onSelectPlan = (planId) => {
     setForm((s) => ({ ...s, requestedPlanId: planId }));
   };
@@ -81,21 +113,59 @@ export default function RegisterPage() {
     if (form.accountType === 'teacher' && !form.requestedPlanId) {
       return setError(t('auth.pleaseChoosePlan'));
     }
+    
+    if (form.accountType === 'student' && !form.academyId) {
+      return setError('يرجى اختيار الأكاديمية');
+    }
+    
+    if (form.accountType === 'parent') {
+      if (!form.parentAcademyId) {
+        return setError('يرجى اختيار الأكاديمية');
+      }
+      if (!form.childContact?.trim()) {
+        return setError('يرجى إدخال إيميل أو موبايل الطفل');
+      }
+    }
 
     setLoading(true);
     try {
-      const payload = { ...form };
-      Object.keys(payload).forEach((k) => {
-        if (payload[k] === '') delete payload[k];
-      });
+      // ✅ بناء الـ payload بشكل صريح عشان نضمن إن كل حاجة بتوصل
+      const payload = {
+        accountType: form.accountType,
+        name: form.name,
+        email: form.email,
+        phoneNumber: form.phoneNumber,
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+        preferredLanguage: form.preferredLanguage,
+      };
 
+      if (form.accountType === 'teacher') {
+        payload.academyName = form.academyName;
+        payload.requestedPlanId = form.requestedPlanId;
+      }
+
+      if (form.accountType === 'student') {
+        payload.gradeLevel = form.gradeLevel;
+        payload.academyId = form.academyId;
+        if (form.parentContact) payload.parentContact = form.parentContact;
+      }
+
+      if (form.accountType === 'parent') {
+        payload.childContact = form.childContact;
+        payload.parentAcademyId = form.parentAcademyId;
+      }
+
+      console.log('🚀🚀 SENDING TO BACKEND:', payload);
       await authService.register(payload);
+      
       setSuccess(t('auth.registerSuccess'));
       setTimeout(
         () => navigate(`/verify-email?email=${encodeURIComponent(form.email)}`),
         1200,
       );
     } catch (err) {
+      console.error('Registration error:', err);
       setError(extractApiError(err).message);
     } finally {
       setLoading(false);
@@ -112,7 +182,6 @@ export default function RegisterPage() {
       <AuthAlert type="success">{success}</AuthAlert>
 
       <form onSubmit={onSubmit} className="space-y-4">
-        {/* Account Type */}
         <AuthSelect
           label={t('auth.accountType')}
           name="accountType"
@@ -170,7 +239,7 @@ export default function RegisterPage() {
           />
         </div>
 
-        {/* ===== Teacher only ===== */}
+        {/* Teacher only */}
         {form.accountType === 'teacher' && (
           <>
             <AuthInput
@@ -181,7 +250,6 @@ export default function RegisterPage() {
               required
             />
 
-            {/* Plans Section */}
             <div className="pt-3">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-bold text-slate-800">
@@ -194,28 +262,11 @@ export default function RegisterPage() {
 
               {plansLoading && (
                 <div className="flex items-center justify-center py-10 bg-slate-50 rounded-2xl">
-                  <svg
-                    className="w-7 h-7 animate-spin text-[#1a3a5c]"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-20"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-90"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
+                  <svg className="w-7 h-7 animate-spin text-[#1a3a5c]" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  <span className="text-sm text-slate-500 ms-3">
-                    {t('auth.plansLoading')}
-                  </span>
+                  <span className="text-sm text-slate-500 ms-3">{t('auth.plansLoading')}</span>
                 </div>
               )}
 
@@ -251,9 +302,36 @@ export default function RegisterPage() {
           </>
         )}
 
-        {/* ===== Student only ===== */}
+        {/* Student only */}
         {form.accountType === 'student' && (
           <>
+            {academiesLoading ? (
+              <div className="p-3 rounded-lg bg-slate-50 text-slate-500 text-sm text-center animate-pulse">
+                جاري تحميل الأكاديميات...
+              </div>
+            ) : academiesError ? (
+              <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm">
+                {academiesError}
+              </div>
+            ) : academies.length === 0 ? (
+              <div className="p-3 rounded-lg bg-amber-50 text-amber-700 text-sm text-center">
+                لا توجد أكاديميات متاحة حالياً للتسجيل
+              </div>
+            ) : (
+              <AuthSelect
+                label="الأكاديمية"
+                name="academyId"
+                value={form.academyId}
+                onChange={onChange}
+                required
+              >
+                <option value="">اختر الأكاديمية</option>
+                {academies.map((a) => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </AuthSelect>
+            )}
+
             <AuthSelect
               label={t('auth.gradeLevel')}
               name="gradeLevel"
@@ -286,15 +364,50 @@ export default function RegisterPage() {
           </>
         )}
 
-        {/* ===== Parent only ===== */}
+        {/* Parent only */}
         {form.accountType === 'parent' && (
-          <AuthInput
-            label={t('auth.childContact')}
-            name="childContact"
-            value={form.childContact}
-            onChange={onChange}
-            placeholder="+201000000000"
-          />
+          <>
+            {academiesLoading ? (
+              <div className="p-3 rounded-lg bg-slate-50 text-slate-500 text-sm text-center animate-pulse">
+                جاري تحميل الأكاديميات...
+              </div>
+            ) : academiesError ? (
+              <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm">
+                {academiesError}
+              </div>
+            ) : academies.length === 0 ? (
+              <div className="p-3 rounded-lg bg-amber-50 text-amber-700 text-sm text-center">
+                لا توجد أكاديميات متاحة حالياً للتسجيل
+              </div>
+            ) : (
+              <AuthSelect
+                label="الأكاديمية"
+                name="parentAcademyId"
+                value={form.parentAcademyId}
+                onChange={onChange}
+                required
+              >
+                <option value="">اختر الأكاديمية</option>
+                {academies.map((a) => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </AuthSelect>
+            )}
+
+            <AuthInput
+              label="إيميل أو موبايل الطفل"
+              name="childContact"
+              value={form.childContact}
+              onChange={onChange}
+              placeholder="child@example.com أو +201000000000"
+              required
+            />
+
+            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+              ⚠️ سيتم إرسال طلب ربط لطفلك — سيحتاج المدرس للموافقة عليه قبل
+              أن تتمكن من متابعة بياناته.
+            </div>
+          </>
         )}
 
         <AuthButton type="submit" loading={loading}>
@@ -304,10 +417,7 @@ export default function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-slate-600">
         {t('auth.haveAccount')}{' '}
-        <Link
-          to="/login"
-          className="text-[#1a3a5c] font-bold hover:underline"
-        >
+        <Link to="/login" className="text-[#1a3a5c] font-bold hover:underline">
           {t('auth.login')}
         </Link>
       </p>

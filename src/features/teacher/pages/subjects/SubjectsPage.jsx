@@ -1,5 +1,9 @@
+// src/features/teacher/pages/subjects/SubjectsPage.jsx
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, BookOpen, Pencil, Trash2, Eye, CheckCircle, Archive } from 'lucide-react';
+import { 
+  Plus, Search, BookOpen, Pencil, Trash2, 
+  CheckCircle, Archive, AlertCircle, RotateCcw 
+} from 'lucide-react';
 import { useI18n } from '../../../../shared/i18n';
 import teacherApi from '../../../../shared/api/teacherApi';
 import CreateSubjectModal from './CreateSubjectModal';
@@ -9,29 +13,44 @@ export default function SubjectsPage() {
   const { t } = useI18n();
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
+  // دالة جلب المواد من الباك اند
   const fetchSubjects = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const res = await teacherApi.getSubjects({ search, limit: 100 });
-      setSubjects(res.data?.data || res.data || []);
+      
+      // قراءة البيانات سواء رجعت مباشرة أو متداخلة
+      let items = [];
+      if (Array.isArray(res.data)) items = res.data;
+      else if (Array.isArray(res.data?.data)) items = res.data.data;
+      else if (Array.isArray(res.data?.items)) items = res.data.items;
+      else if (Array.isArray(res.data?.data?.items)) items = res.data.data.items;
+
+      setSubjects(items);
     } catch (err) {
       console.error('Failed to fetch subjects:', err);
+      setError(err?.response?.data?.message || 'حدث خطأ أثناء جلب المواد');
     } finally {
       setLoading(false);
     }
   }, [search]);
 
+  // جلب البيانات مع تأخير بسيط للبحث (Debounce)
   useEffect(() => {
     const timer = setTimeout(() => fetchSubjects(), 400);
     return () => clearTimeout(timer);
   }, [fetchSubjects]);
 
+  // دالة الحذف
   const handleDelete = async (id) => {
     if (!window.confirm(t('common.confirmDelete') || 'هل أنت متأكد من الحذف؟')) return;
     setDeletingId(id);
@@ -40,11 +59,13 @@ export default function SubjectsPage() {
       fetchSubjects();
     } catch (err) {
       console.error(err);
+      alert(err?.response?.data?.message || 'فشل الحذف');
     } finally {
       setDeletingId(null);
     }
   };
 
+  // دالة النشر
   const handlePublish = async (id) => {
     setActionLoadingId(id);
     try {
@@ -52,11 +73,13 @@ export default function SubjectsPage() {
       fetchSubjects();
     } catch (err) {
       console.error('Publish failed', err);
+      alert(err?.response?.data?.message || 'فشل النشر');
     } finally {
       setActionLoadingId(null);
     }
   };
 
+  // دالة الأرشفة
   const handleArchive = async (id) => {
     setActionLoadingId(id);
     try {
@@ -64,12 +87,37 @@ export default function SubjectsPage() {
       fetchSubjects();
     } catch (err) {
       console.error('Archive failed', err);
+      alert(err?.response?.data?.message || 'فشل الأرشفة');
     } finally {
       setActionLoadingId(null);
     }
   };
 
-  // ترجمة الحالات
+  // دالة الاسترجاع (مع الـ Fallback)
+  const handleUnarchive = async (id) => {
+    setActionLoadingId(id);
+    try {
+      try {
+        // بنجرب الـ endpoint المخصص الأول لو موجود
+        await teacherApi.unarchiveSubject(id);
+      } catch (e) {
+        // لو مش موجود (404) بنبعت التحديث العادي
+        if (e?.response?.status === 404) {
+          await teacherApi.updateSubject(id, { status: 'draft' });
+        } else {
+          throw e;
+        }
+      }
+      fetchSubjects();
+    } catch (err) {
+      console.error('Unarchive failed', err);
+      alert(err?.response?.data?.message || 'فشل الاسترجاع');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // تسمية ولون الحالة
   const statusLabel = (status) => {
     const labels = {
       draft: t('teacher.status.draft') || 'مسودة',
@@ -94,7 +142,7 @@ export default function SubjectsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <BookOpen size={24} /> {t('sidebar.subjects')}
+            <BookOpen size={24} /> {t('sidebar.subjects') || 'المواد'}
           </h1>
           <p className="text-sm text-gray-500">{t('teacher.subjects.subtitle') || 'إدارة المواد الدراسية'}</p>
         </div>
@@ -119,7 +167,12 @@ export default function SubjectsPage() {
       </div>
 
       {/* Content */}
-      {loading ? (
+      {error ? (
+        <div className="p-4 bg-red-50 text-red-600 rounded-lg flex items-center gap-2">
+          <AlertCircle size={20} />
+          {error}
+        </div>
+      ) : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-32 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse" />
@@ -148,7 +201,7 @@ export default function SubjectsPage() {
               </div>
               
               <div className="flex justify-end gap-1 mt-auto pt-2 border-t dark:border-gray-800">
-                {/* زرار النشر */}
+                {/* زرار النشر - بيظهر للمسودة بس */}
                 {sub.status === 'draft' && (
                   <button
                     onClick={() => handlePublish(sub.id)}
@@ -159,7 +212,8 @@ export default function SubjectsPage() {
                     <CheckCircle size={16} />
                   </button>
                 )}
-                {/* زرار الأرشفة */}
+                
+                {/* زرار الأرشفة - بيظهر للمنشور بس */}
                 {sub.status === 'published' && (
                   <button
                     onClick={() => handleArchive(sub.id)}
@@ -170,6 +224,19 @@ export default function SubjectsPage() {
                     <Archive size={16} />
                   </button>
                 )}
+
+                {/* ✅ زرار الاسترجاع - بيظهر للمؤرشف بس */}
+                {sub.status === 'archived' && (
+                  <button
+                    onClick={() => handleUnarchive(sub.id)}
+                    disabled={actionLoadingId === sub.id}
+                    className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg disabled:opacity-50"
+                    title="استرجاع كمسودة"
+                  >
+                    <RotateCcw size={16} />
+                  </button>
+                )}
+
                 {/* زرار التعديل */}
                 <button
                   onClick={() => { setEditingSubject(sub); setIsModalOpen(true); }}
@@ -178,6 +245,7 @@ export default function SubjectsPage() {
                 >
                   <Pencil size={16} />
                 </button>
+                
                 {/* زرار الحذف */}
                 <button
                   onClick={() => handleDelete(sub.id)}

@@ -1,3 +1,4 @@
+// src/features/student/pages/StudentQuizzes.jsx
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -27,31 +28,25 @@ function formatDate(dateStr) {
   });
 }
 
-/**
- * تحديد حالة الاختبار من منظور الطالب
- */
 function getQuizStatus(quiz) {
   const now = new Date();
   const startDate = quiz.startDate ? new Date(quiz.startDate) : null;
   const endDate = quiz.endDate ? new Date(quiz.endDate) : null;
 
   const attempts = quiz.attempts || [];
-  const bestAttempt = attempts[0]; // الأحدث
+  const bestAttempt = attempts[0]; 
   const attemptsUsed = attempts.length;
   const maxAttempts = quiz.maxAttempts || 1;
 
-  // لو مفيش محاولات
   if (attemptsUsed === 0) {
     if (startDate && now < startDate) return 'not_started';
     if (endDate && now > endDate) return 'ended';
     return 'available';
   }
 
-  // لو في محاولة جارية
   const inProgress = attempts.find((a) => a.status === 'in_progress');
   if (inProgress) return 'in_progress';
 
-  // لو استهلك كل المحاولات أو خلص ونجح
   if (bestAttempt?.passed === true) return 'passed';
   if (attemptsUsed >= maxAttempts) return 'failed_attempts';
 
@@ -129,7 +124,6 @@ function QuizCard({ quiz }) {
 
   const handleClick = () => {
     if (status === 'in_progress' && latestAttempt) {
-      // كمل المحاولة اللي بدأت
       navigate(`/student/quizzes/${quiz.id}/take?attempt=${latestAttempt.id}`);
     } else if (canStart) {
       navigate(`/student/quizzes/${quiz.id}/take`);
@@ -186,8 +180,7 @@ function QuizCard({ quiz }) {
           </span>
         </div>
 
-        {/* Best score */}
-        {latestAttempt?.score != null && (
+        {latestAttempt?.percentage != null && (
           <div className="flex items-center justify-between mt-2">
             <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
               <Trophy size={12} />
@@ -270,7 +263,7 @@ export default function StudentQuizzes() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <ClipboardList size={24} className="text-indigo-600" />

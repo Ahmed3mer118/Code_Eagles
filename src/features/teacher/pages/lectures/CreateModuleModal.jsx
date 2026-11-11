@@ -1,25 +1,49 @@
-import { useState } from 'react';
+// src/features/teacher/pages/lectures/CreateModuleModal.jsx
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import teacherApi from '../../../../shared/api/teacherApi';
 
-export default function CreateModuleModal({ isOpen, onClose, courseId, onSuccess }) {
+export default function CreateModuleModal({ isOpen, onClose, courseId, module, onSuccess }) {
   const [form, setForm] = useState({ title: '', description: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (module) {
+      setForm({
+        title: module.title || '',
+        description: module.description || '',
+      });
+    } else {
+      setForm({ title: '', description: '' });
+    }
+    setError('');
+  }, [module, isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
     try {
-      await teacherApi.createModule(courseId, {
-        title: form.title,
-        description: form.description,
-      });
+      if (module) {
+        // تعديل وحدة موجودة
+        await teacherApi.updateModule(module.id, {
+          title: form.title,
+          description: form.description,
+        });
+      } else {
+        // إضافة وحدة جديدة
+        if (!courseId) throw new Error('لم يتم تحديد الكورس');
+        await teacherApi.createModule(courseId, {
+          title: form.title,
+          description: form.description,
+        });
+      }
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err?.response?.data?.message || 'حدث خطأ');
+      setError(err?.response?.data?.message || err.message || 'حدث خطأ');
     } finally {
       setLoading(false);
     }
@@ -31,7 +55,9 @@ export default function CreateModuleModal({ isOpen, onClose, courseId, onSuccess
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-900 rounded-xl w-full max-w-md p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">إضافة وحدة جديدة</h2>
+          <h2 className="text-xl font-bold">
+            {module ? 'تعديل الوحدة' : 'إضافة وحدة جديدة'}
+          </h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
             <X size={20} />
           </button>

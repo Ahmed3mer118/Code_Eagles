@@ -8,6 +8,7 @@ import {
 import teacherApi from '@/shared/api/teacherApi';
 import QuizQuestionsTab from './QuizQuestionsTab';
 import QuizAttemptsTab from './QuizAttemptsTab';
+import { Layers } from 'lucide-react'; // ✅ ضفنا الأيقونة دي
 
 const TABS = [
   { key: 'settings', label: 'إعدادات الكويز' },
@@ -26,7 +27,11 @@ export default function QuizBuilderPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('settings');
+  
   const [subjects, setSubjects] = useState([]);
+  const [groups, setGroups] = useState([]); // ✅ State للمجموعات
+  const [selectedGroupIds, setSelectedGroupIds] = useState([]); // ✅ State للمجموعات المختارة
+  const [savingGroups, setSavingGroups] = useState(false); // ✅ State للحفظ
 
   const { data: quiz, isLoading, isError, error, refetch } = useQuiz(id);
   const updateMut = useUpdateQuiz();
@@ -48,12 +53,34 @@ export default function QuizBuilderPage() {
     fetchSubjects();
   }, []);
 
+  // ✅ جلب المجموعات وتعبئة المجموعات المختارة (لو الكويز متربط بمجموعات أصلاً)
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const [groupsRes, quizRes] = await Promise.all([
+          teacherApi.getGroups({ limit: 100 }),
+          teacherApi.getQuiz(id) // بنجيب الكويز تاني عشان نشوف متربط بمجموعات ولا لأ
+        ]);
+        
+        const groupsData = groupsRes?.data?.data || groupsRes?.data || [];
+        setGroups(Array.isArray(groupsData) ? groupsData : []);
+
+        // لو الكويز راجع فيه groups، بنحطها في الـ state
+        const linkedGroups = quizRes?.data?.groups || quizRes?.groups || [];
+        setSelectedGroupIds(linkedGroups.map((g) => g.groupId));
+      } catch (err) {
+        console.error('Failed to load groups or quiz links', err);
+      }
+    };
+    fetchGroups();
+  }, [id]);
+
   useEffect(() => {
     if (!quiz) return;
     setForm({
       title: quiz.title ?? '',
       description: quiz.description ?? '',
-      subjectId: quiz.subjectId ?? '', // تعبئة المادة الحالية
+      subjectId: quiz.subjectId ?? '', 
       durationMinutes: quiz.durationMinutes ?? 60,
       passingMarks: quiz.passingMarks ?? 50,
       maxAttempts: quiz.maxAttempts ?? 1,
@@ -96,7 +123,6 @@ export default function QuizBuilderPage() {
         shuffleQuestions: form.shuffleQuestions,
         shuffleOptions: form.shuffleOptions,
         showCorrectAnswers: form.showCorrectAnswers,
-        // إرسال المادة (أو null لو المستخدم مسحها)
         subjectId: form.subjectId || null, 
       };
 
@@ -110,6 +136,29 @@ export default function QuizBuilderPage() {
     } catch (err) {
       alert(err?.response?.data?.message || 'فشل الحفظ');
     }
+  };
+
+  // ✅ دالة حفظ المجموعات
+  const handleSaveGroups = async () => {
+    setSavingGroups(true);
+    try {
+      await teacherApi.linkQuizGroups(id, { groupIds: selectedGroupIds });
+      alert('تم ربط المجموعات بنجاح');
+      refetch();
+    } catch (err) {
+      alert(err?.response?.data?.message || 'فشل ربط المجموعات');
+    } finally {
+      setSavingGroups(false);
+    }
+  };
+
+  // ✅ دالة تحديد/إلغاء تحديد المجموعة
+  const toggleGroup = (groupId) => {
+    setSelectedGroupIds((prev) =>
+      prev.includes(groupId)
+        ? prev.filter((gId) => gId !== groupId)
+        : [...prev, groupId]
+    );
   };
 
   const handlePublish = async () => {
@@ -128,7 +177,7 @@ export default function QuizBuilderPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6" dir="rtl">
       <div className="flex items-center justify-between mb-6">
         <div>
           <button
@@ -174,114 +223,160 @@ export default function QuizBuilderPage() {
       </div>
 
       {activeTab === 'settings' && form && (
-        <form onSubmit={handleSaveSettings} className="max-w-2xl text-right">
-          <label className="block mb-3">
-            <span className="text-sm font-medium">العنوان *</span>
-            <input
-              required
-              minLength={2}
-              maxLength={300}
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="w-full border rounded px-3 py-2 mt-1"
-            />
-          </label>
-
-          {/* قائمة اختيار المادة للتعديل */}
-          <label className="block mb-3">
-            <span className="text-sm font-medium">المادة (اختياري)</span>
-            <select
-              value={form.subjectId}
-              onChange={(e) => setForm({ ...form, subjectId: e.target.value })}
-              className="w-full border rounded px-3 py-2 mt-1"
-            >
-              <option value="">-- بدون مادة --</option>
-              {subjects.map((sub) => (
-                <option key={sub.id} value={sub.id}>
-                  {sub.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block mb-3">
-            <span className="text-sm font-medium">الوصف</span>
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              rows={3}
-              className="w-full border rounded px-3 py-2 mt-1"
-            />
-          </label>
-
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <label>
-              <span className="text-sm font-medium">المدة (دقيقة)</span>
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* العمود الأول: الإعدادات الأساسية */}
+          <form onSubmit={handleSaveSettings} className="space-y-4">
+            <label className="block">
+              <span className="text-sm font-medium">العنوان *</span>
               <input
-                type="number" min={1} value={form.durationMinutes}
-                onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })}
+                required
+                minLength={2}
+                maxLength={300}
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
                 className="w-full border rounded px-3 py-2 mt-1"
               />
             </label>
-            <label>
-              <span className="text-sm font-medium">درجة النجاح</span>
-              <input
-                type="number" min={0} value={form.passingMarks}
-                onChange={(e) => setForm({ ...form, passingMarks: e.target.value })}
-                className="w-full border rounded px-3 py-2 mt-1"
-              />
-            </label>
-            <label>
-              <span className="text-sm font-medium">عدد المحاولات</span>
-              <input
-                type="number" min={1} value={form.maxAttempts}
-                onChange={(e) => setForm({ ...form, maxAttempts: e.target.value })}
-                className="w-full border rounded px-3 py-2 mt-1"
-              />
-            </label>
-            <label>
-              <span className="text-sm font-medium">طريقة النتائج</span>
+
+            <label className="block">
+              <span className="text-sm font-medium">المادة (اختياري)</span>
               <select
-                value={form.resultMode}
-                onChange={(e) => setForm({ ...form, resultMode: e.target.value })}
+                value={form.subjectId}
+                onChange={(e) => setForm({ ...form, subjectId: e.target.value })}
                 className="w-full border rounded px-3 py-2 mt-1"
               >
-                <option value="instant">فوري</option>
-                <option value="manual">يدوي</option>
-                <option value="after_end">بعد انتهاء الكويز</option>
+                <option value="">-- بدون مادة --</option>
+                {subjects.map((sub) => (
+                  <option key={sub.id} value={sub.id}>
+                    {sub.name}
+                  </option>
+                ))}
               </select>
             </label>
-          </div>
 
-          <div className="space-y-2 mb-4">
-            <label className="flex items-center justify-end gap-2">
-              <span>ترتيب عشوائي للأسئلة</span>
-              <input type="checkbox" checked={form.shuffleQuestions}
-                onChange={(e) => setForm({ ...form, shuffleQuestions: e.target.checked })}
+            <label className="block">
+              <span className="text-sm font-medium">الوصف</span>
+              <textarea
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                rows={3}
+                className="w-full border rounded px-3 py-2 mt-1"
               />
             </label>
-            <label className="flex items-center justify-end gap-2">
-              <span>ترتيب عشوائي للخيارات</span>
-              <input type="checkbox" checked={form.shuffleOptions}
-                onChange={(e) => setForm({ ...form, shuffleOptions: e.target.checked })}
-              />
-            </label>
-            <label className="flex items-center justify-end gap-2">
-              <span>إظهار الإجابات الصحيحة</span>
-              <input type="checkbox" checked={form.showCorrectAnswers}
-                onChange={(e) => setForm({ ...form, showCorrectAnswers: e.target.checked })}
-              />
-            </label>
-          </div>
 
-          <button
-            type="submit"
-            disabled={updateMut.isPending}
-            className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {updateMut.isPending ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
-          </button>
-        </form>
+            <div className="grid grid-cols-2 gap-3">
+              <label>
+                <span className="text-sm font-medium">المدة (دقيقة)</span>
+                <input
+                  type="number" min={1} value={form.durationMinutes}
+                  onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+              <label>
+                <span className="text-sm font-medium">درجة النجاح</span>
+                <input
+                  type="number" min={0} value={form.passingMarks}
+                  onChange={(e) => setForm({ ...form, passingMarks: e.target.value })}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+              <label>
+                <span className="text-sm font-medium">عدد المحاولات</span>
+                <input
+                  type="number" min={1} value={form.maxAttempts}
+                  onChange={(e) => setForm({ ...form, maxAttempts: e.target.value })}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                />
+              </label>
+              <label>
+                <span className="text-sm font-medium">طريقة النتائج</span>
+                <select
+                  value={form.resultMode}
+                  onChange={(e) => setForm({ ...form, resultMode: e.target.value })}
+                  className="w-full border rounded px-3 py-2 mt-1"
+                >
+                  <option value="instant">فوري</option>
+                  <option value="manual">يدوي</option>
+                  <option value="after_end">بعد انتهاء الكويز</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center justify-end gap-2">
+                <span>ترتيب عشوائي للأسئلة</span>
+                <input type="checkbox" checked={form.shuffleQuestions}
+                  onChange={(e) => setForm({ ...form, shuffleQuestions: e.target.checked })}
+                />
+              </label>
+              <label className="flex items-center justify-end gap-2">
+                <span>ترتيب عشوائي للخيارات</span>
+                <input type="checkbox" checked={form.shuffleOptions}
+                  onChange={(e) => setForm({ ...form, shuffleOptions: e.target.checked })}
+                />
+              </label>
+              <label className="flex items-center justify-end gap-2">
+                <span>إظهار الإجابات الصحيحة</span>
+                <input type="checkbox" checked={form.showCorrectAnswers}
+                  onChange={(e) => setForm({ ...form, showCorrectAnswers: e.target.checked })}
+                />
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={updateMut.isPending}
+              className="w-full bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              {updateMut.isPending ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
+            </button>
+          </form>
+
+          {/* العمود التاني: ربط المجموعات */}
+          <div className="bg-gray-50 dark:bg-gray-800/30 rounded-xl p-5 border border-gray-200 dark:border-gray-800">
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+              <Layers size={20} className="text-blue-600" />
+              المجموعات المستهدفة
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              اختاري المجموعات التي سيظهر لها هذا الكويز. (لازم المجموعة دي يكون فيها الطالب).
+            </p>
+            
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {groups.length === 0 ? (
+                <p className="text-sm text-gray-500">لا توجد مجموعات متاحة. تأكدي من إنشاء مجموعة أولاً.</p>
+              ) : (
+                groups.map((group) => (
+                  <label 
+                    key={group.id} 
+                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedGroupIds.includes(group.id)}
+                      onChange={() => toggleGroup(group.id)}
+                      className="w-4 h-4 text-blue-600 rounded"
+                    />
+                    <div>
+                      <p className="font-medium text-sm text-gray-900 dark:text-white">{group.name}</p>
+                      {group.gradeLevel && <p className="text-xs text-gray-500">{group.gradeLevel}</p>}
+                    </div>
+                  </label>
+                ))
+              )}
+            </div>
+            
+            <button
+              type="button"
+              onClick={handleSaveGroups}
+              disabled={savingGroups}
+              className="mt-4 w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {savingGroups ? 'جاري الحفظ...' : 'حفظ المجموعات'}
+            </button>
+          </div>
+        </div>
       )}
 
       {activeTab === 'questions' && (

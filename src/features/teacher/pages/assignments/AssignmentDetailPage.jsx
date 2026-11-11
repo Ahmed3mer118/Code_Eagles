@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   useAssignment,
@@ -6,6 +6,7 @@ import {
   usePublishAssignment,
 } from '../../hooks/useAssignments';
 import SubmissionsTab from './SubmissionsTab';
+import teacherApi from '@/shared/api/teacherApi'; // ✅ استيراد الـ API
 
 const TABS = [
   { key: 'settings', label: 'إعدادات التكليف' },
@@ -30,14 +31,19 @@ export default function AssignmentDetailPage() {
   const publishMut = usePublishAssignment();
 
   const [form, setForm] = useState(null);
+  
+  // ✅ States جديدة للمجموعات
+  const [allGroups, setAllGroups] = useState([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState([]);
+  const [isSavingGroups, setIsSavingGroups] = useState(false);
 
   useEffect(() => {
     if (!assignment) return;
+    
     // تحويل التاريخ لـ format يقبله input type="datetime-local"
     let formattedDate = '';
     if (assignment.dueDate) {
       const d = new Date(assignment.dueDate);
-      // نطرح فرق التوقيت عشان يظهر صح في الـ input
       const offset = d.getTimezoneOffset() * 60000;
       formattedDate = new Date(d.getTime() - offset).toISOString().slice(0, 16);
     }
@@ -50,7 +56,56 @@ export default function AssignmentDetailPage() {
       allowLateSubmission: assignment.allowLateSubmission ?? false,
       latePenaltyPercent: assignment.latePenaltyPercent ?? 0,
     });
+
+    // ✅ نحدث الـ groups المختارة بناءً على اللي جاي من الباك إند
+    if (assignment.groups) {
+      setSelectedGroupIds(assignment.groups.map((g) => g.groupId));
+    }
   }, [assignment]);
+
+  // ✅ جلب كل المجموعات المتاحة عشان نختار منها
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const res = await teacherApi.getGroups({ limit: 100 });
+        const data = res?.data?.data || res?.data || [];
+        setAllGroups(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to load groups', err);
+      }
+    };
+    if (id) fetchGroups();
+  }, [id]);
+
+  // ✅ فلترة المجموعات عشان نعرض بس اللي تابعين لنفس المادة
+  const filteredGroups = useMemo(() => {
+    if (!assignment?.subjectId) return allGroups;
+    return allGroups.filter((g) => g.subjectId === assignment.subjectId);
+  }, [allGroups, assignment?.subjectId]);
+
+  // ✅ دالة تبديل المجموعة (اختيار/إلغاء)
+  const toggleGroup = (groupId) => {
+    setSelectedGroupIds((prev) =>
+      prev.includes(groupId)
+        ? prev.filter((gid) => gid !== groupId)
+        : [...prev, groupId],
+    );
+  };
+
+  // ✅ دالة حفظ المجموعات الجديدة
+  const handleSaveGroups = async () => {
+    try {
+      setIsSavingGroups(true);
+      await teacherApi.linkAssignmentGroups(id, { groupIds: selectedGroupIds });
+      refetch(); // تحديث بيانات التكليف
+      setSuccessMsg('تم تحديث المجموعات بنجاح');
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      alert(err?.response?.data?.message || 'فشل حفظ المجموعات');
+    } finally {
+      setIsSavingGroups(false);
+    }
+  };
 
   if (isLoading) {
     return <div className="p-6 text-gray-500">جاري التحميل...</div>;
@@ -75,7 +130,6 @@ export default function AssignmentDetailPage() {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      // تجهيز البايلود بدقة حسب الـ UpdateAssignmentDto
       const payload = {
         title: form.title.trim(),
         maxPoints: Number(form.maxPoints),
@@ -89,8 +143,6 @@ export default function AssignmentDetailPage() {
       if (form.dueDate) {
         payload.dueDate = new Date(form.dueDate).toISOString();
       } else {
-        // لو المستخدم مسح التاريخ، بنبعت null عشان الباك يمسحه
-        // (لو الباك بيرفض null، ممكن نشيل السطرين دول)
         payload.dueDate = null; 
       }
 
@@ -255,10 +307,64 @@ export default function AssignmentDetailPage() {
           <button
             type="submit"
             disabled={updateMut.isPending}
-            className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 disabled:opacity-50 mb-8"
           >
             {updateMut.isPending ? 'جاري الحفظ...' : 'حفظ التغييرات'}
           </button>
+
+          {/* ✅ قسم إدارة المجموعات الجديد */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-semibold mb-3">المجموعات المرتبطة</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              يمكنك تعديل المجموعات التي يظهر لها هذا التكليف.
+            </p>
+
+            <div className="border rounded p-3 bg-gray-50 mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">المجموعات</span>
+                {filteredGroups.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedGroupIds.length === filteredGroups.length) setSelectedGroupIds([]);
+                      else setSelectedGroupIds(filteredGroups.map((g) => g.id));
+                    }}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    {selectedGroupIds.length === filteredGroups.length ? 'إلغاء الكل' : 'تحديد الكل'}
+                  </button>
+                )}
+              </div>
+
+              {filteredGroups.length === 0 ? (
+                <div className="text-sm text-red-600">
+                  لا توجد مجموعات متاحة لهذه المادة.
+                </div>
+              ) : (
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {filteredGroups.map((g) => (
+                    <label key={g.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={selectedGroupIds.includes(g.id)}
+                        onChange={() => toggleGroup(g.id)}
+                      />
+                      <span>{g.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSaveGroups}
+              disabled={isSavingGroups}
+              className="bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {isSavingGroups ? 'جاري حفظ المجموعات...' : 'حفظ المجموعات'}
+            </button>
+          </div>
         </form>
       )}
 

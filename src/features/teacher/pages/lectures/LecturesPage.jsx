@@ -1,5 +1,6 @@
+// src/features/teacher/pages/lectures/LecturesPage.jsx
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Video, Pencil, Trash2, Layers } from 'lucide-react';
+import { Plus, Video, Pencil, Trash2, Layers, CheckCircle, Eye } from 'lucide-react';
 import { useI18n } from '../../../../shared/i18n';
 import teacherApi from '../../../../shared/api/teacherApi';
 import CreateLectureModal from './CreateLectureModal';
@@ -24,7 +25,9 @@ export default function LecturesPage() {
   // Modals
   const [isLectureModalOpen, setIsLectureModalOpen] = useState(false);
   const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
+  
   const [editingLecture, setEditingLecture] = useState(null);
+  const [editingModule, setEditingModule] = useState(null); // ✅ جديد
 
   // 1. جلب الكورسات
   useEffect(() => {
@@ -91,6 +94,33 @@ export default function LecturesPage() {
     }
   };
 
+  const handlePublish = async (id) => {
+    try {
+      await teacherApi.publishLecture(id);
+      fetchLectures();
+    } catch (err) {
+      alert(err?.response?.data?.message || 'حدث خطأ أثناء النشر');
+    }
+  };
+
+  // ✅ لما نيجي نفتح مودال الوحدة، بنمسح الـ editingModule لو بنضيف جديد
+  const handleOpenModuleModal = (module = null) => {
+    setEditingModule(module);
+    setIsModuleModalOpen(true);
+  };
+
+  const refreshModules = () => {
+    teacherApi.getModules(selectedCourseId).then(res => {
+      const newModules = res.data?.data || res.data || [];
+      setModules(newModules);
+      // تحديث الوحدة المختارة عشان لو اتعدل اسمها يظهر
+      if (selectedModuleId) {
+        const updated = newModules.find(m => m.id === selectedModuleId);
+        if (updated) setSelectedModuleId(updated.id);
+      }
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -105,6 +135,7 @@ export default function LecturesPage() {
 
       {/* Filters: Course & Module Selector */}
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-end">
+        
         {/* اختيار الكورس */}
         <div className="flex-1 w-full">
           <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
@@ -123,7 +154,7 @@ export default function LecturesPage() {
           </select>
         </div>
 
-        {/* اختيار الوحدة */}
+        {/* اختيار الوحدة + زرار التعديل */}
         <div className="flex-1 w-full">
           <div className="flex justify-between items-center mb-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -131,24 +162,39 @@ export default function LecturesPage() {
             </label>
             {selectedCourseId && (
               <button
-                onClick={() => setIsModuleModalOpen(true)}
-                className="text-xs text-primary-600 hover:underline"
+                onClick={() => handleOpenModuleModal(null)}
+                className="text-xs text-primary-600 hover:underline flex items-center gap-1"
               >
-                + إضافة وحدة
+                <Plus size={12} /> إضافة وحدة
               </button>
             )}
           </div>
-          <select
-            value={selectedModuleId}
-            onChange={(e) => setSelectedModuleId(e.target.value)}
-            disabled={!selectedCourseId || loadingModules}
-            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700 disabled:opacity-50"
-          >
-            <option value="">— اختر وحدة —</option>
-            {modules.map((m) => (
-              <option key={m.id} value={m.id}>{m.title}</option>
-            ))}
-          </select>
+          <div className="flex gap-2">
+            <select
+              value={selectedModuleId}
+              onChange={(e) => setSelectedModuleId(e.target.value)}
+              disabled={!selectedCourseId || loadingModules}
+              className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700 disabled:opacity-50"
+            >
+              <option value="">— اختر وحدة —</option>
+              {modules.map((m) => (
+                <option key={m.id} value={m.id}>{m.title}</option>
+              ))}
+            </select>
+            {/* ✅ زرار تعديل الوحدة */}
+            {selectedModuleId && (
+              <button
+                onClick={() => {
+                  const mod = modules.find(m => m.id === selectedModuleId);
+                  handleOpenModuleModal(mod);
+                }}
+                className="px-3 py-2 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                title="تعديل الوحدة"
+              >
+                <Pencil size={16} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* زرار إضافة محاضرة */}
@@ -189,13 +235,29 @@ export default function LecturesPage() {
                   {idx + 1}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{lec.title}</h3>
-                  <p className="text-xs text-gray-500">
+                  <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    {lec.title}
+                    {lec.status === 'published' ? (
+                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">منشورة</span>
+                    ) : (
+                      <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">مسودة</span>
+                    )}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
                     المدة: {Math.floor(lec.duration / 60)} دقيقة • {lec.isFree ? 'مجاني' : 'مدفوع'}
                   </p>
                 </div>
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-1 items-center">
+                {lec.status !== 'published' && (
+                  <button
+                    onClick={() => handlePublish(lec.id)}
+                    className="px-2 py-1 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg flex items-center gap-1"
+                    title="نشر المحاضرة للطلاب"
+                  >
+                    <Eye size={14} /> نشر
+                  </button>
+                )}
                 <button
                   onClick={() => { setEditingLecture(lec); setIsLectureModalOpen(true); }}
                   className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
@@ -225,14 +287,14 @@ export default function LecturesPage() {
         />
       )}
 
+      {/* ✅ مودال الوحدة بياخد الـ module عشان التعديل */}
       {isModuleModalOpen && (
         <CreateModuleModal
           isOpen={isModuleModalOpen}
           onClose={() => setIsModuleModalOpen(false)}
           courseId={selectedCourseId}
-          onSuccess={() => {
-            teacherApi.getModules(selectedCourseId).then(res => setModules(res.data?.data || res.data || []));
-          }}
+          module={editingModule}
+          onSuccess={refreshModules}
         />
       )}
     </div>

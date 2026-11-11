@@ -1,38 +1,42 @@
 // src/features/student/StudentRoutes.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
 import StudentGuard from './StudentGuard';
+import StudentLayout from './StudentLayout';
+
+// ===== Pages =====
 import StudentDashboard from './pages/StudentDashboard';
 import StudentSubjects from './pages/StudentSubjects';
-import StudentSubjectDetails from './pages/StudentSubjectDetails'; // 🆕
+import StudentSubjectDetails from './pages/StudentSubjectDetails';
 import StudentCourses from './pages/StudentCourses';
-import StudentLectures from './pages/StudentLectures';
-import StudentAssignments from './pages/StudentAssignments';
-import StudentQuizzes from './pages/StudentQuizzes';
-import StudentGrades from './pages/StudentGrades';
-import StudentNotifications from './pages/StudentNotifications';
-import StudentProfile from './pages/StudentProfile';           
-import StudentLayout from './StudentLayout';
 import StudentCourseDetails from './pages/StudentCourseDetails';
+import StudentLectures from './pages/StudentLectures';
 import StudentModuleLectures from './pages/StudentModuleLectures';
 import StudentLecturePlayer from './pages/StudentLecturePlayer';
+import StudentAssignments from './pages/StudentAssignments';
 import StudentAssignmentDetails from './pages/StudentAssignmentDetails';
+import StudentQuizzes from './pages/StudentQuizzes';
 import StudentQuizTake from './pages/StudentQuizTake';
 import StudentQuizResult from './pages/StudentQuizResult';
-
-// 🆕 صفحات جديدة
+import StudentGrades from './pages/StudentGrades';
 import StudentPoints from './pages/StudentPoints';
 import StudentLeaderboard from './pages/StudentLeaderboard';
 import StudentPaymentPlans from './pages/StudentPaymentPlans';
 import StudentPayments from './pages/StudentPayments';
-import StudentEnrollments from './pages/StudentEnrollments';
 import StudentSubscription from './pages/StudentSubscription';
+import StudentNotifications from './pages/StudentNotifications';
+import StudentProfile from './pages/StudentProfile';
+import StudentPendingPage from './pages/StudentPendingPage';
 
 export default function StudentRoutes() {
   return (
     <Routes>
       <Route element={<StudentGuard />}>
         <Route element={<StudentLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
+          {/* ✅ نوجه الطالب لخطط الدفع بدل الداشبورد */}
+          <Route index element={<Navigate to="payment-plans" replace />} />
+
+          {/* ✅ صفحة الانتظار */}
+          <Route path="pending" element={<StudentPendingPage />} />
 
           {/* Dashboard */}
           <Route path="dashboard" element={<StudentDashboard />} />
@@ -71,14 +75,13 @@ export default function StudentRoutes() {
           {/* Grades */}
           <Route path="grades" element={<StudentGrades />} />
 
-          {/* 🆕 Gamification */}
+          {/* Gamification */}
           <Route path="points" element={<StudentPoints />} />
           <Route path="leaderboard" element={<StudentLeaderboard />} />
 
-          {/* 🆕 Payments */}
+          {/* ✅ Payments & Subscription */}
           <Route path="payment-plans" element={<StudentPaymentPlans />} />
           <Route path="payments" element={<StudentPayments />} />
-          <Route path="enrollments" element={<StudentEnrollments />} />
           <Route path="subscription" element={<StudentSubscription />} />
 
           {/* Others */}

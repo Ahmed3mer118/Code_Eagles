@@ -11,7 +11,7 @@ export default function useStudentAssignments() {
     setError(null);
     try {
       const data = await getStudentAssignments();
-      setAssignments(Array.isArray(data) ? data : []);
+      setAssignments(Array.isArray(data) ? data : (data?.data || []));
     } catch (err) {
       console.error('Failed to load assignments:', err);
       setError(

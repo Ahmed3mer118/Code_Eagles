@@ -137,7 +137,7 @@ export default function StudentsPage() {
         <EmptyState
           icon={Users}
           title="لا يوجد طلاب"
-          description="لم ينضم أي طالب بعد. سيظهر الطلاب هنا بعد الموافقة على طلبات الانضمام."
+          description="لم ينضم أي طالب بعد."
         />
       ) : (
         <>

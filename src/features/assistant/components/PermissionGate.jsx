@@ -2,29 +2,65 @@
 import { useEffect, useState } from 'react';
 import assistantApi from '../api/assistantApi';
 
-export default function PermissionGate({ permission, children, fallback = null }) {
-  const [permissions, setPermissions] = useState(null);
-  const [loading, setLoading] = useState(true);
+let permissionsCache = null;
+let permissionsPromise = null;
+
+function loadPermissions(force = false) {
+  if (force) {
+    permissionsCache = null;
+    permissionsPromise = null;
+  }
+  if (permissionsCache) return Promise.resolve(permissionsCache);
+  if (permissionsPromise) return permissionsPromise;
+
+  permissionsPromise = assistantApi
+    .getMe()
+    .then((res) => {
+      const data = res?.data ?? res;
+      permissionsCache = Array.isArray(data?.permissions) ? data.permissions : [];
+      return permissionsCache;
+    })
+    .catch(() => {
+      permissionsCache = [];
+      return permissionsCache;
+    })
+    .finally(() => { permissionsPromise = null; });
+
+  return permissionsPromise;
+}
+
+export function invalidatePermissionsCache() {
+  permissionsCache = null;
+  permissionsPromise = null;
+}
+
+export function usePermissions() {
+  const [permissions, setPermissions] = useState(permissionsCache);
+  const [loading, setLoading] = useState(!permissionsCache);
 
   useEffect(() => {
     let mounted = true;
-    assistantApi.getMe()
-      .then(res => {
-        if (mounted) {
-          const data = res?.data ?? res;
-          setPermissions(data?.permissions || []);
-        }
-      })
-      .catch(() => {
-        if (mounted) setPermissions([]);
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
+    loadPermissions().then((perms) => {
+      if (mounted) {
+        setPermissions(perms);
+        setLoading(false);
+      }
+    });
     return () => { mounted = false; };
   }, []);
 
-  if (loading) return null;
+  return {
+    permissions: permissions || [],
+    loading,
+    has: (p) => (permissions || []).includes(p),
+  };
+}
 
-  return permissions?.includes(permission) ? children : fallback;
+export default function PermissionGate({ permission, children, fallback = null, loadingFallback = null }) {
+  const { permissions, loading } = usePermissions();
+  if (loading) return loadingFallback;
+
+  const required = Array.isArray(permission) ? permission : [permission];
+  const allowed = required.some((p) => permissions.includes(p));
+  return allowed ? children : fallback;
 }

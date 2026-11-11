@@ -19,6 +19,10 @@ export interface RegisterPayload {
   gradeLevel?: string;
   parentContact?: string;
   childContact?: string;
+  academyId?: string;
+  parentAcademyId?: string;
+  academySlug?: string;
+  parentAcademySlug?: string;
 }
 
 export interface LoginPayload {
@@ -72,12 +76,18 @@ export interface MeResponse {
 /* ========== Service ========== */
 export const authService = {
   /* ---- Register ---- */
+  async getSignupAcademies(search = '') {
+    const query = search ? `?search=${encodeURIComponent(search)}` : '';
+    // ✅ التعديل هنا: apiClient بدل client
+    const { data } = await apiClient.get(`/auth/signup/academies${query}`);
+    return data;
+  },
+
   async register(payload: RegisterPayload) {
     const { data } = await apiClient.post<AuthResponse>(
       '/auth/register',
       payload,
     );
-    // الباك مش بيرجّع توكن وقت التسجيل — محتاج verify الأول
     return data;
   },
 

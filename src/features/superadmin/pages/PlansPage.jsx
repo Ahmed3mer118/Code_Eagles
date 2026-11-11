@@ -1,6 +1,8 @@
+// src/features/superadmin/pages/PlansPage.jsx
 import { useEffect, useRef, useState } from 'react';
 import { platformPlansService } from '../../../shared/api/platformPlansService';
 import { useI18n } from '../../../shared/i18n';
+import { broadcastUpdate } from '../../../shared/utils/liveUpdates';
 
 /* ─────────────────────────────────────────────
    Constants
@@ -62,16 +64,16 @@ export default function PlansPage() {
   const { lang } = useI18n();
   const isAr = lang === 'ar';
 
-  const [plans, setPlans]     = useState([]);
+  const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
-  const [saving, setSaving]   = useState(false);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [statusLoadingId, setStatusLoadingId] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing]     = useState(null);
-  const [form, setForm]           = useState(EMPTY_FORM);
-  const [fieldErrors, setFieldErrors] = useState({}); // ⭐ أخطاء الحقول
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   /* ── Fetch ── */
   const fetchPlans = async () => {
@@ -99,7 +101,7 @@ export default function PlansPage() {
   const openCreate = () => {
     setEditing(null);
     setForm({ ...EMPTY_FORM, features: { ...DEFAULT_FEATURES } });
-    setFieldErrors({});       // ⭐ صفّر الأخطاء
+    setFieldErrors({});
     setError('');
     setModalOpen(true);
   };
@@ -125,7 +127,7 @@ export default function PlansPage() {
       sortOrder: plan.sortOrder ?? 0,
       status: plan.status ?? 'active',
     });
-    setFieldErrors({});       // ⭐ صفّر الأخطاء
+    setFieldErrors({});
     setError('');
     setModalOpen(true);
   };
@@ -140,7 +142,6 @@ export default function PlansPage() {
 
     setForm((p) => ({ ...p, [key]: value }));
 
-    // ⭐ امسح خطأ الحقل ده لما المستخدم يعدّله
     if (fieldErrors[key]) {
       setFieldErrors((p) => {
         const copy = { ...p };
@@ -165,8 +166,7 @@ export default function PlansPage() {
       setError('');
       setFieldErrors({});
 
-      const totalMonths =
-        Number(form.periodMonths) * Number(form.durationUnit);
+      const totalMonths = Number(form.periodMonths) * Number(form.durationUnit);
 
       const payload = {
         name: form.name,
@@ -187,13 +187,15 @@ export default function PlansPage() {
         await platformPlansService.create(payload);
       }
 
+      // ⭐ أبلغ كل التابات التانية
+      broadcastUpdate('plans-updated');
+
       setModalOpen(false);
       await fetchPlans();
     } catch (e) {
       const res = e?.response?.data;
       const status = e?.response?.status;
 
-      // ⭐ 409 = duplicate → رسالة واضحة تحت الحقل
       if (status === 409) {
         const msg =
           (typeof res?.message === 'string' && res.message) ||
@@ -202,13 +204,11 @@ export default function PlansPage() {
             : `Slug "${form.slug}" is already used. Choose another one.`);
 
         setError(msg);
-
         const field = res?.field || 'slug';
         setFieldErrors((p) => ({ ...p, [field]: msg }));
         return;
       }
 
-      // 400 = validation error
       if (status === 400) {
         const raw = res?.message;
         const msg = Array.isArray(raw)
@@ -218,7 +218,6 @@ export default function PlansPage() {
         return;
       }
 
-      // باقي الأخطاء
       const raw = res?.message;
       const msg = Array.isArray(raw)
         ? raw.join(' • ')
@@ -229,13 +228,14 @@ export default function PlansPage() {
     }
   };
 
-  /* ── ⭐ Change Status ── */
+  /* ── Change Status ── */
   const handleChangeStatus = async (plan, newStatus) => {
     if (plan.status === newStatus) return;
     try {
       setStatusLoadingId(plan.id);
       setError('');
       await platformPlansService.updateStatus(plan.id, newStatus);
+      broadcastUpdate('plans-updated'); // ⭐
       setPlans((prev) =>
         prev.map((p) => (p.id === plan.id ? { ...p, status: newStatus } : p)),
       );
@@ -257,6 +257,7 @@ export default function PlansPage() {
     if (!ok) return;
     try {
       await platformPlansService.remove(plan.id);
+      broadcastUpdate('plans-updated'); // ⭐
       setPlans((p) => p.filter((x) => x.id !== plan.id));
     } catch (e) {
       setError(
@@ -271,6 +272,7 @@ export default function PlansPage() {
     try {
       setSaving(true);
       await platformPlansService.seedFree();
+      broadcastUpdate('plans-updated'); // ⭐
       await fetchPlans();
     } catch (e) {
       setError(
@@ -282,7 +284,6 @@ export default function PlansPage() {
     }
   };
 
-  /* ── Count active features ── */
   const activeFeaturesCount = (features) => {
     if (!features) return 0;
     if (Array.isArray(features)) return features.length;
@@ -297,7 +298,6 @@ export default function PlansPage() {
       className="p-6 space-y-6 bg-slate-50 min-h-screen"
       dir={isAr ? 'rtl' : 'ltr'}
     >
-      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
@@ -327,14 +327,12 @@ export default function PlansPage() {
         </div>
       </div>
 
-      {/* ⭐ Error Banner — خارج المودال بس */}
       {error && !modalOpen && (
         <div className="rounded-lg border border-rose-200 bg-rose-50 text-rose-700 px-4 py-3 text-sm">
           {error}
         </div>
       )}
 
-      {/* Content */}
       {loading ? (
         <div className="text-slate-500">
           {isAr ? 'جاري التحميل...' : 'Loading...'}
@@ -388,7 +386,6 @@ export default function PlansPage() {
                 </span>
               </div>
 
-              {/* Feature chips summary */}
               <div className="mt-4 flex flex-wrap gap-1.5 text-xs">
                 {PLAN_FEATURES.filter((f) => {
                   const feats = plan.features ?? {};
@@ -430,7 +427,6 @@ export default function PlansPage() {
         </div>
       )}
 
-      {/* ═══════════ Modal ═══════════ */}
       {modalOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
@@ -441,7 +437,6 @@ export default function PlansPage() {
             onSubmit={handleSubmit}
             className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
           >
-            {/* Modal Header */}
             <div className="relative px-8 pt-6 pb-4 border-b border-slate-100">
               <button
                 type="button"
@@ -461,7 +456,6 @@ export default function PlansPage() {
               </h2>
             </div>
 
-            {/* ⭐ Error Alert داخل المودال */}
             {error && (
               <div className="mx-8 mt-4 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 px-4 py-3 text-sm flex items-start gap-2">
                 <span className="text-base leading-none">⚠️</span>
@@ -476,9 +470,7 @@ export default function PlansPage() {
               </div>
             )}
 
-            {/* Modal Body */}
             <div className="px-8 py-6 space-y-5 overflow-y-auto">
-              {/* Slug */}
               <Field label={isAr ? 'معرّف الباقة *' : 'Plan slug *'}>
                 <input
                   required
@@ -506,7 +498,6 @@ export default function PlansPage() {
                 )}
               </Field>
 
-              {/* Name */}
               <Field label={isAr ? 'اسم الباقة *' : 'Plan name *'}>
                 <input
                   required
@@ -522,7 +513,6 @@ export default function PlansPage() {
                 </p>
               </Field>
 
-              {/* Price + Duration + Unit */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label={isAr ? 'المبلغ (ج.م) *' : 'Amount (EGP) *'}>
                   <input
@@ -571,7 +561,6 @@ export default function PlansPage() {
                   : 'Duration = number × unit (e.g. 3 months)'}
               </p>
 
-              {/* Limits */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label={isAr ? 'أقصى عدد طلاب' : 'Max students'}>
                   <input
@@ -606,7 +595,6 @@ export default function PlansPage() {
                 </Field>
               </div>
 
-              {/* ⭐ Features Section — Toggles */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
                   {isAr ? 'المميزات المتاحة' : 'Available Features'}
@@ -635,7 +623,6 @@ export default function PlansPage() {
                 </p>
               </div>
 
-              {/* Status + Sort */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label={isAr ? 'الحالة' : 'Status'}>
                   <select
@@ -662,7 +649,6 @@ export default function PlansPage() {
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="px-8 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
               <button
                 type="button"
@@ -743,7 +729,6 @@ function FeatureSwitch({ checked, onChange, label }) {
   );
 }
 
-/* ⭐ Status Menu — dropdown لتغيير الحالة بسرعة */
 function StatusMenu({ currentStatus, onChange, isAr, loading }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);

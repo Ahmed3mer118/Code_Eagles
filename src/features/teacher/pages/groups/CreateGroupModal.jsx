@@ -8,7 +8,6 @@ export default function CreateGroupModal({ isOpen, onClose, group, onSuccess }) 
   const [form, setForm] = useState({
     name: '',
     subjectId: '',
-    gradeLevel: '',
     capacity: 30,
     meetingDays: [],
   });
@@ -39,12 +38,11 @@ export default function CreateGroupModal({ isOpen, onClose, group, onSuccess }) 
       setForm({
         name: group.name || '',
         subjectId: group.subjectId || '',
-        gradeLevel: group.gradeLevel || '',
         capacity: group.capacity || 30,
         meetingDays: group.meetingDays || [],
       });
     } else {
-      setForm({ name: '', subjectId: '', gradeLevel: '', capacity: 30, meetingDays: [] });
+      setForm({ name: '', subjectId: '', capacity: 30, meetingDays: [] });
     }
     setError('');
   }, [group, isOpen]);
@@ -57,7 +55,7 @@ export default function CreateGroupModal({ isOpen, onClose, group, onSuccess }) 
       const payload = {
         name: form.name,
         subjectId: form.subjectId,
-        gradeLevel: form.gradeLevel || undefined,
+        // ❌ شيلنا gradeLevel من الـ payload
         capacity: Number(form.capacity) || 30,
       };
       if (group) {
@@ -75,11 +73,6 @@ export default function CreateGroupModal({ isOpen, onClose, group, onSuccess }) 
   };
 
   if (!isOpen) return null;
-
-  const gradeLevels = [
-    'grade_1', 'grade_2', 'grade_3', 'grade_4', 'grade_5', 'grade_6',
-    'grade_7', 'grade_8', 'grade_9', 'grade_10', 'grade_11', 'grade_12'
-  ];
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -120,33 +113,21 @@ export default function CreateGroupModal({ isOpen, onClose, group, onSuccess }) 
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
+            <p className="text-xs text-gray-500 mt-1">
+              * سيتم أخذ الصف الدراسي تلقائياً من المادة المختارة.
+            </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium mb-1">الصف الدراسي</label>
-              <select
-                value={form.gradeLevel}
-                onChange={(e) => setForm({ ...form, gradeLevel: e.target.value })}
-                className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
-              >
-                <option value="">— اختر —</option>
-                {gradeLevels.map((g) => (
-                  <option key={g} value={g}>{t(`grades.${g}`) || g}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">السعة</label>
-              <input
-                type="number"
-                min={1}
-                value={form.capacity}
-                onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-                className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
-              />
-            </div>
+          {/* شيلنا الـ grid اللي كان فيه الصف الدراسي، وخليا خانة السعة لوحدها */}
+          <div>
+            <label className="block text-sm font-medium mb-1">السعة</label>
+            <input
+              type="number"
+              min={1}
+              value={form.capacity}
+              onChange={(e) => setForm({ ...form, capacity: e.target.value })}
+              className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
+            />
           </div>
 
           <div className="flex gap-2 pt-2">
