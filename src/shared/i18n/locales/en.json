@@ -1,4 +1,194 @@
 {
+  "landing": {
+    "brandTagline": "Multi-Academy Learning Platform",
+    "nav": {
+      "features": "Features",
+      "academies": "Academies",
+      "categories": "Categories",
+      "pricing": "Pricing",
+      "contact": "Contact Us",
+      "login": "Login",
+      "register": "Sign Up"
+    },
+    "hero": {
+      "badge": "Code Eagles",
+      "title": "Learn Programming and Secondary Education with Trusted Academies",
+      "subtitle": "Master in-demand software skills with structured guidance, hands-on projects, and career-focused learning to help you advance your tech career.",
+      "startLearning": "Start Learning Today",
+      "exploreAcademies": "Explore Academies",
+      "searchPlaceholder": "Search for academies, teachers or subjects...",
+      "search": "Search...",
+      "students": "Students",
+      "teachers": "Teachers",
+      "academiesCount": "Academies"
+    },
+    "heroFeatures": {
+      "recorded": "Courses & Lectures",
+      "quizzes": "Quizzes & Assessment",
+      "live": "Live Classes",
+      "certs": "Certificates & Achievements"
+    },
+    "trusted": {
+      "badge": "Trusted By",
+      "title": "Built for Educational Excellence",
+      "subtitle": "Leading academies and teachers use Code Eagles to deliver organized learning experiences.",
+      "activeAcademies": "Active Academies",
+      "studentsRegistered": "Registered Students",
+      "publishedCourses": "Published Courses",
+      "completedQuizzes": "Completed Quizzes"
+    },
+    "dashboard": {
+      "badge": "All-in-One Platform",
+      "title": "Learning Dashboard",
+      "title2": "Built to Keep You Going",
+      "subtitle": "Every course is designed to keep you motivated, focused, and progressing toward your goal. From hands-on practice, real-world challenges, and expert feedback — everything you need is here.",
+      "bullet1": "Smart Daily Coding Streaks & Milestones",
+      "bullet2": "Gamified XP & Skill Progress Tracking",
+      "bullet3": "Hands-On Practice, Not Passive Watching",
+      "bullet4": "Real-World Learning Through Structured Projects",
+      "bullet5": "Verifiable Completion & Skill Verification",
+      "live": "Live",
+      "streak": "Streak",
+      "xp": "XP",
+      "rank": "Rank",
+      "courses": {
+        "react": "React Fundamentals",
+        "node": "Node.js & APIs",
+        "typescript": "TypeScript Deep Dive"
+      }
+    },
+    "codeReview": {
+      "badge": "Code Review",
+      "title": "Direct Mentoring, No Guesswork",
+      "subtitle": "At Code Eagles, you don't wrestle through endless generic docs. Our expert mentors guide you line by line, helping you understand not just what to write, but why it works and how to debug it properly.",
+      "subtitle2": "Whether you're preparing for complex backend projects or a live production deployment, our senior advisors ensure your code conforms to industry standards and scalable architecture.",
+      "cta": "Get Code Review",
+      "reviewerName": "Sarah M.",
+      "reviewerRole": "Senior Software Engineer",
+      "verified": "Verified",
+      "aiReviews": "+ 3 AI Reviews",
+      "builtInLinter": "Built-in Linter"
+    },
+    "courses": {
+      "badge": "Popular Courses",
+      "title": "This Month's Most-Loved Courses",
+      "subtitle": "Trusted by developers — take a look at what's inspiring attention and delivering the highest learner satisfaction.",
+      "viewAll": "View All Courses",
+      "enroll": "Enroll",
+      "free": "Free",
+      "beginner": "Beginner",
+      "lessons": "lessons"
+    },
+    "academies": {
+      "badge": "Discover",
+      "title": "Featured Academies",
+      "subtitle": "Explore verified academies led by expert teachers.",
+      "verified": "Verified",
+      "studentsCount": "students",
+      "coursesCount": "courses",
+      "view": "View Academy",
+      "empty": "No academies available"
+    },
+    "categories": {
+      "badge": "Explore",
+      "title": "Browse by Category",
+      "subtitle": "Find the right track for programming or high school preparation.",
+      "items": {
+        "programming": { "title": "Programming", "desc": "Software engineering and programming fundamentals" },
+        "frontend": { "title": "Frontend", "desc": "Modern UIs and React" },
+        "backend": { "title": "Backend", "desc": "APIs and databases" },
+        "ai": { "title": "Artificial Intelligence", "desc": "Machine learning and smart tools" },
+        "data": { "title": "Data Science", "desc": "Analytics, data, and Python workflows" },
+        "cyber": { "title": "Cybersecurity", "desc": "Security and protection basics" },
+        "g1": { "title": "Grade 10", "desc": "Grade 10 curriculum" },
+        "g2": { "title": "Grade 11", "desc": "Grade 11 preparation" },
+        "g3": { "title": "Grade 12", "desc": "Grade 12 and university prep" }
+      }
+    },
+    "features": {
+      "badge": "Why Code Eagles",
+      "title": "Why Code Eagles",
+      "subtitle": "Everything you need to teach, learn, and grow — with confidence and a modern experience.",
+      "items": {
+        "teachers": { "title": "Expert Teachers", "desc": "Learn from verified instructors with proven results." },
+        "live": { "title": "Live Classes", "desc": "Join schedules with direct interaction with the teacher." },
+        "recorded": { "title": "Recorded Lectures", "desc": "Watch lessons anytime with progress tracking." },
+        "quizzes": { "title": "Quizzes", "desc": "Practice with exams that reinforce learning outcomes." },
+        "certs": { "title": "Certificates", "desc": "Celebrate achievements and important milestones." },
+        "parent": { "title": "Parent Dashboard", "desc": "Parents track progress, attendance, and results." },
+        "mobile": { "title": "Mobile Friendly", "desc": "Fast and touch-friendly mobile experience." },
+        "smart": { "title": "Smart Learning Tools", "desc": "Smart support for review, notes, and study paths." }
+      }
+    },
+    "testimonials": {
+      "badge": "Success Stories",
+      "title": "Stories from Code Eagles Learners",
+      "subtitle": "Thousands of learners share what Code Eagles meant for their growth.",
+      "addButton": "Share Your Story",
+      "flipHint": "Flip the card for more",
+      "starsLabel": "rating",
+      "backButton": "Back",
+      "quoteOpen": "“",
+      "quoteClose": "”"
+    },
+    "impact": {
+      "title": "Platform Impact",
+      "subtitle": "Numbers reflecting active learning across Code Eagles academies.",
+      "students": "Students",
+      "academies": "Academies",
+      "teachers": "Teachers",
+      "watchHours": "Watch Hours",
+      "completedQuizzes": "Completed Quizzes"
+    },
+    "cta": {
+      "badge": "Learn from the Best",
+      "title": "Ready to Grow with Code Eagles?",
+      "subtitle": "Join 50,000+ learners taking their software craft. Master core skills and follow a modern learning path.",
+      "button": "Explore Courses"
+    },
+    "teacherCta": {
+      "badge": "For Teachers",
+      "title": "Build Your Academy in Minutes",
+      "subtitle": "Launch your branded academy, publish courses, manage groups, review payments, and grow your student community.",
+      "button": "Create Academy"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Answers for students, parents, and teachers."
+    },
+    "footer": {
+      "about": "A trusted platform for teaching programming and secondary education through certified academies.",
+      "platform": "Platform",
+      "learn": "Learn",
+      "legal": "Legal",
+      "company": "Company",
+      "support": "Support",
+      "home": "Home",
+      "academies": "Academies",
+      "pricing": "Pricing",
+      "contact": "Contact Us",
+      "joinAsStudent": "Join as Student",
+      "programming": "Programming",
+      "secondary": "Secondary Education",
+      "terms": "Terms of Use",
+      "privacy": "Privacy Policy",
+      "aboutUs": "About Us",
+      "careers": "Careers",
+      "blog": "Blog",
+      "help": "Help Center",
+      "faq": "FAQ",
+      "docs": "Documentation",
+      "newsletterPlaceholder": "Enter your email",
+      "subscribe": "Subscribe",
+      "copyright": "© 2026 Code Eagles. All rights reserved."
+    },
+    "mobileNav": {
+      "home": "Home",
+      "academies": "Academies",
+      "contact": "Contact",
+      "login": "Login"
+    }
+  },
   "common": {
     "loading": "Loading...",
     "save": "Save",
@@ -22,7 +212,33 @@
     "no": "No",
     "optional": "optional",
     "required": "required",
-    "confirmDelete": "Are you sure you want to delete?"
+    "confirmDelete": "Are you sure you want to delete?",
+    "name": "Name",
+    "namePlaceholder": "Enter name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "password": "Password",
+    "permissions": "Permissions",
+    "groups": "Groups",
+    "gradeLevel": "Grade Level",
+    "gradeLevelPlaceholder": "Select grade level",
+    "choose": "— Choose —",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter description",
+    "title": "Title",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "term": "Term",
+    "subject": "Subject",
+    "selectSubject": "— Select subject —",
+    "loadingData": "Loading data...",
+    "noData": "No data",
+    "saved": "Saved successfully",
+    "created": "Created successfully",
+    "updated": "Updated successfully",
+    "deleted": "Deleted successfully",
+    "somethingWentWrong": "Something went wrong, please try again"
   },
   "auth": {
     "login": "Login",
@@ -55,7 +271,7 @@
     "planId": "Plan ID (UUID)",
     "optional": "optional",
     "gradeLevel": "Grade Level",
-    "gradeLevelPlaceholder": "e.g. PRIMARY_1",
+    "gradeLevelPlaceholder": "e.g. Primary 1",
     "parentContact": "Parent Contact",
     "childContact": "Child Contact",
     "passwordsDontMatch": "Passwords don't match",
@@ -79,6 +295,18 @@
     "choose": "— Choose —"
   },
   "grades": {
+    "PRIMARY_1": "Primary 1",
+    "PRIMARY_2": "Primary 2",
+    "PRIMARY_3": "Primary 3",
+    "PRIMARY_4": "Primary 4",
+    "PRIMARY_5": "Primary 5",
+    "PRIMARY_6": "Primary 6",
+    "PREPARATORY_1": "Preparatory 1",
+    "PREPARATORY_2": "Preparatory 2",
+    "PREPARATORY_3": "Preparatory 3",
+    "SECONDARY_1": "Secondary 1",
+    "SECONDARY_2": "Secondary 2",
+    "SECONDARY_3": "Secondary 3",
     "grade_1": "Grade 1",
     "grade_2": "Grade 2",
     "grade_3": "Grade 3",
@@ -403,132 +631,6 @@
       "noHistory": "No history"
     }
   },
-  "landing": {
-    "brandTagline": "Multi-Academy Learning Platform",
-    "nav": {
-      "features": "Features",
-      "academies": "Academies",
-      "categories": "Categories",
-      "contact": "Contact Us",
-      "login": "Login",
-      "register": "Sign Up"
-    },
-    "hero": {
-      "badge": "Code Eagles",
-      "title": "Learn Programming and Secondary Education with Trusted Academies",
-      "startLearning": "Start Learning",
-      "exploreAcademies": "Explore Academies",
-      "searchPlaceholder": "Search for academies, teachers or subjects...",
-      "search": "Search...",
-      "students": "Students",
-      "teachers": "Teachers",
-      "academiesCount": "Academies"
-    },
-    "heroFeatures": {
-      "recorded": "Courses & Lectures",
-      "quizzes": "Quizzes & Assessment",
-      "live": "Live Classes",
-      "certs": "Certificates & Achievements"
-    },
-    "trusted": {
-      "badge": "Trusted By",
-      "title": "Built for Educational Excellence",
-      "subtitle": "Leading academies and teachers use Code Eagles to deliver organized learning experiences.",
-      "activeAcademies": "Active Academies",
-      "studentsRegistered": "Registered Students",
-      "publishedCourses": "Published Courses",
-      "completedQuizzes": "Completed Quizzes"
-    },
-    "academies": {
-      "badge": "Discover",
-      "title": "Featured Academies",
-      "subtitle": "Explore verified academies led by expert teachers.",
-      "verified": "Verified",
-      "studentsCount": "students",
-      "coursesCount": "courses",
-      "view": "View Academy",
-      "empty": "No academies available"
-    },
-    "categories": {
-      "badge": "Explore",
-      "title": "Browse by Category",
-      "subtitle": "Find the right track for programming or high school preparation.",
-      "items": {
-        "programming": { "title": "Programming", "desc": "Software engineering and programming fundamentals" },
-        "frontend": { "title": "Frontend", "desc": "Modern UIs and React" },
-        "backend": { "title": "Backend", "desc": "APIs and databases" },
-        "ai": { "title": "Artificial Intelligence", "desc": "Machine learning and smart tools" },
-        "data": { "title": "Data Science", "desc": "Analytics, data, and Python workflows" },
-        "cyber": { "title": "Cybersecurity", "desc": "Security and protection basics" },
-        "g1": { "title": "Grade 10", "desc": "Grade 10 curriculum" },
-        "g2": { "title": "Grade 11", "desc": "Grade 11 preparation" },
-        "g3": { "title": "Grade 12", "desc": "Grade 12 and university prep" }
-      }
-    },
-    "features": {
-      "badge": "Why Code Eagles",
-      "title": "Why Code Eagles",
-      "subtitle": "Everything you need to teach, learn, and grow — with confidence and a modern experience.",
-      "items": {
-        "teachers": { "title": "Expert Teachers", "desc": "Learn from verified instructors with proven results." },
-        "live": { "title": "Live Classes", "desc": "Join schedules with direct interaction with the teacher." },
-        "recorded": { "title": "Recorded Lectures", "desc": "Watch lessons anytime with progress tracking." },
-        "quizzes": { "title": "Quizzes", "desc": "Practice with exams that reinforce learning outcomes." },
-        "certs": { "title": "Certificates", "desc": "Celebrate achievements and important milestones." },
-        "parent": { "title": "Parent Dashboard", "desc": "Parents track progress, attendance, and results." },
-        "mobile": { "title": "Mobile Friendly", "desc": "Fast and touch-friendly mobile experience." },
-        "smart": { "title": "Smart Learning Tools", "desc": "Smart support for review, notes, and study paths." }
-      }
-    },
-    "testimonials": {
-      "badge": "Success Stories",
-      "title": "Student Success",
-      "subtitle": "Real journeys of students who improved their grades, skills, and confidence."
-    },
-    "impact": {
-      "title": "Platform Impact",
-      "subtitle": "Numbers reflecting active learning across Code Eagles academies.",
-      "students": "Students",
-      "academies": "Academies",
-      "teachers": "Teachers",
-      "watchHours": "Watch Hours",
-      "completedQuizzes": "Completed Quizzes"
-    },
-    "teacherCta": {
-      "badge": "For Teachers",
-      "title": "Build Your Academy in Minutes",
-      "subtitle": "Launch your branded academy, publish courses, manage groups, review payments, and grow your student community.",
-      "button": "Create Academy"
-    },
-    "faq": {
-      "title": "Frequently Asked Questions",
-      "subtitle": "Answers for students, parents, and teachers."
-    },
-    "footer": {
-      "about": "A trusted platform for teaching programming and secondary education through certified academies.",
-      "platform": "Platform",
-      "learn": "Learn",
-      "legal": "Legal",
-      "home": "Home",
-      "academies": "Academies",
-      "pricing": "Pricing",
-      "contact": "Contact Us",
-      "joinAsStudent": "Join as Student",
-      "programming": "Programming",
-      "secondary": "Secondary Education",
-      "terms": "Terms of Use",
-      "privacy": "Privacy Policy",
-      "newsletterPlaceholder": "Enter your email",
-      "subscribe": "Subscribe",
-      "copyright": "© 2026 Code Eagles. All rights reserved."
-    },
-    "mobileNav": {
-      "home": "Home",
-      "academies": "Academies",
-      "contact": "Contact",
-      "login": "Login"
-    }
-  },
   "teacher": {
     "status": {
       "draft": "Draft",
@@ -536,9 +638,41 @@
       "archived": "Archived"
     },
     "subjects": {
+      "title": "Subjects",
       "subtitle": "Manage educational subjects",
+      "addNew": "Add Subject",
+      "addTitle": "Add New Subject",
+      "editTitle": "Edit Subject",
       "empty": "No subjects found",
-      "emptyHint": "Start by adding a new subject"
+      "emptyHint": "Start by adding a new subject",
+      "name": "Subject Name",
+      "namePlaceholder": "e.g. Mathematics",
+      "gradeLevel": "Grade Level",
+      "description": "Description",
+      "descriptionPlaceholder": "A short description of the subject...",
+      "createSuccess": "Subject added successfully",
+      "updateSuccess": "Subject updated successfully",
+      "deleteSuccess": "Subject deleted successfully",
+      "deleteConfirm": "Are you sure you want to delete this subject?"
+    },
+    "courses": {
+      "title": "Courses",
+      "subtitle": "Manage educational courses",
+      "addNew": "Add Course",
+      "addTitle": "Add New Course",
+      "editTitle": "Edit Course",
+      "empty": "No courses found",
+      "emptyHint": "Start by adding a new course",
+      "form": {
+        "subject": "Subject",
+        "term": "Term",
+        "name": "Course Name",
+        "description": "Description"
+      },
+      "createSuccess": "Course added successfully",
+      "updateSuccess": "Course updated successfully",
+      "deleteSuccess": "Course deleted successfully",
+      "deleteConfirm": "Are you sure you want to delete this course?"
     },
     "tenantSettings": {
       "title": "Academy Settings",
@@ -598,15 +732,6 @@
       "addLecture": "Add Lecture",
       "noLectures": "No lectures found"
     },
-    "courses": {
-      "subtitle": "Manage educational courses",
-      "empty": "No courses found",
-      "emptyHint": "Start by adding a new course",
-      "form": {
-        "subject": "Subject",
-        "term": "Term"
-      }
-    },
     "layout": {
       "title": "Teacher Panel",
       "status": {
@@ -614,6 +739,68 @@
         "published": "Published",
         "archived": "Archived"
       }
+    },
+    "menu": {
+      "overview": "Overview",
+      "pendingRequests": "Pending Join Requests",
+      "groups": "Groups",
+      "subjects": "Subjects",
+      "students": "Students",
+      "quizzes": "Quizzes",
+      "assignments": "Assignments",
+      "reports": "Reports",
+      "reportsAnalytics": "Reports & Analytics",
+      "payments": "Payments",
+      "pendingPayments": "Pending Payments",
+      "paymentPlans": "Payment Plans",
+      "platformPlan": "Platform Plan",
+      "platformPay": "Pay Platform Subscription",
+      "promoCodes": "Promo Codes",
+      "paymentHistory": "Payment History",
+      "settings": "Settings"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "empty": "No notifications",
+      "markAllRead": "Mark all as read"
+    },
+    "user": {
+      "profile": "Profile",
+      "settings": "Settings",
+      "logout": "Logout"
+    },
+    "dashboard": {
+      "welcome": "Welcome",
+      "stats": {
+        "students": "Students",
+        "groups": "Groups",
+        "subjects": "Subjects",
+        "revenue": "Revenue"
+      },
+      "charts": {
+        "studentsGroups": "Students & Groups",
+        "revenue": "Revenue (Monthly)",
+        "subjectsDistribution": "Subjects Distribution",
+        "summary": "Quick Summary",
+        "students": "Students",
+        "groups": "Groups",
+        "subjects": "Subjects",
+        "other": "Other",
+        "totalStudents": "Total Students",
+        "totalGroups": "Total Groups",
+        "totalSubjects": "Total Subjects",
+        "months": {
+          "jan": "Jan",
+          "feb": "Feb",
+          "mar": "Mar",
+          "apr": "Apr",
+          "may": "May",
+          "jun": "Jun"
+        }
+      },
+      "recentEnrollments": "Recent Enrollments",
+      "recentPayments": "Recent Payments",
+      "viewAll": "View All"
     },
     "assistants": {
       "title": "Assistants",
@@ -699,10 +886,10 @@
         "user:create": "Create Users",
         "user:update": "Update Users",
         "user:delete": "Delete Users",
-        "member:read": "View Members",
-        "member:create": "Create Members",
-        "member:update": "Update Members",
-        "member:delete": "Delete Members",
+        "member:read": "View Students",
+        "member:create": "Create Students",
+        "member:update": "Manage Students",
+        "member:delete": "Delete Students",
         "course:read": "View Courses",
         "course:create": "Create Courses",
         "course:update": "Update Courses",
@@ -713,7 +900,7 @@
         "lesson:delete": "Delete Lessons",
         "group:read": "View Groups",
         "group:create": "Create Groups",
-        "group:update": "Update Groups",
+        "group:update": "Manage Groups",
         "group:delete": "Delete Groups",
         "payment:read": "View Payments",
         "payment:create": "Create Payments",
@@ -722,10 +909,13 @@
         "assignment:create": "Create Assignments",
         "assignment:update": "Update Assignments",
         "assignment:delete": "Delete Assignments",
+        "assignment:grade": "Grade Assignments",
         "quiz:read": "View Quizzes",
         "quiz:create": "Create Quizzes",
         "quiz:update": "Update Quizzes",
-        "quiz:delete": "Delete Quizzes"
+        "quiz:delete": "Delete Quizzes",
+        "quiz:grade": "Grade Quizzes",
+        "attendance:manage": "Manage Attendance"
       }
     }
   },
@@ -756,8 +946,6 @@
     "promoCodes": "Promo Codes",
     "paymentHistory": "Payment History",
     "platformSubscription": "Platform Subscription",
-    "mySubscription": "My Subscription",
-    "paySubscription": "Pay Subscription",
     "team": "Team",
     "assistants": "Assistants",
     "notifications": "Notifications",

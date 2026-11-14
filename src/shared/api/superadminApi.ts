@@ -30,10 +30,27 @@ export interface ActivityItem {
 
 export const superadminApi = {
   async getOverview(): Promise<DashboardOverview> {
-    // ✅ بدون /api
-    const { data } = await api.get('/admin/dashboard/overview');
-    return data.data ?? data;
-  },
+  const { data } = await api.get('/admin/dashboard/overview');
+  const d = data.data ?? data;
+
+  // Normalize: لو revenue رقم مش object
+  const normalized: DashboardOverview = {
+    revenue: typeof d.revenue === 'number'
+      ? { value: d.revenue, growth: 0 }
+      : { value: d.revenue?.value ?? 0, growth: d.revenue?.growth ?? 0 },
+    pendingRequests: typeof d.pendingRequests === 'number'
+      ? { value: d.pendingRequests, growth: 0 }
+      : { value: d.pendingRequests?.value ?? 0, growth: d.pendingRequests?.growth ?? 0 },
+    totalUsers: typeof d.totalUsers === 'number'
+      ? { value: d.totalUsers, growth: 0 }
+      : { value: d.totalUsers?.value ?? 0, growth: d.totalUsers?.growth ?? 0 },
+    totalAcademies: typeof d.totalAcademies === 'number'
+      ? { value: d.totalAcademies, growth: 0 }
+      : { value: d.totalAcademies?.value ?? 0, growth: d.totalAcademies?.growth ?? 0 },
+    badges: d.badges ?? { pendingRequests: 0, pendingMessages: 0, unreadNotifications: 0 },
+  };
+  return normalized;
+},
 
   async getGrowth(days = 7): Promise<GrowthPoint[]> {
     const { data } = await api.get('/admin/dashboard/growth', {
